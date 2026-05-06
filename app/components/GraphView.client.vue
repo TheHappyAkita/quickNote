@@ -27,15 +27,30 @@ let cy: Core | null = null
 
 const router = useRouter()
 
+function updateElements() {
+  if (!cy) return
+  cy.elements().remove()
+  cy.add([...props.graphData.nodes, ...props.graphData.edges])
+  cy.layout({
+    name: 'cose',
+    animate: true,
+    randomize: true,
+    componentSpacing: 100,
+    nodeRepulsion: 400000,
+    idealEdgeLength: 100,
+    edgeElasticity: 100,
+    gravity: 80,
+  }).run()
+}
+
+watch(() => props.graphData, updateElements, { deep: true })
+
 onMounted(() => {
   if (!containerRef.value) return
 
   cy = cytoscape({
     container: containerRef.value,
-    elements: [
-      ...props.graphData.nodes,
-      ...props.graphData.edges,
-    ],
+    elements: [...props.graphData.nodes, ...props.graphData.edges],
     style: [
       {
         selector: 'node',
@@ -129,16 +144,6 @@ onMounted(() => {
         style: { 'line-color': '#6c63ff', 'width': 2.5, 'opacity': 1 },
       },
     ],
-    layout: {
-      name: 'cose',
-      animate: true,
-      randomize: true,
-      componentSpacing: 100,
-      nodeRepulsion: 400000,
-      idealEdgeLength: 100,
-      edgeElasticity: 100,
-      gravity: 80,
-    },
   })
 
   cy.on('tap', 'node[type="date"]', (event) => {
