@@ -287,7 +287,8 @@ function insertSuggestion(date: string) {
 }
 
 :deep(.preview-pane code) {
-  background: #0f0f17;
+  background: #2e2e4e;
+  color: #c8c0ff;
   padding: 2px 6px;
   border-radius: 4px;
   font-family: monospace;
