@@ -33,15 +33,14 @@
       </v-chip>
 
       <v-btn
-        color="primary"
-        variant="tonal"
+        icon="mdi-content-save"
+        variant="text"
         size="small"
-        class="ml-1"
+        :color="saveStatus === 'saved' ? 'success' : 'primary'"
         :loading="saveStatus === 'saving'"
+        title="Save (Ctrl+S)"
         @click="saveNow"
-      >
-        Save
-      </v-btn>
+      />
     </div>
 
     <NoteEditor v-model="content" :date="date" @blur="saveNow" />
