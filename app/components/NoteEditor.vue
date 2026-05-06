@@ -91,7 +91,10 @@ const wordCount = computed(() => {
 })
 
 const renderedContent = computed(() => {
-  let html = marked.parse(props.modelValue) as string
+  let html = marked.parse(props.modelValue, {
+    gfm: true,
+    breaks: false,
+  }) as string
   html = html.replace(
     /\[\[(\d{4}-\d{2}-\d{2})\]\]/g,
     '<a href="/note/$1" class="wiki-link">$1</a>',
