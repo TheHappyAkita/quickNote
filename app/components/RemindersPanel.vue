@@ -143,12 +143,15 @@ const isCollapsed = ref(true)
 const activeView = ref<'alerts' | 'reminders'>('reminders')
 const emit = defineEmits<{
   'update:collapsed': [value: boolean]
+  'panelOpen': [panel: string]
 }>()
 
 function toggleAlerts() {
   if (isCollapsed.value) {
     isCollapsed.value = false
     activeView.value = 'alerts'
+    // Close other panels
+    emit('panelOpen', 'reminders')
   } else if (activeView.value === 'alerts') {
     isCollapsed.value = true
   } else {
@@ -161,6 +164,8 @@ function toggleReminders() {
   if (isCollapsed.value) {
     isCollapsed.value = false
     activeView.value = 'reminders'
+    // Close other panels
+    emit('panelOpen', 'reminders')
   } else if (activeView.value === 'reminders') {
     isCollapsed.value = true
   } else {
@@ -168,6 +173,14 @@ function toggleReminders() {
   }
   emit('update:collapsed', isCollapsed.value)
 }
+
+// Method to collapse this panel when another opens
+defineExpose({
+  collapse() {
+    isCollapsed.value = true
+    emit('update:collapsed', true)
+  }
+})
 
 const { data: reminders, pending, refresh } = await useFetch<Reminder[]>('/api/notes/reminders', {
   server: false,

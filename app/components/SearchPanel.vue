@@ -97,10 +97,15 @@ const query = ref('')
 const results = ref<SearchResult[]>([])
 const loading = ref(false)
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
+const emit = defineEmits<{
+  'panelOpen': [panel: string]
+}>()
 
 function toggle() {
   isCollapsed.value = !isCollapsed.value
   if (!isCollapsed.value) {
+    // Close other panels when opening
+    emit('panelOpen', 'search')
     nextTick(() => {
       // Focus the input when opening
       const input = document.querySelector('.search-input input') as HTMLInputElement
@@ -108,6 +113,13 @@ function toggle() {
     })
   }
 }
+
+// Method to collapse this panel when another opens
+defineExpose({
+  collapse() {
+    isCollapsed.value = true
+  }
+})
 
 function debouncedSearch() {
   if (debounceTimer) clearTimeout(debounceTimer)
@@ -141,13 +153,13 @@ async function performSearch() {
 <style scoped>
 .search-panel {
   position: fixed;
-  top: 160px; /* Below the reminders panel (which is at top: 64px + height) */
+  top: 96px; /* Same position as reminders panel */
   right: 0;
   width: 340px;
-  height: calc(100vh - 180px);
+  height: calc(100vh - 110px);
   background: #1a1a2e;
   border-left: 1px solid #2e2e4e;
-  z-index: 99; /* Below reminders panel (z-index: 100) */
+  z-index: 101; /* Higher than reminders when open */
   transition: transform 0.3s ease;
   display: flex;
   flex-direction: column;
