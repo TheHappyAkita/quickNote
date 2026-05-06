@@ -37,5 +37,6 @@ export interface CanvasMeta {
 export interface Reminder {
   date: string
   text: string
-  keyword: 'remind' | 'remindme' | 'reminder'
+  keyword: 'remind' | 'remindme' | 'reminder' | 'alert'
+  alertDate?: string // For alert-type reminders: the target date
 }
