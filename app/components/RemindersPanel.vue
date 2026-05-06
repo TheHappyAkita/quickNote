@@ -6,7 +6,7 @@
       variant="text"
       class="toggle-btn"
       :title="isCollapsed ? 'Show reminders' : 'Hide reminders'"
-      @click="isCollapsed = !isCollapsed"
+      @click="toggle"
     >
       <v-icon>{{ isCollapsed ? 'mdi-bell-badge' : 'mdi-chevron-right' }}</v-icon>
     </v-btn>
@@ -58,6 +58,14 @@
 import type { Reminder } from '#shared/types/notes'
 
 const isCollapsed = ref(true)
+const emit = defineEmits<{
+  'update:collapsed': [value: boolean]
+}>()
+
+function toggle() {
+  isCollapsed.value = !isCollapsed.value
+  emit('update:collapsed', isCollapsed.value)
+}
 
 const { data: reminders, pending, refresh } = await useFetch<Reminder[]>('/api/notes/reminders', {
   server: false,
