@@ -33,11 +33,14 @@
         density="compact"
         hide-details
         class="search-input mb-3"
-        prepend-inner-icon="mdi-magnify"
         clearable
         @keyup.enter="performSearch"
         @update:model-value="debouncedSearch"
-      />
+      >
+        <template #prepend>
+          <v-icon size="18" color="primary">mdi-magnify</v-icon>
+        </template>
+      </v-text-field>
 
       <div v-if="loading" class="d-flex justify-center pa-4">
         <v-progress-circular indeterminate size="20" color="primary" />
@@ -211,5 +214,13 @@ async function performSearch() {
 
 :deep(.search-input .v-field) {
   background: #0f0f17;
+}
+
+:deep(.search-input .v-field__prepend-inner) {
+  padding-right: 8px;
+}
+
+:deep(.search-input .v-field__clearable) {
+  padding-left: 8px;
 }
 </style>

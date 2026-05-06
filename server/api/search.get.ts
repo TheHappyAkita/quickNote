@@ -21,13 +21,15 @@ export default defineEventHandler(async (event): Promise<SearchResult[]> => {
   const dates = await listNotes()
   await Promise.all(dates.map(async (date) => {
     const content = await readNote(date)
-    if (!content) return
+    // Match if date contains search term OR content contains it
+    const dateMatch = date.toLowerCase().includes(searchTerm)
+    const contentMatch = content?.toLowerCase().includes(searchTerm)
 
-    const contentLower = content.toLowerCase()
-    if (contentLower.includes(searchTerm)) {
+    if (dateMatch || contentMatch) {
+      const contentLower = content?.toLowerCase() ?? ''
       // Find excerpts around matches
-      const excerpts = extractExcerpts(content, searchTerm, 3)
-      const excerpt = excerpts.join(' … ') || content.slice(0, 160)
+      const excerpts = content ? extractExcerpts(content, searchTerm, 3) : []
+      const excerpt = excerpts.join(' … ') || (content?.slice(0, 160) ?? '')
 
       results.push({
         type: 'note',
@@ -43,12 +45,14 @@ export default defineEventHandler(async (event): Promise<SearchResult[]> => {
   const pages = await listPages()
   await Promise.all(pages.map(async (page) => {
     const content = await readPage(page)
-    if (!content) return
+    // Match if page name contains search term OR content contains it
+    const nameMatch = page.toLowerCase().includes(searchTerm)
+    const contentMatch = content?.toLowerCase().includes(searchTerm)
 
-    const contentLower = content.toLowerCase()
-    if (contentLower.includes(searchTerm)) {
-      const excerpts = extractExcerpts(content, searchTerm, 3)
-      const excerpt = excerpts.join(' … ') || content.slice(0, 160)
+    if (nameMatch || contentMatch) {
+      const contentLower = content?.toLowerCase() ?? ''
+      const excerpts = content ? extractExcerpts(content, searchTerm, 3) : []
+      const excerpt = excerpts.join(' … ') || (content?.slice(0, 160) ?? '')
 
       results.push({
         type: 'page',
