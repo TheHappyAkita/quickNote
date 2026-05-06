@@ -149,29 +149,50 @@ function extractKeywords(content: string): string[] {
     .filter((w) => w.length >= 4 && !STOPWORDS.has(w) && !/^\d+$/.test(w))
 }
 
+const DATE_PATTERN_GRAPH = /^\d{4}-\d{2}-\d{2}$/
+
 export async function buildGraph(): Promise<GraphData> {
   const dates = await listNotes()
+  const pages = await listPages()
   const dateSet = new Set(dates)
+  const pageSet = new Set(pages)
 
-  const nodes: GraphData['nodes'] = dates.map((date) => ({
-    data: { id: date, label: date, type: 'date' as const },
-  }))
+  // Create nodes for dates and pages
+  const nodes: GraphData['nodes'] = [
+    ...dates.map((date) => ({
+      data: { id: date, label: date, type: 'date' as const },
+    })),
+    ...pages.map((page) => ({
+      data: { id: `page:${page}`, label: page, type: 'page' as const },
+    })),
+  ]
   const edges: GraphData['edges'] = []
   const seenEdges = new Set<string>()
 
   const kwFreq = new Map<string, { total: number; dates: Set<string> }>()
 
+  // Process daily notes
   for (const date of dates) {
     const content = await readNote(date)
     if (!content) continue
 
     const links = extractLinks(content)
     for (const target of links) {
-      if (!dateSet.has(target)) continue
-      const edgeKey = `${date}->${target}`
-      if (seenEdges.has(edgeKey)) continue
-      seenEdges.add(edgeKey)
-      edges.push({ data: { id: edgeKey, source: date, target, type: 'wikilink' as const } })
+      // Link to another date
+      if (dateSet.has(target)) {
+        const edgeKey = `${date}->${target}`
+        if (seenEdges.has(edgeKey)) continue
+        seenEdges.add(edgeKey)
+        edges.push({ data: { id: edgeKey, source: date, target, type: 'wikilink' as const } })
+      }
+      // Link to a page
+      else if (pageSet.has(target)) {
+        const pageId = `page:${target}`
+        const edgeKey = `${date}->${pageId}`
+        if (seenEdges.has(edgeKey)) continue
+        seenEdges.add(edgeKey)
+        edges.push({ data: { id: edgeKey, source: date, target: pageId, type: 'wikilink' as const } })
+      }
     }
 
     const words = extractKeywords(content)
@@ -181,6 +202,34 @@ export async function buildGraph(): Promise<GraphData> {
       const entry = kwFreq.get(w)!
       entry.total++
       if (!seen.has(w)) { entry.dates.add(date); seen.add(w) }
+    }
+  }
+
+  // Process pages for links to dates and keywords
+  for (const page of pages) {
+    const content = await readPage(page)
+    if (!content) continue
+
+    const links = extractLinks(content)
+    for (const target of links) {
+      // Page links to a date
+      if (dateSet.has(target)) {
+        const pageId = `page:${page}`
+        const edgeKey = `${pageId}->${target}`
+        if (seenEdges.has(edgeKey)) continue
+        seenEdges.add(edgeKey)
+        edges.push({ data: { id: edgeKey, source: pageId, target, type: 'wikilink' as const } })
+      }
+    }
+
+    // Extract keywords from pages too (optional - can be removed if not desired)
+    const words = extractKeywords(content)
+    const seen = new Set<string>()
+    for (const w of words) {
+      if (!kwFreq.has(w)) kwFreq.set(w, { total: 0, dates: new Set() })
+      const entry = kwFreq.get(w)!
+      entry.total++
+      if (!seen.has(w)) { entry.dates.add(`page:${page}`); seen.add(w) }
     }
   }
 

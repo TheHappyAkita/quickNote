@@ -1,5 +1,5 @@
 export interface GraphNode {
-  data: { id: string; label: string; type: 'date' | 'keyword'; weight?: number }
+  data: { id: string; label: string; type: 'date' | 'page' | 'keyword'; weight?: number }
 }
 
 export interface GraphEdge {

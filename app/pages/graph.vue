@@ -5,7 +5,7 @@
       <h1 class="text-h6 text-primary font-weight-bold">Knowledge Graph</h1>
       <v-spacer />
       <v-chip size="small" variant="tonal" color="primary">
-        {{ nodeCount }} notes
+        {{ nodeCount.dates }} dates, {{ nodeCount.pages }} pages
       </v-chip>
       <v-btn
         icon="mdi-refresh"
@@ -18,12 +18,12 @@
     </div>
 
     <v-alert
-      v-if="!pending && nodeCount === 0"
+      v-if="!pending && nodeCount.total === 0"
       type="info"
       variant="tonal"
       class="mb-4"
     >
-      No notes yet. Create your first daily note to start building your graph.
+      No notes yet. Create your first daily note or page to start building your graph.
     </v-alert>
 
     <ClientOnly>
@@ -46,5 +46,10 @@ useHead({
 
 const { data: graphData, pending, refresh } = await useFetch<GraphData>('/api/notes/graph')
 
-const nodeCount = computed(() => graphData.value?.nodes?.length ?? 0)
+const nodeCount = computed(() => {
+  const nodes = graphData.value?.nodes ?? []
+  const dates = nodes.filter(n => n.data.type === 'date').length
+  const pages = nodes.filter(n => n.data.type === 'page').length
+  return { total: nodes.length, dates, pages }
+})
 </script>

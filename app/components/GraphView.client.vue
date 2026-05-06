@@ -60,6 +60,18 @@ onMounted(() => {
         },
       },
       {
+        selector: 'node[type="page"]',
+        style: {
+          'background-color': '#1e2e3e',
+          'border-color': '#9c8fff',
+          'border-width': 2,
+          'border-style': 'dashed',
+          'font-size': 10,
+          'width': 44,
+          'height': 44,
+        },
+      },
+      {
         selector: 'node[type="keyword"]',
         style: {
           'background-color': '#1a6b5a',
@@ -73,6 +85,10 @@ onMounted(() => {
           'color': '#a7f3d0',
           'text-outline-color': '#0f1f1a',
         },
+      },
+      {
+        selector: 'node[type="page"]:hover',
+        style: { 'background-color': '#2e3e4e', 'border-color': '#b8a5ff' },
       },
       {
         selector: 'node:selected',
@@ -130,11 +146,24 @@ onMounted(() => {
     router.push(`/note/${date}`)
   })
 
+  cy.on('tap', 'node[type="page"]', (event) => {
+    const id = event.target.data('id') as string
+    const pageName = id.replace(/^page:/, '')
+    router.push(`/page/${encodeURIComponent(pageName)}`)
+  })
+
   cy.on('mouseover', 'node', (event) => {
     const node = event.target
     const type = node.data('type') as string
     const id = node.data('id') as string
-    hoveredNode.value = type === 'date' ? id : `#${node.data('label') as string}`
+    const label = node.data('label') as string
+    if (type === 'date') {
+      hoveredNode.value = id
+    } else if (type === 'page') {
+      hoveredNode.value = `📄 ${label}`
+    } else {
+      hoveredNode.value = `#${label}`
+    }
   })
 
   cy.on('mouseout', 'node', () => {
