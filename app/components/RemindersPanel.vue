@@ -118,10 +118,14 @@ function formatDate(dateStr: string): string {
   top: 64px; /* Below app bar */
   bottom: 0;
   width: 280px;
-  background: rgba(26, 26, 46, 0.95);
+  background: #1a1a2e;
   border-left: 1px solid #2e2e4e;
   z-index: 100;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.reminders-panel:not(.collapsed) {
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);
 }
 
 .reminders-panel.collapsed {

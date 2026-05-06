@@ -11,7 +11,9 @@
 <script setup lang="ts">
 const panelCollapsed = ref(true)
 const mainStyle = computed(() => ({
-  paddingRight: panelCollapsed.value ? '40px' : '280px',
+  // Only reserve space for the toggle button when collapsed.
+  // When open, panel is overlay (z-index) and doesn't push content.
+  paddingRight: panelCollapsed.value ? '40px' : '0px',
   transition: 'padding-right 0.2s ease',
 }))
 
