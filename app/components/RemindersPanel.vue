@@ -33,6 +33,7 @@
           v-for="reminder in reminders"
           :key="`${reminder.date}-${reminder.text}`"
           class="reminder-item"
+          :class="{ 'alert-item': reminder.keyword === 'alert' }"
         >
           <template #prepend>
             <v-icon size="14" :color="iconColor(reminder.keyword)" class="mr-2">
@@ -47,7 +48,16 @@
           </v-list-item-title>
 
           <v-list-item-subtitle class="text-caption">
-            {{ formatDate(reminder.date) }}
+            <template v-if="reminder.keyword === 'alert' && reminder.alertDate">
+              <v-icon size="12" color="error" class="mr-1">mdi-clock-alert</v-icon>
+              <span :class="{ 'text-error font-weight-bold': isOverdue(reminder.alertDate) }">
+                {{ formatAlertDate(reminder.alertDate) }}
+              </span>
+              <span class="text-medium-emphasis ml-1">(in {{ formatDate(reminder.date) }})</span>
+            </template>
+            <template v-else>
+              {{ formatDate(reminder.date) }}
+            </template>
           </v-list-item-subtitle>
 
           <template #append>
@@ -111,7 +121,8 @@ function iconFor(keyword: Reminder['keyword']): string {
   switch (keyword) {
     case 'remind': return 'mdi-bell-outline'
     case 'remindme': return 'mdi-bell-ring'
-    case 'reminder': return 'mdi-clock-alert'
+    case 'reminder': return 'mdi-clock-alert-outline'
+    case 'alert': return 'mdi-bell-alert'
     default: return 'mdi-bell'
   }
 }
@@ -121,8 +132,21 @@ function iconColor(keyword: Reminder['keyword']): string {
     case 'remind': return 'warning'
     case 'remindme': return 'error'
     case 'reminder': return 'info'
+    case 'alert': return 'error' // Red for alerts
     default: return 'warning'
   }
+}
+
+function isOverdue(alertDate: string): boolean {
+  const today = new Date().toISOString().split('T')[0]
+  return alertDate < today
+}
+
+function formatAlertDate(alertDate: string): string {
+  const today = new Date().toISOString().split('T')[0]
+  if (alertDate === today) return 'TODAY'
+  const d = new Date(alertDate + 'T00:00:00')
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 function formatDate(dateStr: string): string {
@@ -194,6 +218,15 @@ function formatDate(dateStr: string): string {
 
 .reminder-item:hover {
   background: rgba(108, 99, 255, 0.1);
+}
+
+.alert-item {
+  background: rgba(244, 67, 54, 0.15) !important;
+  border-left: 3px solid #f44336;
+}
+
+.alert-item:hover {
+  background: rgba(244, 67, 54, 0.25) !important;
 }
 
 .reminder-text {
