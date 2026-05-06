@@ -1,22 +1,53 @@
 <template>
   <div class="reminders-panel" :class="{ collapsed: isCollapsed }">
+    <!-- Alert Bell Toggle (only shown when alerts exist) -->
     <v-btn
+      v-if="alertCount > 0"
       icon
       size="small"
       variant="text"
-      class="toggle-btn"
-      :title="isCollapsed ? 'Show reminders' : 'Hide reminders'"
-      @click="toggle"
+      class="alert-toggle-btn"
+      :color="activeView === 'alerts' ? 'error' : undefined"
+      :title="activeView === 'alerts' ? 'Hide alerts' : `Show ${alertCount} alert${alertCount > 1 ? 's' : ''}`"
+      @click="toggleAlerts"
     >
-      <v-icon>{{ isCollapsed ? 'mdi-bell-badge' : 'mdi-chevron-right' }}</v-icon>
+      <v-badge :content="alertCount" color="error" offset-x="4" offset-y="-4">
+        <v-icon color="error">mdi-bell-alert</v-icon>
+      </v-badge>
+    </v-btn>
+
+    <!-- Reminder Bell Toggle -->
+    <v-btn
+      v-if="regularCount > 0"
+      icon
+      size="small"
+      variant="text"
+      class="reminder-toggle-btn"
+      :class="{ 'offset-left': alertCount === 0 }"
+      :color="activeView === 'reminders' ? 'warning' : undefined"
+      :title="activeView === 'reminders' ? 'Hide reminders' : `Show ${regularCount} reminder${regularCount > 1 ? 's' : ''}`"
+      @click="toggleReminders"
+    >
+      <v-badge :content="regularCount" color="warning" offset-x="4" offset-y="-4">
+        <v-icon color="warning">mdi-bell-outline</v-icon>
+      </v-badge>
     </v-btn>
 
     <div v-show="!isCollapsed" class="panel-content">
-      <div class="panel-header">
-        <v-icon size="18" color="warning" class="mr-2">mdi-bell-outline</v-icon>
-        <span class="font-weight-bold">Reminders</span>
-        <v-spacer />
-        <v-chip size="x-small" variant="tonal" color="warning">{{ reminders?.length ?? 0 }}</v-chip>
+      <!-- Dynamic Header based on active view -->
+      <div class="panel-header" :class="{ 'alert-header': activeView === 'alerts' }">
+        <template v-if="activeView === 'alerts'">
+          <v-icon size="18" color="error" class="mr-2">mdi-bell-alert</v-icon>
+          <span class="font-weight-bold text-error">Alerts</span>
+          <v-spacer />
+          <v-chip size="x-small" variant="tonal" color="error">{{ alertCount }}</v-chip>
+        </template>
+        <template v-else>
+          <v-icon size="18" color="warning" class="mr-2">mdi-bell-outline</v-icon>
+          <span class="font-weight-bold text-warning">Reminders</span>
+          <v-spacer />
+          <v-chip size="x-small" variant="tonal" color="warning">{{ regularCount }}</v-chip>
+        </template>
       </div>
 
       <div v-if="pending" class="d-flex justify-center pa-4">
@@ -28,70 +59,15 @@
         <span class="text-xs">Use "Remind: text" or "Reminder: text" in notes</span>
       </div>
 
-      <v-list v-else density="compact" class="reminder-list">
-        <!-- Alerts Section -->
-        <template v-if="alertCount > 0">
-          <div class="section-header alert-header">
-            <v-icon size="16" color="error" class="mr-2">mdi-bell-alert</v-icon>
-            <span class="text-caption font-weight-bold text-error">ALERTS</span>
-            <v-chip size="x-small" color="error" variant="tonal" class="ml-2">{{ alertCount }}</v-chip>
-          </div>
-
-          <v-list-item
-            v-for="reminder in alerts"
-            :key="`${reminder.date}-${reminder.text}`"
-            class="reminder-item alert-item"
-          >
-            <template #prepend>
-              <v-icon size="14" color="error" class="mr-2">mdi-bell-alert</v-icon>
-            </template>
-
-            <v-list-item-title class="text-body-2 reminder-text">
-              <NuxtLink :to="`/note/${reminder.date}`" class="reminder-link">
-                {{ reminder.text }}
-              </NuxtLink>
-            </v-list-item-title>
-
-            <v-list-item-subtitle class="text-caption">
-              <v-icon size="12" color="error" class="mr-1">mdi-clock-alert</v-icon>
-              <span :class="{ 'text-error font-weight-bold': isOverdue(reminder.alertDate!) }">
-                {{ formatAlertDate(reminder.alertDate!) }}
-              </span>
-              <span class="text-medium-emphasis ml-1">(in {{ formatDate(reminder.date) }})</span>
-            </v-list-item-subtitle>
-
-            <template #append>
-              <v-btn
-                icon="mdi-check"
-                size="x-small"
-                variant="text"
-                color="success"
-                title="Mark as done / Dismiss"
-                @click.prevent="dismiss(reminder)"
-              />
-            </template>
-          </v-list-item>
-
-          <v-divider v-if="regularCount > 0" class="my-2" color="#2e2e4e" />
-        </template>
-
-        <!-- Reminders Section -->
-        <template v-if="regularCount > 0">
-          <div v-if="alertCount > 0" class="section-header">
-            <v-icon size="16" color="warning" class="mr-2">mdi-bell-outline</v-icon>
-            <span class="text-caption font-weight-bold text-warning">REMINDERS</span>
-            <v-chip size="x-small" color="warning" variant="tonal" class="ml-2">{{ regularCount }}</v-chip>
-          </div>
-
-          <v-list-item
-            v-for="reminder in regularReminders"
-            :key="`${reminder.date}-${reminder.text}`"
-            class="reminder-item"
-          >
+      <!-- Show only Alerts -->
+      <v-list v-else-if="activeView === 'alerts'" density="compact" class="reminder-list">
+        <v-list-item
+          v-for="reminder in alerts"
+          :key="`${reminder.date}-${reminder.text}`"
+          class="reminder-item alert-item"
+        >
           <template #prepend>
-            <v-icon size="14" :color="iconColor(reminder.keyword)" class="mr-2">
-              {{ iconFor(reminder.keyword) }}
-            </v-icon>
+            <v-icon size="14" color="error" class="mr-2">mdi-bell-alert</v-icon>
           </template>
 
           <v-list-item-title class="text-body-2 reminder-text">
@@ -101,16 +77,11 @@
           </v-list-item-title>
 
           <v-list-item-subtitle class="text-caption">
-            <template v-if="reminder.keyword === 'alert' && reminder.alertDate">
-              <v-icon size="12" color="error" class="mr-1">mdi-clock-alert</v-icon>
-              <span :class="{ 'text-error font-weight-bold': isOverdue(reminder.alertDate) }">
-                {{ formatAlertDate(reminder.alertDate) }}
-              </span>
-              <span class="text-medium-emphasis ml-1">(in {{ formatDate(reminder.date) }})</span>
-            </template>
-            <template v-else>
-              {{ formatDate(reminder.date) }}
-            </template>
+            <v-icon size="12" color="error" class="mr-1">mdi-clock-alert</v-icon>
+            <span :class="{ 'text-error font-weight-bold': isOverdue(reminder.alertDate!) }">
+              {{ formatAlertDate(reminder.alertDate!) }}
+            </span>
+            <span class="text-medium-emphasis ml-1">(in {{ formatDate(reminder.date) }})</span>
           </v-list-item-subtitle>
 
           <template #append>
@@ -124,7 +95,42 @@
             />
           </template>
         </v-list-item>
-        </template>
+      </v-list>
+
+      <!-- Show only Reminders -->
+      <v-list v-else density="compact" class="reminder-list">
+        <v-list-item
+          v-for="reminder in regularReminders"
+          :key="`${reminder.date}-${reminder.text}`"
+          class="reminder-item"
+        >
+          <template #prepend>
+            <v-icon size="14" :color="iconColor(reminder.keyword)" class="mr-2">
+              {{ iconFor(reminder.keyword) }}
+            </v-icon>
+          </template>
+
+          <v-list-item-title class="text-body-2 reminder-text">
+            <NuxtLink :to="`/note/${reminder.date}`" class="reminder-link">
+              {{ reminder.text }}
+            </NuxtLink>
+          </v-list-item-title>
+
+          <v-list-item-subtitle class="text-caption">
+            {{ formatDate(reminder.date) }}
+          </v-list-item-subtitle>
+
+          <template #append>
+            <v-btn
+              icon="mdi-check"
+              size="x-small"
+              variant="text"
+              color="success"
+              title="Mark as done / Dismiss"
+              @click.prevent="dismiss(reminder)"
+            />
+          </template>
+        </v-list-item>
       </v-list>
     </div>
   </div>
@@ -134,12 +140,32 @@
 import type { Reminder } from '#shared/types/notes'
 
 const isCollapsed = ref(true)
+const activeView = ref<'alerts' | 'reminders'>('reminders')
 const emit = defineEmits<{
   'update:collapsed': [value: boolean]
 }>()
 
-function toggle() {
-  isCollapsed.value = !isCollapsed.value
+function toggleAlerts() {
+  if (isCollapsed.value) {
+    isCollapsed.value = false
+    activeView.value = 'alerts'
+  } else if (activeView.value === 'alerts') {
+    isCollapsed.value = true
+  } else {
+    activeView.value = 'alerts'
+  }
+  emit('update:collapsed', isCollapsed.value)
+}
+
+function toggleReminders() {
+  if (isCollapsed.value) {
+    isCollapsed.value = false
+    activeView.value = 'reminders'
+  } else if (activeView.value === 'reminders') {
+    isCollapsed.value = true
+  } else {
+    activeView.value = 'reminders'
+  }
   emit('update:collapsed', isCollapsed.value)
 }
 
@@ -237,15 +263,25 @@ function formatDate(dateStr: string): string {
   pointer-events: none;
 }
 
-.reminders-panel.collapsed .toggle-btn {
+.reminders-panel.collapsed .alert-toggle-btn,
+.reminders-panel.collapsed .reminder-toggle-btn {
   pointer-events: auto;
 }
 
-.toggle-btn {
+.alert-toggle-btn,
+.reminder-toggle-btn {
   position: absolute;
   left: 4px;
   top: 8px;
   z-index: 10;
+}
+
+.reminder-toggle-btn {
+  top: 48px; /* Stack below alert button */
+}
+
+.reminder-toggle-btn.offset-left {
+  top: 8px; /* When alert button is hidden, position at top */
 }
 
 .panel-content {
