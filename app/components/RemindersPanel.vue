@@ -32,7 +32,6 @@
         <v-list-item
           v-for="reminder in reminders"
           :key="`${reminder.date}-${reminder.text}`"
-          :to="`/note/${reminder.date}`"
           class="reminder-item"
         >
           <template #prepend>
@@ -42,12 +41,25 @@
           </template>
 
           <v-list-item-title class="text-body-2 reminder-text">
-            {{ reminder.text }}
+            <NuxtLink :to="`/note/${reminder.date}`" class="reminder-link">
+              {{ reminder.text }}
+            </NuxtLink>
           </v-list-item-title>
 
           <v-list-item-subtitle class="text-caption">
             {{ formatDate(reminder.date) }}
           </v-list-item-subtitle>
+
+          <template #append>
+            <v-btn
+              icon="mdi-check"
+              size="x-small"
+              variant="text"
+              color="success"
+              title="Mark as done / Dismiss"
+              @click.prevent="dismiss(reminder)"
+            />
+          </template>
         </v-list-item>
       </v-list>
     </div>
@@ -71,6 +83,14 @@ const { data: reminders, pending, refresh } = await useFetch<Reminder[]>('/api/n
   server: false,
   default: () => [],
 })
+
+async function dismiss(reminder: Reminder) {
+  await $fetch('/api/notes/reminders/dismiss', {
+    method: 'POST' as 'GET',
+    body: { date: reminder.date, text: reminder.text },
+  })
+  await refresh()
+}
 
 // Refresh every 30 seconds when panel is open
 let interval: ReturnType<typeof setInterval> | null = null
@@ -187,5 +207,15 @@ function formatDate(dateStr: string): string {
 
 .text-xs {
   font-size: 11px;
+}
+
+.reminder-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.reminder-link:hover {
+  color: #9c8fff;
 }
 </style>
