@@ -29,12 +29,65 @@
       </div>
 
       <v-list v-else density="compact" class="reminder-list">
-        <v-list-item
-          v-for="reminder in reminders"
-          :key="`${reminder.date}-${reminder.text}`"
-          class="reminder-item"
-          :class="{ 'alert-item': reminder.keyword === 'alert' }"
-        >
+        <!-- Alerts Section -->
+        <template v-if="alertCount > 0">
+          <div class="section-header alert-header">
+            <v-icon size="16" color="error" class="mr-2">mdi-bell-alert</v-icon>
+            <span class="text-caption font-weight-bold text-error">ALERTS</span>
+            <v-chip size="x-small" color="error" variant="tonal" class="ml-2">{{ alertCount }}</v-chip>
+          </div>
+
+          <v-list-item
+            v-for="reminder in alerts"
+            :key="`${reminder.date}-${reminder.text}`"
+            class="reminder-item alert-item"
+          >
+            <template #prepend>
+              <v-icon size="14" color="error" class="mr-2">mdi-bell-alert</v-icon>
+            </template>
+
+            <v-list-item-title class="text-body-2 reminder-text">
+              <NuxtLink :to="`/note/${reminder.date}`" class="reminder-link">
+                {{ reminder.text }}
+              </NuxtLink>
+            </v-list-item-title>
+
+            <v-list-item-subtitle class="text-caption">
+              <v-icon size="12" color="error" class="mr-1">mdi-clock-alert</v-icon>
+              <span :class="{ 'text-error font-weight-bold': isOverdue(reminder.alertDate!) }">
+                {{ formatAlertDate(reminder.alertDate!) }}
+              </span>
+              <span class="text-medium-emphasis ml-1">(in {{ formatDate(reminder.date) }})</span>
+            </v-list-item-subtitle>
+
+            <template #append>
+              <v-btn
+                icon="mdi-check"
+                size="x-small"
+                variant="text"
+                color="success"
+                title="Mark as done / Dismiss"
+                @click.prevent="dismiss(reminder)"
+              />
+            </template>
+          </v-list-item>
+
+          <v-divider v-if="regularCount > 0" class="my-2" color="#2e2e4e" />
+        </template>
+
+        <!-- Reminders Section -->
+        <template v-if="regularCount > 0">
+          <div v-if="alertCount > 0" class="section-header">
+            <v-icon size="16" color="warning" class="mr-2">mdi-bell-outline</v-icon>
+            <span class="text-caption font-weight-bold text-warning">REMINDERS</span>
+            <v-chip size="x-small" color="warning" variant="tonal" class="ml-2">{{ regularCount }}</v-chip>
+          </div>
+
+          <v-list-item
+            v-for="reminder in regularReminders"
+            :key="`${reminder.date}-${reminder.text}`"
+            class="reminder-item"
+          >
           <template #prepend>
             <v-icon size="14" :color="iconColor(reminder.keyword)" class="mr-2">
               {{ iconFor(reminder.keyword) }}
@@ -71,6 +124,7 @@
             />
           </template>
         </v-list-item>
+        </template>
       </v-list>
     </div>
   </div>
@@ -93,6 +147,12 @@ const { data: reminders, pending, refresh } = await useFetch<Reminder[]>('/api/n
   server: false,
   default: () => [],
 })
+
+// Computed: separate alerts and regular reminders
+const alerts = computed(() => reminders.value?.filter(r => r.keyword === 'alert') ?? [])
+const regularReminders = computed(() => reminders.value?.filter(r => r.keyword !== 'alert') ?? [])
+const alertCount = computed(() => alerts.value.length)
+const regularCount = computed(() => regularReminders.value.length)
 
 async function dismiss(reminder: Reminder) {
   await $fetch('/api/notes/reminders/dismiss', {
@@ -218,6 +278,18 @@ function formatDate(dateStr: string): string {
 
 .reminder-item:hover {
   background: rgba(108, 99, 255, 0.1);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 4px;
+  border-radius: 4px;
+}
+
+.alert-header {
+  background: rgba(244, 67, 54, 0.1);
 }
 
 .alert-item {
