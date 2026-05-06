@@ -11,7 +11,7 @@
 <script setup lang="ts">
 const panelCollapsed = ref(true)
 const mainStyle = computed(() => ({
-  paddingRight: panelCollapsed.value ? '0px' : '280px',
+  paddingRight: panelCollapsed.value ? '40px' : '280px',
   transition: 'padding-right 0.2s ease',
 }))
 
