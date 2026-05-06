@@ -19,6 +19,16 @@
       </v-btn>
 
       <v-btn
+        to="/pages"
+        :active="isPages"
+        prepend-icon="mdi-file-document-multiple"
+        variant="text"
+        size="small"
+      >
+        Pages
+      </v-btn>
+
+      <v-btn
         to="/graph"
         :active="isGraph"
         prepend-icon="mdi-graph"
@@ -69,6 +79,7 @@ const { user, clear } = useUserSession()
 
 const today = computed(() => new Date().toISOString().split('T')[0])
 const isToday = computed(() => route.path === `/note/${today.value}`)
+const isPages = computed(() => route.path === '/pages' || route.path.startsWith('/page/'))
 const isGraph = computed(() => route.path === '/graph')
 const isCanvas = computed(() => route.path === '/canvas')
 const username = computed(() => (user.value as { username?: string } | null)?.username ?? '')

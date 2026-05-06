@@ -5,7 +5,10 @@ import { join, resolve } from 'path'
 import { homedir } from 'os'
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
-const WIKILINK_PATTERN = /\[\[(\d{4}-\d{2}-\d{2})\]\]/g
+const PAGE_NAME_PATTERN = /^[a-zA-Z0-9_\- ]+$/
+const WIKILINK_PATTERN = /\[\[(\d{4}-\d{2}-\d{2}|[a-zA-Z0-9_\- ]+)\]\]/g
+
+const PAGES_DIR = 'pages'
 
 export function getNotesDir(): string {
   const dir = process.env.NOTES_DIR || '~/.quickNote'
@@ -53,6 +56,65 @@ export async function writeNote(date: string, content: string): Promise<void> {
   await ensureNotesDir()
   const filePath = join(getNotesDir(), `${date}.md`)
   await writeFile(filePath, content, 'utf-8')
+}
+
+// Named notes (pages) functions
+function getPagesDir(): string {
+  return join(getNotesDir(), PAGES_DIR)
+}
+
+async function ensurePagesDir(): Promise<void> {
+  const dir = getPagesDir()
+  if (!existsSync(dir)) {
+    await mkdir(dir, { recursive: true })
+  }
+}
+
+export function isValidPageName(name: string): boolean {
+  return PAGE_NAME_PATTERN.test(name) && name.length > 0 && name.length <= 100
+}
+
+export async function listPages(): Promise<string[]> {
+  await ensurePagesDir()
+  const dir = getPagesDir()
+  try {
+    const files = await readdir(dir)
+    return files
+      .filter((f) => f.endsWith('.md'))
+      .map((f) => f.replace('.md', ''))
+      .sort()
+  } catch {
+    return []
+  }
+}
+
+export async function readPage(name: string): Promise<string | null> {
+  if (!isValidPageName(name)) return null
+  await ensurePagesDir()
+  const filePath = join(getPagesDir(), `${name}.md`)
+  try {
+    return await readFile(filePath, 'utf-8')
+  } catch {
+    return null
+  }
+}
+
+export async function writePage(name: string, content: string): Promise<void> {
+  if (!isValidPageName(name)) {
+    throw new Error('Invalid page name')
+  }
+  await ensurePagesDir()
+  const filePath = join(getPagesDir(), `${name}.md`)
+  await writeFile(filePath, content, 'utf-8')
+}
+
+export async function deletePage(name: string): Promise<void> {
+  if (!isValidPageName(name)) {
+    throw new Error('Invalid page name')
+  }
+  const { unlink } = await import('fs/promises')
+  const filePath = join(getPagesDir(), `${name}.md`)
+  await unlink(filePath)
 }
 
 export function extractLinks(content: string): string[] {

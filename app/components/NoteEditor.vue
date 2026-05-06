@@ -24,7 +24,7 @@
           ref="textareaRef"
           :value="modelValue"
           class="note-textarea"
-          placeholder="Start writing… use [[YYYY-MM-DD]] to link to other notes"
+          placeholder="Start writing… use [[YYYY-MM-DD]] for dates or [[Page Name]] for pages"
           spellcheck="true"
           @input="handleInput"
           @keydown="handleKeydown"
@@ -37,7 +37,7 @@
         >
           <v-list density="compact" class="pa-0">
             <v-list-subheader class="px-3 py-1" style="font-size: 11px; opacity: 0.7">
-              Link to note (↑↓ Enter/Tab)
+              Link to (↑↓ Enter/Tab)
             </v-list-subheader>
             <v-list-item
               v-for="(suggestion, index) in suggestions"
@@ -47,7 +47,8 @@
               @mousedown.prevent="insertSuggestion(suggestion)"
             >
               <template #prepend>
-                <v-icon size="14" class="mr-1">mdi-calendar</v-icon>
+                <v-icon v-if="/^\d{4}-\d{2}-\d{2}$/.test(suggestion)" size="14" class="mr-1">mdi-calendar</v-icon>
+                <v-icon v-else size="14" class="mr-1">mdi-file-document-outline</v-icon>
               </template>
               <v-list-item-title class="text-body-2">{{ suggestion }}</v-list-item-title>
             </v-list-item>
@@ -69,7 +70,8 @@ import { marked } from 'marked'
 
 const props = defineProps<{
   modelValue: string
-  date: string
+  date?: string
+  pageName?: string
 }>()
 
 const emit = defineEmits<{
@@ -84,6 +86,7 @@ const suggestions = ref<string[]>([])
 const selectedSuggestion = ref(0)
 
 const { data: allDates } = await useFetch<string[]>('/api/notes')
+const { data: allPages } = await useFetch<string[]>('/api/pages')
 
 const wordCount = computed(() => {
   const text = props.modelValue.trim()
@@ -95,9 +98,15 @@ const renderedContent = computed(() => {
     gfm: true,
     breaks: false,
   }) as string
+  // Date links: [[YYYY-MM-DD]]
   html = html.replace(
     /\[\[(\d{4}-\d{2}-\d{2})\]\]/g,
-    '<a href="/note/$1" class="wiki-link">$1</a>',
+    '<a href="/note/$1" class="wiki-link">📅 $1</a>',
+  )
+  // Page links: [[Page Name]] (non-date format)
+  html = html.replace(
+    /\[\[([a-zA-Z0-9_\- ][a-zA-Z0-9_\- ]+)\]\]/g,
+    '<a href="/page/$1" class="wiki-link page-link">📄 $1</a>',
   )
   return html
 })
@@ -111,12 +120,19 @@ function handleInput(event: Event) {
   const match = textBeforeCursor.match(/\[\[([^\[\]]*)$/)
   if (match) {
     const query = match[1] ?? ''
-    const filtered = (allDates.value ?? []).filter(
+    const queryLower = query.toLowerCase()
+    // Filter dates
+    const dateMatches = (allDates.value ?? []).filter(
       (d) => d.startsWith(query) && d !== props.date,
     )
-    suggestions.value = filtered.slice(0, 8)
+    // Filter pages
+    const pageMatches = (allPages.value ?? []).filter(
+      (p) => p.toLowerCase().includes(queryLower) && p !== props.pageName,
+    )
+    // Combine: dates first, then pages
+    suggestions.value = [...dateMatches, ...pageMatches].slice(0, 8)
     selectedSuggestion.value = 0
-    showSuggestions.value = filtered.length > 0
+    showSuggestions.value = suggestions.value.length > 0
   } else {
     showSuggestions.value = false
   }
