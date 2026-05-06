@@ -15,19 +15,6 @@
         <v-icon>mdi-chevron-right</v-icon>
       </v-btn>
 
-      <!-- Search -->
-      <v-btn
-        icon
-        size="small"
-        variant="text"
-        class="strip-btn"
-        :color="activePanel === 'search' ? 'primary' : undefined"
-        title="Search"
-        @click="toggle('search')"
-      >
-        <v-icon>mdi-magnify</v-icon>
-      </v-btn>
-
       <!-- Alerts bell (only when alerts exist) -->
       <v-btn
         v-if="alertCount > 0"
@@ -58,6 +45,19 @@
         <v-badge :content="regularCount" color="warning" offset-x="4" offset-y="-4">
           <v-icon color="warning">mdi-bell-outline</v-icon>
         </v-badge>
+      </v-btn>
+
+      <!-- Search -->
+      <v-btn
+        icon
+        size="small"
+        variant="text"
+        class="strip-btn"
+        :color="activePanel === 'search' ? 'primary' : undefined"
+        title="Search"
+        @click="toggle('search')"
+      >
+        <v-icon>mdi-magnify</v-icon>
       </v-btn>
     </div>
 
