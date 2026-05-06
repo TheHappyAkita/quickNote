@@ -41,6 +41,26 @@
           </v-list>
         </v-menu>
 
+        <v-menu>
+          <template #activator="{ props: menuProps }">
+            <v-btn v-bind="menuProps" prepend-icon="mdi-file-document-plus" size="small" color="secondary" variant="tonal">
+              Page
+            </v-btn>
+          </template>
+          <v-list max-height="300" style="overflow-y:auto">
+            <v-list-subheader>Pick a page to add</v-list-subheader>
+            <v-list-item
+              v-for="page in availablePages"
+              :key="page"
+              :title="page"
+              density="compact"
+              prepend-icon="mdi-file-document-outline"
+              @click="addPageCard(page)"
+            />
+            <v-list-item v-if="availablePages.length === 0" title="No pages yet" disabled />
+          </v-list>
+        </v-menu>
+
         <v-btn prepend-icon="mdi-web" size="small" variant="tonal" @click="startAdd('url')">URL</v-btn>
         <v-btn prepend-icon="mdi-image-outline" size="small" variant="tonal" @click="startAdd('image')">Image</v-btn>
 
@@ -113,7 +133,9 @@ const props = defineProps<{
   canvasId: string
   initialState: CanvasState
   allDates: string[]
+  allPages: string[]
   previews: Record<string, string>
+  pagePreviews?: Record<string, string>
 }>()
 
 // Snapshot the ID at component creation. With :key="canvasId" each instance
@@ -122,6 +144,7 @@ const ownCanvasId = props.canvasId
 
 type Popup =
   | { type: 'note'; date: string; notePreview: string; x: number; y: number }
+  | { type: 'page'; pageName: string; pagePreview: string; x: number; y: number }
   | { type: 'url'; url: string; title: string; description: string; ogImage: string; x: number; y: number }
   | { type: 'image'; src: string; x: number; y: number }
 const popup = ref<Popup | null>(null)
@@ -145,6 +168,10 @@ const availableDates = computed(() =>
   props.allDates.filter((d) => !cy?.getElementById(d).length)
 )
 
+const availablePages = computed(() =>
+  props.allPages.filter((p) => !cy?.getElementById(`page:${p}`).length)
+)
+
 function getDomain(url: string): string {
   try { return new URL(url).hostname } catch { return url }
 }
@@ -156,6 +183,13 @@ function noteLabelFor(date: string): string {
   return `${date}\n${short}`
 }
 
+function pageLabelFor(pageName: string): string {
+  const preview = props.pagePreviews?.[pageName]
+  if (!preview) return pageName
+  const short = preview.length > 55 ? preview.slice(0, 52) + '\u2026' : preview
+  return `${pageName}\n${short}`
+}
+
 function cardNodeData(c: CanvasCard): Record<string, unknown> {
   if (c.type === 'url') {
     const domain = getDomain(c.url)
@@ -163,6 +197,10 @@ function cardNodeData(c: CanvasCard): Record<string, unknown> {
   }
   if (c.type === 'image') {
     return { id: c.id, type: 'image', src: c.src, label: '' }
+  }
+  if (c.type === 'page') {
+    const id = `page:${c.pageName}`
+    return { id, type: 'page', pageName: c.pageName, label: pageLabelFor(c.pageName) }
   }
   return { id: c.id, type: 'note', date: c.date, label: noteLabelFor(c.date) }
 }
@@ -260,6 +298,14 @@ onMounted(() => {
         },
       },
       {
+        selector: 'node[type="page"]',
+        style: {
+          'background-color': '#1e2e3e',
+          'border-color': '#9c8fff',
+          'border-style': 'dashed',
+        },
+      },
+      {
         selector: 'edge:selected',
         style: { 'line-color': '#f59e0b', 'target-arrow-color': '#f59e0b' },
       },
@@ -295,6 +341,9 @@ onMounted(() => {
     const nodeType = node.data('type') as string
     if (nodeType === 'note') {
       router.push(`/note/${id}`)
+    } else if (nodeType === 'page') {
+      const pageName = node.data('pageName') as string
+      router.push(`/page/${encodeURIComponent(pageName)}`)
     } else if (nodeType === 'url') {
       window.open(node.data('url') as string, '_blank', 'noopener')
     }
@@ -322,6 +371,9 @@ onMounted(() => {
       popup.value = { type: 'url', url: node.data('url') as string, title: node.data('urlTitle') as string, description: node.data('description') as string, ogImage: node.data('image') as string, x, y }
     } else if (nodeType === 'image') {
       popup.value = { type: 'image', src: node.data('src') as string, x, y }
+    } else if (nodeType === 'page') {
+      const pageName = node.data('pageName') as string
+      popup.value = { type: 'page', pageName, pagePreview: props.pagePreviews?.[pageName] ?? '', x, y }
     } else {
       const id = node.data('id') as string
       popup.value = { type: 'note', date: id, notePreview: props.previews[id] ?? '', x, y }
@@ -378,6 +430,13 @@ function centerPos() {
 function addCard(date: string) {
   if (!cy) return
   cy.add({ data: { id: date, type: 'note', date, label: noteLabelFor(date) }, position: centerPos() })
+  scheduleSave()
+}
+
+function addPageCard(pageName: string) {
+  if (!cy) return
+  const id = `page:${pageName}`
+  cy.add({ data: { id, type: 'page', pageName, label: pageLabelFor(pageName) }, position: centerPos() })
   scheduleSave()
 }
 
@@ -455,6 +514,9 @@ function getState(): CanvasState {
     }
     if (nodeType === 'image') {
       return { id, type: 'image', src: n.data('src') as string, x, y }
+    }
+    if (nodeType === 'page') {
+      return { id, type: 'page', pageName: n.data('pageName') as string, x, y }
     }
     return { id, type: 'note', date: (n.data('date') as string) || id, x, y }
   })

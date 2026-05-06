@@ -102,7 +102,9 @@
         :canvas-id="selectedId"
         :initial-state="canvasState"
         :all-dates="allDates ?? []"
+        :all-pages="allPages ?? []"
         :previews="previews ?? {}"
+        :page-previews="pagePreviews ?? {}"
       />
       <template #fallback>
         <div class="d-flex justify-center align-center" style="height: 60vh">
@@ -127,7 +129,9 @@ useHead({
 
 const { data: canvasState } = await useFetch<CanvasState>(() => `/api/canvas/${selectedId.value}`)
 const { data: allDates } = await useFetch<string[]>('/api/notes')
+const { data: allPages } = await useFetch<string[]>('/api/pages')
 const { data: previews } = await useFetch<Record<string, string>>('/api/notes/previews')
+const { data: pagePreviews } = await useFetch<Record<string, string>>('/api/pages/previews')
 
 watch(selectedId, () => {
   canvasState.value = undefined

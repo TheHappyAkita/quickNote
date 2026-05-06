@@ -13,6 +13,7 @@ export interface GraphData {
 
 export type CanvasCard =
   | { id: string; type: 'note'; date: string; x: number; y: number }
+  | { id: string; type: 'page'; pageName: string; x: number; y: number }
   | { id: string; type: 'url'; url: string; title: string; description: string; image: string; x: number; y: number }
   | { id: string; type: 'image'; src: string; x: number; y: number }
 
