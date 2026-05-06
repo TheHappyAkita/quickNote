@@ -34,6 +34,7 @@
           v-if="showSuggestions && suggestions.length > 0"
           class="suggestions-dropdown"
           elevation="8"
+          :style="dropdownStyle"
         >
           <v-list density="compact" class="pa-0">
             <v-list-subheader class="px-3 py-1" style="font-size: 11px; opacity: 0.7">
@@ -85,8 +86,11 @@ const showSuggestions = ref(false)
 const suggestions = ref<string[]>([])
 const selectedSuggestion = ref(0)
 
-const { data: allDates } = await useFetch<string[]>('/api/notes')
-const { data: allPages } = await useFetch<string[]>('/api/pages')
+const { data: allDates } = await useFetch<string[]>('/api/notes', { server: false, default: () => [] })
+const { data: allPagesRaw } = await useFetch<{ name: string; tags: string[] }[]>('/api/pages', { server: false, default: () => [] })
+const allPages = computed(() => allPagesRaw.value?.map(p => p.name) ?? [])
+
+const dropdownStyle = ref({ top: '40px', left: '16px' })
 
 const wordCount = computed(() => {
   const text = props.modelValue.trim()
@@ -111,6 +115,35 @@ const renderedContent = computed(() => {
   return html
 })
 
+function getCursorCoords(textarea: HTMLTextAreaElement, pos: number): { top: number; left: number } {
+  const div = document.createElement('div')
+  const style = window.getComputedStyle(textarea)
+  for (const prop of style) div.style.setProperty(prop, style.getPropertyValue(prop))
+  div.style.position = 'absolute'
+  div.style.visibility = 'hidden'
+  div.style.whiteSpace = 'pre-wrap'
+  div.style.wordBreak = 'break-word'
+  div.style.overflow = 'hidden'
+  div.style.width = textarea.clientWidth + 'px'
+  div.style.height = 'auto'
+
+  const text = textarea.value.substring(0, pos)
+  div.textContent = text
+  const span = document.createElement('span')
+  span.textContent = '|'
+  div.appendChild(span)
+  document.body.appendChild(div)
+
+  const rect = textarea.getBoundingClientRect()
+  const spanRect = span.getBoundingClientRect()
+  document.body.removeChild(div)
+
+  return {
+    top: spanRect.top - rect.top + textarea.scrollTop + 20,
+    left: Math.min(spanRect.left - rect.left, textarea.clientWidth - 270),
+  }
+}
+
 function handleInput(event: Event) {
   const target = event.target as HTMLTextAreaElement
   const value = target.value
@@ -130,9 +163,13 @@ function handleInput(event: Event) {
       (p) => p.toLowerCase().includes(queryLower) && p !== props.pageName,
     )
     // Combine: dates first, then pages
-    suggestions.value = [...dateMatches, ...pageMatches].slice(0, 8)
+    suggestions.value = [...dateMatches, ...pageMatches].slice(0, 10)
     selectedSuggestion.value = 0
     showSuggestions.value = suggestions.value.length > 0
+    if (showSuggestions.value) {
+      const coords = getCursorCoords(target, cursorPos)
+      dropdownStyle.value = { top: coords.top + 'px', left: Math.max(0, coords.left) + 'px' }
+    }
   } else {
     showSuggestions.value = false
   }
@@ -240,11 +277,9 @@ function insertSuggestion(date: string) {
 
 .suggestions-dropdown {
   position: absolute;
-  bottom: 8px;
-  left: 8px;
-  min-width: 200px;
-  max-width: 260px;
-  z-index: 200;
+  min-width: 220px;
+  max-width: 280px;
+  z-index: 500;
   background: #1a1a2e !important;
   border: 1px solid #6c63ff !important;
 }
