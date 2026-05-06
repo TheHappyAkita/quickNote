@@ -1,6 +1,6 @@
 import { join } from 'path'
 import { readFile, writeFile } from 'fs/promises'
-import { getNotesDir } from '../../utils/notes'
+import { getNotesDir } from '../../../utils/notes'
 
 const DISMISSED_FILE = '.dismissed_reminders.json'
 
