@@ -126,6 +126,11 @@ function formatDate(dateStr: string): string {
 
 .reminders-panel.collapsed {
   transform: translateX(calc(100% - 40px));
+  pointer-events: none;
+}
+
+.reminders-panel.collapsed .toggle-btn {
+  pointer-events: auto;
 }
 
 .toggle-btn {
