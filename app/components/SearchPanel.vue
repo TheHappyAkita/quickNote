@@ -141,13 +141,13 @@ async function performSearch() {
 <style scoped>
 .search-panel {
   position: fixed;
-  top: 96px; /* Below the reminders panel toggle buttons */
+  top: 160px; /* Below the reminders panel (which is at top: 64px + height) */
   right: 0;
   width: 340px;
-  height: calc(100vh - 120px);
+  height: calc(100vh - 180px);
   background: #1a1a2e;
   border-left: 1px solid #2e2e4e;
-  z-index: 100;
+  z-index: 99; /* Below reminders panel (z-index: 100) */
   transition: transform 0.3s ease;
   display: flex;
   flex-direction: column;
