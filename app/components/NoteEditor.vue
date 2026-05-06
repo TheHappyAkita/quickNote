@@ -116,31 +116,15 @@ const renderedContent = computed(() => {
 })
 
 function getCursorCoords(textarea: HTMLTextAreaElement, pos: number): { top: number; left: number } {
-  const div = document.createElement('div')
-  const style = window.getComputedStyle(textarea)
-  for (const prop of style) div.style.setProperty(prop, style.getPropertyValue(prop))
-  div.style.position = 'absolute'
-  div.style.visibility = 'hidden'
-  div.style.whiteSpace = 'pre-wrap'
-  div.style.wordBreak = 'break-word'
-  div.style.overflow = 'hidden'
-  div.style.width = textarea.clientWidth + 'px'
-  div.style.height = 'auto'
-
-  const text = textarea.value.substring(0, pos)
-  div.textContent = text
-  const span = document.createElement('span')
-  span.textContent = '|'
-  div.appendChild(span)
-  document.body.appendChild(div)
-
-  const rect = textarea.getBoundingClientRect()
-  const spanRect = span.getBoundingClientRect()
-  document.body.removeChild(div)
-
+  const textBefore = textarea.value.substring(0, pos)
+  const lineNumber = (textBefore.match(/\n/g) ?? []).length
+  const cs = window.getComputedStyle(textarea)
+  const lineHeight = parseFloat(cs.lineHeight) || 24
+  const paddingTop = parseFloat(cs.paddingTop) || 16
+  const top = paddingTop + lineNumber * lineHeight - textarea.scrollTop + lineHeight + 4
   return {
-    top: spanRect.top - rect.top + textarea.scrollTop + 20,
-    left: Math.min(spanRect.left - rect.left, textarea.clientWidth - 270),
+    top: Math.max(8, Math.min(top, textarea.clientHeight - 220)),
+    left: 16,
   }
 }
 
