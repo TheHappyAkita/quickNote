@@ -17,3 +17,11 @@ useHead({
   ],
 })
 </script>
+
+<style>
+html,
+body {
+  overflow: hidden;
+  height: 100%;
+}
+</style>
