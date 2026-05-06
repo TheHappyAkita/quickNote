@@ -33,3 +33,9 @@ export interface CanvasMeta {
   createdAt: string
   updatedAt: string
 }
+
+export interface Reminder {
+  date: string
+  text: string
+  keyword: 'remind' | 'remindme' | 'reminder'
+}
