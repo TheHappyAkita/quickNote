@@ -13,5 +13,5 @@ services:
     volumes:
       # Notes and canvas state are persisted here.
       # Change the left side to any host path you like, e.g. ~/my-notes:/data/notes
-      - /home/akita/.quickNote:/data/notes
+      - $HOME/.quickNote:/data/notes
     restart: unless-stopped
