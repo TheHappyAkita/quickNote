@@ -270,4 +270,24 @@ function insertSuggestion(date: string) {
   padding-left: 16px;
   color: #aaa;
 }
+
+:deep(.preview-pane ul),
+:deep(.preview-pane ol) {
+  padding-left: 1.6em;
+  margin: 0.4em 0;
+}
+
+:deep(.preview-pane ul) { list-style-type: disc; }
+:deep(.preview-pane ul ul) { list-style-type: circle; }
+:deep(.preview-pane ul ul ul) { list-style-type: square; }
+:deep(.preview-pane ol) { list-style-type: decimal; }
+
+:deep(.preview-pane li) {
+  margin: 0.15em 0;
+}
+
+:deep(.preview-pane li > ul),
+:deep(.preview-pane li > ol) {
+  margin: 0.1em 0;
+}
 </style>

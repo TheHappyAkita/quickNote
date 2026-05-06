@@ -26,3 +26,10 @@ export interface CanvasState {
   cards: CanvasCard[]
   edges: CanvasEdge[]
 }
+
+export interface CanvasMeta {
+  id: string
+  name: string
+  createdAt: string
+  updatedAt: string
+}

@@ -110,10 +110,15 @@ import type { Core, NodeSingular } from 'cytoscape'
 import type { CanvasState, CanvasCard } from '#shared/types/notes'
 
 const props = defineProps<{
+  canvasId: string
   initialState: CanvasState
   allDates: string[]
   previews: Record<string, string>
 }>()
+
+// Snapshot the ID at component creation. With :key="canvasId" each instance
+// owns exactly one canvas, so we must never follow reactive prop changes here.
+const ownCanvasId = props.canvasId
 
 type Popup =
   | { type: 'note'; date: string; notePreview: string; x: number; y: number }
@@ -328,6 +333,14 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  if (saveTimer !== null) {
+    clearTimeout(saveTimer)
+    saveTimer = null
+    if (cy) {
+      const state = getState()
+      $fetch(`/api/canvas/${ownCanvasId}`, { method: 'PUT' as 'GET', body: state }).catch(() => {})
+    }
+  }
   cy?.destroy()
   cy = null
 })
@@ -437,7 +450,7 @@ async function scheduleSave() {
     saveStatus.value = 'saving'
     try {
       const state = getState()
-      await $fetch('/api/canvas', { method: 'PUT' as 'GET', body: state })
+      await $fetch(`/api/canvas/${ownCanvasId}`, { method: 'PUT' as 'GET', body: state })
       emit('update:state', state)
       saveStatus.value = 'saved'
       setTimeout(() => { saveStatus.value = null }, 2000)
