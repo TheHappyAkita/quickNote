@@ -27,6 +27,44 @@
       />
     </div>
 
+    <!-- Tags row -->
+    <div class="d-flex flex-wrap align-center gap-1 mb-3">
+      <v-chip
+        v-for="tag in currentTags"
+        :key="tag"
+        size="small"
+        variant="tonal"
+        color="secondary"
+        closable
+        @click:close="removeTag(tag)"
+      >
+        #{{ tag }}
+      </v-chip>
+      <v-text-field
+        v-if="addingTag"
+        ref="tagInputRef"
+        v-model="newTag"
+        density="compact"
+        variant="outlined"
+        hide-details
+        placeholder="tag name"
+        class="tag-input"
+        @keyup.enter="confirmAddTag"
+        @keyup.escape="addingTag = false; newTag = ''"
+        @blur="confirmAddTag"
+      />
+      <v-btn
+        v-else
+        size="x-small"
+        variant="text"
+        color="secondary"
+        prepend-icon="mdi-tag-plus"
+        @click="startAddTag"
+      >
+        Add tag
+      </v-btn>
+    </div>
+
     <NoteEditor v-model="content" :page-name="pageName" @blur="saveNow" />
 
     <!-- Delete confirmation dialog -->
@@ -68,6 +106,78 @@ const content = ref('')
 const saving = ref(false)
 const saved = ref(false)
 const deleteDialog = ref(false)
+
+// ─── Tags ─────────────────────────────────────────────────────────
+const addingTag = ref(false)
+const newTag = ref('')
+const tagInputRef = ref<{ focus: () => void } | null>(null)
+
+// Parse frontmatter tags from the current content
+const currentTags = computed(() => {
+  const c = content.value
+  if (!c) return []
+  // Parse frontmatter tags: [t1, t2]
+  if (c.startsWith('---')) {
+    const end = c.indexOf('\n---', 3)
+    if (end !== -1) {
+      const fm = c.slice(3, end)
+      const inline = /^tags:\s*\[([^\]]*)\]/m.exec(fm)
+      if (inline) {
+        return (inline[1] ?? '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
+      }
+      const block = /^tags:\s*\n((?:[ \t]*-[ \t]+[^\n]+\n?)*)/m.exec(fm)
+      if (block) {
+        return (block[1] ?? '').split('\n')
+          .map(l => l.replace(/^[ \t]*-[ \t]+/, '').trim().toLowerCase())
+          .filter(Boolean)
+      }
+    }
+  }
+  return []
+})
+
+function applyTagsToContent(tags: string[]) {
+  const tagLine = tags.length > 0 ? `tags: [${tags.join(', ')}]` : null
+  const c = content.value
+  if (c.startsWith('---')) {
+    const end = c.indexOf('\n---', 3)
+    if (end !== -1) {
+      const fm = c.slice(3, end).replace(/\ntags:[^\n]*(\n[ \t]+-[^\n]*)*/g, '')
+      const rest = c.slice(end + 4)
+      const cleaned = fm.trim()
+      if (tagLine) {
+        content.value = `---\n${cleaned ? cleaned + '\n' : ''}${tagLine}\n---${rest}`
+      } else if (cleaned) {
+        content.value = `---\n${cleaned}\n---${rest}`
+      } else {
+        content.value = rest.trimStart()
+      }
+      return
+    }
+  }
+  if (tagLine) content.value = `---\n${tagLine}\n---\n${c}`
+}
+
+function removeTag(tag: string) {
+  const updated = currentTags.value.filter(t => t !== tag)
+  applyTagsToContent(updated)
+  saveNow()
+}
+
+function startAddTag() {
+  addingTag.value = true
+  nextTick(() => (tagInputRef.value as any)?.focus?.())
+}
+
+function confirmAddTag() {
+  const tag = newTag.value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '')
+  if (tag && !currentTags.value.includes(tag)) {
+    applyTagsToContent([...currentTags.value, tag].sort())
+    saveNow()
+  }
+  newTag.value = ''
+  addingTag.value = false
+}
 
 // Load content when data changes
 watch(() => pageData.value?.content, (newContent) => {
@@ -124,3 +234,12 @@ onMounted(() => {
   })
 })
 </script>
+
+<style scoped>
+.gap-1 {
+  gap: 4px;
+}
+.tag-input {
+  max-width: 120px;
+}
+</style>

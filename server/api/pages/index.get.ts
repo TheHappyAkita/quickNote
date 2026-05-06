@@ -1,5 +1,6 @@
-import { listPages } from '../../utils/notes'
+import type { PageMeta } from '#shared/types/notes'
+import { listPagesWithMeta } from '../../utils/notes'
 
-export default defineEventHandler(async (): Promise<string[]> => {
-  return await listPages()
+export default defineEventHandler(async (): Promise<PageMeta[]> => {
+  return await listPagesWithMeta()
 })

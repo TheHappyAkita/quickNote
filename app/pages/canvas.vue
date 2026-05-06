@@ -129,7 +129,8 @@ useHead({
 
 const { data: canvasState } = await useFetch<CanvasState>(() => `/api/canvas/${selectedId.value}`)
 const { data: allDates } = await useFetch<string[]>('/api/notes')
-const { data: allPages } = await useFetch<string[]>('/api/pages')
+const { data: allPagesRaw } = await useFetch<{ name: string; tags: string[] }[]>('/api/pages')
+const allPages = computed(() => allPagesRaw.value?.map(p => p.name) ?? [])
 const { data: previews } = await useFetch<Record<string, string>>('/api/notes/previews')
 const { data: pagePreviews } = await useFetch<Record<string, string>>('/api/pages/previews')
 

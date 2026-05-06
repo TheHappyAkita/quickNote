@@ -35,6 +35,11 @@ export interface CanvasMeta {
   updatedAt: string
 }
 
+export interface PageMeta {
+  name: string
+  tags: string[]
+}
+
 export interface Reminder {
   date: string
   text: string

@@ -5,7 +5,7 @@
       <h1 class="text-h6 font-weight-bold">Pages</h1>
       <v-spacer />
       <v-chip size="small" variant="tonal" color="secondary">
-        {{ pages?.length ?? 0 }} pages
+        {{ filteredPages.length }} / {{ pages?.length ?? 0 }} pages
       </v-chip>
     </div>
 
@@ -44,6 +44,31 @@
       </v-card-text>
     </v-card>
 
+    <!-- Tag filter chips -->
+    <div v-if="allTags.length > 0" class="mb-4 d-flex flex-wrap gap-2 align-center">
+      <v-icon size="16" color="secondary" class="mr-1">mdi-tag-multiple</v-icon>
+      <v-chip
+        v-for="tag in allTags"
+        :key="tag"
+        size="small"
+        :variant="selectedTags.has(tag) ? 'flat' : 'tonal'"
+        :color="selectedTags.has(tag) ? 'secondary' : undefined"
+        class="cursor-pointer"
+        @click="toggleTag(tag)"
+      >
+        #{{ tag }}
+      </v-chip>
+      <v-btn
+        v-if="selectedTags.size > 0"
+        size="x-small"
+        variant="text"
+        color="secondary"
+        @click="selectedTags.clear()"
+      >
+        Clear filter
+      </v-btn>
+    </div>
+
     <!-- Pages list -->
     <v-progress-circular v-if="pending" indeterminate color="secondary" class="d-flex mx-auto" />
 
@@ -55,10 +80,14 @@
       No pages yet. Create your first page above!
     </v-alert>
 
+    <v-alert v-else-if="filteredPages.length === 0" type="info" variant="tonal">
+      No pages match the selected tags.
+    </v-alert>
+
     <v-row v-else dense>
       <v-col
-        v-for="page in sortedPages"
-        :key="page"
+        v-for="page in filteredPages"
+        :key="page.name"
         cols="12"
         sm="6"
         md="4"
@@ -68,16 +97,29 @@
           variant="outlined"
           class="page-card"
           hover
-          :to="`/page/${encodeURIComponent(page)}`"
+          :to="`/page/${encodeURIComponent(page.name)}`"
         >
           <v-card-item>
             <template #prepend>
               <v-icon color="secondary">mdi-file-document-outline</v-icon>
             </template>
             <v-card-title class="text-body-1 text-truncate">
-              {{ page }}
+              {{ page.name }}
             </v-card-title>
           </v-card-item>
+          <v-card-text v-if="page.tags.length > 0" class="pt-0 pb-2 px-3">
+            <v-chip
+              v-for="tag in page.tags"
+              :key="tag"
+              size="x-small"
+              variant="tonal"
+              color="secondary"
+              class="mr-1"
+              @click.prevent="toggleTag(tag)"
+            >
+              #{{ tag }}
+            </v-chip>
+          </v-card-text>
         </v-card>
       </v-col>
     </v-row>
@@ -85,21 +127,42 @@
 </template>
 
 <script setup lang="ts">
+import type { PageMeta } from '#shared/types/notes'
+
 useHead({
   title: 'Pages',
 })
 
-const { data: pages, pending, error, refresh } = await useFetch<string[]>('/api/pages', {
+const { data: pages, pending, error, refresh } = await useFetch<PageMeta[]>('/api/pages', {
   server: false,
   default: () => [],
 })
 
 const newPageName = ref('')
 const creating = ref(false)
+const selectedTags = reactive(new Set<string>())
 
 const sortedPages = computed(() => {
-  return [...(pages.value ?? [])].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+  return [...(pages.value ?? [])].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
 })
+
+const allTags = computed(() => {
+  const tags = new Set<string>()
+  for (const p of sortedPages.value) {
+    for (const t of p.tags) tags.add(t)
+  }
+  return [...tags].sort()
+})
+
+const filteredPages = computed(() => {
+  if (selectedTags.size === 0) return sortedPages.value
+  return sortedPages.value.filter(p => [...selectedTags].every(t => p.tags.includes(t)))
+})
+
+function toggleTag(tag: string) {
+  if (selectedTags.has(tag)) selectedTags.delete(tag)
+  else selectedTags.add(tag)
+}
 
 const nameRules = {
   valid: (v: string) => {
@@ -141,9 +204,14 @@ async function createPage() {
   cursor: pointer;
   transition: transform 0.15s, border-color 0.15s;
 }
-
 .page-card:hover {
   transform: translateY(-2px);
   border-color: #6c63ff;
+}
+.gap-2 {
+  gap: 8px;
+}
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>

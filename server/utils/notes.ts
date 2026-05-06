@@ -1,4 +1,4 @@
-import type { GraphData } from '#shared/types/notes'
+import type { GraphData, PageMeta } from '#shared/types/notes'
 import { readFile, writeFile, readdir, mkdir } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join, resolve } from 'path'
@@ -116,6 +116,80 @@ export async function deletePage(name: string): Promise<void> {
   const filePath = join(getPagesDir(), `${name}.md`)
   await unlink(filePath)
 }
+
+// ─── Tag utilities ───────────────────────────────────────────────────────────
+
+export function parseFrontmatterTags(content: string): string[] {
+  if (!content.startsWith('---')) return []
+  const end = content.indexOf('\n---', 3)
+  if (end === -1) return []
+  const frontmatter = content.slice(3, end)
+  // tags: [tag1, tag2]
+  const inlineMatch = /^tags:\s*\[([^\]]*)\]/m.exec(frontmatter)
+  if (inlineMatch) {
+    return (inlineMatch[1] ?? '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
+  }
+  // tags:\n  - tag1
+  const blockMatch = /^tags:\s*\n((?:[ \t]*-[ \t]+[^\n]+\n?)*)/m.exec(frontmatter)
+  if (blockMatch) {
+    return (blockMatch[1] ?? '').split('\n')
+      .map(l => l.replace(/^[ \t]*-[ \t]+/, '').trim().toLowerCase())
+      .filter(Boolean)
+  }
+  return []
+}
+
+export function parseInlineTags(content: string): string[] {
+  // Skip over frontmatter
+  let body = content
+  if (content.startsWith('---')) {
+    const end = content.indexOf('\n---', 3)
+    if (end !== -1) body = content.slice(end + 4)
+  }
+  const tags: string[] = []
+  const re = /#([a-zA-Z][a-zA-Z0-9_-]+)/g
+  let match: RegExpExecArray | null
+  while ((match = re.exec(body)) !== null) {
+    tags.push(match[1]!.toLowerCase())
+  }
+  return [...new Set(tags)]
+}
+
+export function parseTags(content: string): string[] {
+  return [...new Set([...parseFrontmatterTags(content), ...parseInlineTags(content)])].sort()
+}
+
+export function setFrontmatterTags(content: string, tags: string[]): string {
+  const tagLine = tags.length > 0 ? `tags: [${tags.join(', ')}]` : null
+  if (content.startsWith('---')) {
+    const end = content.indexOf('\n---', 3)
+    if (end !== -1) {
+      const fm = content.slice(3, end).replace(/\ntags:[^\n]*(\n[ \t]+-[^\n]*)*/g, '')
+      const rest = content.slice(end + 4)
+      const cleaned = fm.trim()
+      if (tagLine) {
+        return `---\n${cleaned ? cleaned + '\n' : ''}${tagLine}\n---${rest}`
+      } else if (cleaned) {
+        return `---\n${cleaned}\n---${rest}`
+      } else {
+        return rest.trimStart()
+      }
+    }
+  }
+  if (tagLine) return `---\n${tagLine}\n---\n${content}`
+  return content
+}
+
+export async function listPagesWithMeta(): Promise<PageMeta[]> {
+  const names = await listPages()
+  return Promise.all(names.map(async (name) => {
+    const content = await readPage(name)
+    const tags = content ? parseTags(content) : []
+    return { name, tags }
+  }))
+}
+
+// ─── Link utilities ───────────────────────────────────────────────────────────
 
 export function extractLinks(content: string): string[] {
   const links: string[] = []
