@@ -109,10 +109,19 @@ async function saveNow() {
 
 onMounted(() => {
   saveInterval = setInterval(saveNow, 10_000)
+  document.addEventListener('keydown', handleKeydown)
 })
 
 onBeforeUnmount(() => {
   if (saveInterval) clearInterval(saveInterval)
+  document.removeEventListener('keydown', handleKeydown)
   saveNow()
 })
+
+function handleKeydown(event: KeyboardEvent) {
+  if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+    event.preventDefault()
+    saveNow()
+  }
+}
 </script>

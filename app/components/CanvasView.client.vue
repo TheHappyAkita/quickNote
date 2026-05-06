@@ -180,6 +180,7 @@ function buildElements(state: CanvasState) {
 }
 
 onMounted(() => {
+  document.addEventListener('keydown', handleKeydown)
   if (!containerRef.value) return
 
   cy = cytoscape({
@@ -333,6 +334,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown)
   if (saveTimer !== null) {
     clearTimeout(saveTimer)
     saveTimer = null
@@ -344,6 +346,26 @@ onUnmounted(() => {
   cy?.destroy()
   cy = null
 })
+
+function handleKeydown(event: KeyboardEvent) {
+  if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+    event.preventDefault()
+    if (saveTimer !== null) {
+      clearTimeout(saveTimer)
+      saveTimer = null
+      if (cy) {
+        saveStatus.value = 'saving'
+        const state = getState()
+        $fetch(`/api/canvas/${ownCanvasId}`, { method: 'PUT' as 'GET', body: state })
+          .then(() => {
+            saveStatus.value = 'saved'
+            setTimeout(() => { saveStatus.value = null }, 2000)
+          })
+          .catch(() => { saveStatus.value = null })
+      }
+    }
+  }
+}
 
 function centerPos() {
   const e = cy?.extent() ?? { x1: 0, x2: 400, y1: 0, y2: 300 }
