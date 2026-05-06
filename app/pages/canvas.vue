@@ -121,6 +121,10 @@ const canvasList = ref<CanvasMeta[]>(listData.value ?? [])
 const selectedId = ref(canvasList.value[0]?.id ?? 'default')
 const currentMeta = computed(() => canvasList.value.find((c) => c.id === selectedId.value))
 
+useHead({
+  title: computed(() => currentMeta.value?.name ? `Canvas: ${currentMeta.value.name}` : 'Canvas'),
+})
+
 const { data: canvasState } = await useFetch<CanvasState>(() => `/api/canvas/${selectedId.value}`)
 const { data: allDates } = await useFetch<string[]>('/api/notes')
 const { data: previews } = await useFetch<Record<string, string>>('/api/notes/previews')

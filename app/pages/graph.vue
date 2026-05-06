@@ -40,6 +40,10 @@
 <script setup lang="ts">
 import type { GraphData } from '#shared/types/notes'
 
+useHead({
+  title: 'Knowledge Graph',
+})
+
 const { data: graphData, pending, refresh } = await useFetch<GraphData>('/api/notes/graph')
 
 const nodeCount = computed(() => graphData.value?.nodes?.length ?? 0)

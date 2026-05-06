@@ -52,6 +52,10 @@
 const route = useRoute()
 const date = computed(() => route.params.date as string)
 
+useHead({
+  title: date.value,
+})
+
 const dayOfWeek = computed(() => {
   const d = new Date(date.value + 'T00:00:00')
   return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
