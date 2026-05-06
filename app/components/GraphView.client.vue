@@ -180,6 +180,8 @@ function fitGraph() {
   cy?.fit(undefined, 40)
 }
 
+defineExpose({ fitGraph })
+
 function zoomIn() {
   if (!cy) return
   cy.zoom({ level: cy.zoom() * 1.3, renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 } })
