@@ -33,13 +33,12 @@
       <v-btn
         :to="isToday ? undefined : `/note/${today}`"
         :disabled="isToday"
+        icon="mdi-calendar-today"
+        variant="text"
         size="small"
-        variant="tonal"
         :color="isToday ? 'success' : 'primary'"
         title="Go to today"
-      >
-        Today
-      </v-btn>
+      />
 
       <!-- Date picker -->
       <div style="position: relative; display: inline-flex;">
