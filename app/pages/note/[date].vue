@@ -42,20 +42,22 @@
       </v-btn>
 
       <!-- Date picker -->
-      <v-btn
-        icon="mdi-calendar-search"
-        variant="text"
-        size="small"
-        title="Jump to date"
-        @click="openDatePicker"
-      />
-      <input
-        ref="dateInputRef"
-        type="date"
-        class="hidden-date-input"
-        :value="date"
-        @change="onDatePicked"
-      />
+      <div style="position: relative; display: inline-flex;">
+        <v-btn
+          icon="mdi-calendar-search"
+          variant="text"
+          size="small"
+          title="Jump to date"
+          @click="openDatePicker"
+        />
+        <input
+          ref="dateInputRef"
+          type="date"
+          class="hidden-date-input"
+          :value="date"
+          @change="onDatePicked"
+        />
+      </div>
 
       <v-divider vertical class="mx-1" style="height:24px; align-self:center" />
 
@@ -195,9 +197,10 @@ function handleKeydown(event: KeyboardEvent) {
 <style scoped>
 .hidden-date-input {
   position: absolute;
+  inset: 0;
   opacity: 0;
   pointer-events: none;
-  width: 0;
-  height: 0;
+  width: 100%;
+  height: 100%;
 }
 </style>
