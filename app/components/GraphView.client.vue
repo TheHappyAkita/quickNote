@@ -143,6 +143,14 @@ onMounted(() => {
         selector: 'edge:selected',
         style: { 'line-color': '#6c63ff', 'width': 2.5, 'opacity': 1 },
       },
+      {
+        selector: 'node[?dimmed]',
+        style: { 'opacity': 0.45 },
+      },
+      {
+        selector: 'edge[?dimmed]',
+        style: { 'opacity': 0.2 },
+      },
     ],
   })
 

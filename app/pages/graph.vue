@@ -65,19 +65,33 @@ const filteredGraphData = computed<GraphData>(() => {
   if (!searchQuery.value.trim()) return graphData.value
 
   const query = searchQuery.value.toLowerCase().trim()
-  const visibleNodes = new Set<string>()
+  const matchedNodes = new Set<string>()
 
-  // Find nodes matching the query
-  const filteredNodes = graphData.value.nodes.filter((node) => {
-    const match = node.data.label.toLowerCase().includes(query)
-    if (match) visibleNodes.add(node.data.id)
-    return match
-  })
+  // Step 1: find nodes directly matching the query
+  for (const node of graphData.value.nodes) {
+    if (node.data.label.toLowerCase().includes(query)) {
+      matchedNodes.add(node.data.id)
+    }
+  }
 
-  // Keep edges where both source and target are visible
-  const filteredEdges = graphData.value.edges.filter((edge) => {
-    return visibleNodes.has(edge.data.source) && visibleNodes.has(edge.data.target)
-  })
+  // Step 2: expand to direct neighbours via any edge
+  const visibleNodes = new Set<string>(matchedNodes)
+  for (const edge of graphData.value.edges) {
+    if (matchedNodes.has(edge.data.source)) visibleNodes.add(edge.data.target)
+    if (matchedNodes.has(edge.data.target)) visibleNodes.add(edge.data.source)
+  }
+
+  // Step 3: filter nodes and edges
+  const filteredNodes = graphData.value.nodes
+    .filter(n => visibleNodes.has(n.data.id))
+    .map(n => ({
+      ...n,
+      data: { ...n.data, dimmed: !matchedNodes.has(n.data.id) },
+    }))
+
+  const filteredEdges = graphData.value.edges.filter(
+    e => visibleNodes.has(e.data.source) && visibleNodes.has(e.data.target),
+  )
 
   return { nodes: filteredNodes, edges: filteredEdges }
 })
