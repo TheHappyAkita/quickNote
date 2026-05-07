@@ -2,16 +2,18 @@
 
 ## Daily Notes
 
-Every day gets its own Markdown file (`YYYY-MM-DD.md`). The **Today** button in the navigation bar always takes you to the current day's note.
+Every day gets its own Markdown file (`YYYY-MM-DD.md`).
+
+**Navigation:**
+- **📅 Today** icon — one-click jump to today's note
+- **🗓 calendar-search** icon — open date picker to jump to any specific date
+- **← →** arrows — navigate to previous/next note in chronological order
+- **Wikilinks** — use `[[YYYY-MM-DD]]` to jump between notes
 
 **Saving:**
 - Auto-saves when the editor loses focus
 - Manual save with **Ctrl+S** (or **⌘+S** on Mac)
 - Save icon turns green briefly to confirm the save
-
-**Navigation:**
-- Click the date in the header to pick any date
-- Use wikilinks `[[YYYY-MM-DD]]` to jump between notes
 
 ---
 
@@ -118,8 +120,16 @@ The graph visualizes connections between your notes and pages.
 - **Click** a date node → navigate to that daily note
 - **Click** a page node → navigate to that named page
 - **Hover** → shows a tooltip label
-- **Filter** → type in the header search field to filter nodes by name
+- **Filter** → type in the header search field to filter nodes by name; the graph will show matching nodes plus their direct neighbours (relationship context), with neighbours dimmed
 - **Fit** / **Zoom** → controls in the top-right corner of the graph
+
+### Graph Filtering with Context
+
+When you filter the graph (e.g. typing "install"), the view shows:
+- **Bright nodes** — items that directly match your filter
+- **Dimmed nodes** — direct neighbours (pages, notes, or keywords connected to matches)
+
+This reveals relationships — for example, filtering for a tag shows both the tag and all pages that use it.
 
 ---
 

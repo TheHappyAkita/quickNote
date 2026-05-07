@@ -9,7 +9,12 @@ A lightweight, self-hosted personal knowledge base and daily note-taking app —
 ## Features
 
 ### ✏️ Daily Notes
-One Markdown file per day (`YYYY-MM-DD.md`). Navigate to today with one click, or jump to any past date. Auto-saves on blur; manual save via **Ctrl+S** or the save icon.
+One Markdown file per day (`YYYY-MM-DD.md`). Navigate via:
+- **📅** Today icon — instant jump to today's note
+- **🗓** Calendar icon — date picker to jump to any date
+- **← →** Arrows — previous/next note chronologically
+
+Auto-saves on blur; manual save via **Ctrl+S** or the save icon.
 
 ### 📄 Named Pages
 Create persistent reference pages (e.g. *Book List*, *Project Ideas*, *Harmonica*). Pages are separate Markdown files stored in `~/.quickNote/pages/`.
@@ -35,11 +40,25 @@ Link between notes and pages using `[[...]]` syntax:
 
 Type `[[` in the editor to trigger autocomplete suggestions for existing notes and pages.
 
+### ✨ Text Highlighting & Colour
+Highlight important text directly in notes:
+
+| Syntax | Result |
+|--------|--------|
+| `==critical==` | Yellow highlight (Obsidian-compatible) |
+| `[c=red]warning[/c]` | Red coloured text |
+| `[c=#6c63ff]purple[/c]` | Custom hex colour |
+
+Supported colours: `red`, `orange`, `yellow`, `green`, `blue`, `purple`, `pink`, `teal`, `gray`
+
 ### 🔍 Full-Text Search
 Search across all daily notes and named pages from the sidebar panel. Results show excerpts around matches with match counts. Searches page names, note dates, and content.
 
 ### 🧠 Knowledge Graph
-An interactive graph (powered by Cytoscape.js) showing all your notes, pages, and their connections as nodes and edges. Filter visible nodes by name using the search field in the graph header. Click any node to navigate to the corresponding note or page.
+An interactive graph (powered by Cytoscape.js) showing all your notes, pages, and their connections as nodes and edges. 
+
+- **Filter** by name — shows matching nodes plus their direct neighbours (context)
+- **Click** any node to navigate directly to the note or page
 
 ### 🗺️ Canvas
 A free-form visual board where you can pin note cards, page cards, images, and URL previews. Arrange them spatially to see relationships and create visual overviews. Multiple named canvases are supported.
