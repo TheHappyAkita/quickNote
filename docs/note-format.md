@@ -146,6 +146,32 @@ Alert 2025-12-31: file end-of-year tax docs
 
 ---
 
+## Text Highlighting & Colour
+
+### Highlight
+
+Wrap text in `==` to apply a yellow highlight (Obsidian-compatible):
+
+```markdown
+This is ==very important== and should not be missed.
+```
+
+### Coloured text
+
+Use `[c=color]...[/c]` to colour text:
+
+```markdown
+[c=red]Critical issue[/c] — needs attention before release.
+[c=green]All tests pass.[/c]
+[c=#6c63ff]Custom hex colour.[/c]
+```
+
+Supported named colours: `red`, `orange`, `yellow`, `green`, `blue`, `purple`, `pink`, `teal`, `gray`
+
+Any 3- or 6-digit hex code (e.g. `#f00`, `#ff5252`) is also accepted.
+
+---
+
 ## Compatibility
 
 quickNote's Markdown files are fully compatible with:

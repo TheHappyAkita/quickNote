@@ -97,6 +97,20 @@ const wordCount = computed(() => {
   return text ? text.split(/\s+/).length : 0
 })
 
+// Safe color map for named colors
+const COLOR_MAP: Record<string, string> = {
+  red: '#ff5252', orange: '#ff9800', yellow: '#ffd740', green: '#4caf50',
+  blue: '#2196f3', purple: '#9c8fff', pink: '#f06292', teal: '#2dd4bf',
+  gray: '#9e9e9e', grey: '#9e9e9e', white: '#ffffff',
+}
+
+function resolveColor(raw: string): string | null {
+  const lower = raw.toLowerCase()
+  if (COLOR_MAP[lower]) return COLOR_MAP[lower]!
+  if (/^#[0-9a-fA-F]{3,6}$/.test(raw)) return raw
+  return null
+}
+
 const renderedContent = computed(() => {
   let html = marked.parse(props.modelValue, {
     gfm: true,
@@ -112,6 +126,13 @@ const renderedContent = computed(() => {
     /\[\[([a-zA-Z0-9_\- ][a-zA-Z0-9_\- ]+)\]\]/g,
     '<a href="/page/$1" class="wiki-link page-link">📄 $1</a>',
   )
+  // ==highlight== → yellow highlight
+  html = html.replace(/==([^=\n]+)==/g, '<mark class="hl">$1</mark>')
+  // [c=color]text[/c] or [c=color]text[/] → colored span
+  html = html.replace(/\[c=([^\]]+)\]([\s\S]*?)\[\/c?\]/g, (_match, rawColor, text) => {
+    const color = resolveColor(rawColor.trim())
+    return color ? `<span style="color:${color}">${text}</span>` : text
+  })
   return html
 })
 
@@ -276,6 +297,13 @@ function insertSuggestion(date: string) {
 
 :deep(.wiki-link:hover) {
   color: #6c63ff;
+}
+
+:deep(mark.hl) {
+  background: #ffd740;
+  color: #0f0f17;
+  padding: 0 3px;
+  border-radius: 3px;
 }
 
 :deep(.preview-pane h1),
