@@ -158,11 +158,11 @@ This is ==very important== and should not be missed.
 
 ### Coloured text
 
-Use `[c=color]...[/c]` to colour text:
+Use `[c=color]...[/c]` or the long form `[color=color]...[/color]` to colour text:
 
 ```markdown
 [c=red]Critical issue[/c] — needs attention before release.
-[c=green]All tests pass.[/c]
+[color=green]All tests pass.[/color]
 [c=#6c63ff]Custom hex colour.[/c]
 ```
 
@@ -181,4 +181,4 @@ quickNote's Markdown files are fully compatible with:
 - **VS Code** (with Markdown Preview) — standard Markdown rendering
 - **Any text editor** — plain `.md` files
 
-The `Remind:` / `Alert:` lines are just regular Markdown text when viewed in other apps.
+The `Remind:` / `Alert:` / `Todo:` lines are just regular Markdown text when viewed in other apps.

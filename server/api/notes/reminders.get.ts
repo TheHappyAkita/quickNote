@@ -5,6 +5,7 @@ import { getNotesDir } from '../../utils/notes'
 
 const REMINDER_PATTERN = /^(.*?)(remind|remindme|reminder)(?:\s*:\s*|\s+)(.+)$/i
 const ALERT_PATTERN = /^(.*?)(alert|alertme|alerter|alerta)\s+(\S+)\s*:\s*(.+)$/i
+const TODO_PATTERN = /^(.*?)(todo|to-do|to do)(?:\s*:\s*|\s+)(.+)$/i
 const DISMISSED_FILE = '.dismissed_reminders.json'
 
 // Parse various date formats and return YYYY-MM-DD or null
@@ -121,6 +122,17 @@ export default defineEventHandler(async (): Promise<Reminder[]> => {
         const key: DismissedKey = `${noteDate}:${text}`
         if (!dismissed.has(key)) {
           reminders.push({ date: noteDate, text, keyword })
+        }
+        continue
+      }
+
+      // Check for ToDo pattern
+      const todoMatch = TODO_PATTERN.exec(trimmed)
+      if (todoMatch) {
+        const text = todoMatch[3]!.trim().slice(0, 200)
+        const key: DismissedKey = `${noteDate}:${text}`
+        if (!dismissed.has(key)) {
+          reminders.push({ date: noteDate, text, keyword: 'todo' })
         }
       }
     }

@@ -128,8 +128,8 @@ const renderedContent = computed(() => {
   )
   // ==highlight== → yellow highlight
   html = html.replace(/==([^=\n]+)==/g, '<mark class="hl">$1</mark>')
-  // [c=color]text[/c] or [c=color]text[/] → colored span
-  html = html.replace(/\[c=([^\]]+)\]([\s\S]*?)\[\/c?\]/g, (_match, rawColor, text) => {
+  // [c=color]text[/c], [c=color]text[/], [color=name]text[/color], [color=name]text[/] → colored span
+  html = html.replace(/\[(?:c|color)=([^\]]+)\]([\s\S]*?)\[\/(?:color|c)?\]/g, (_match, rawColor, text) => {
     const color = resolveColor(rawColor.trim())
     return color ? `<span style="color:${color}">${text}</span>` : text
   })

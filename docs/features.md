@@ -182,9 +182,45 @@ Alert YYYY-MM-DD: text
 
 Alerts only appear in the **🔴 Alerts** panel **on or after** the specified date. They are ordered by urgency and shown with the date and source note.
 
+### To-Do
+
+```
+Todo: finish the proposal
+ToDo: review PR #42
+TODO: update docs
+```
+
+To-do items appear in the **☑ To-Do** sidebar panel (white/grey icon). They are less prominent than reminders and appear only when at least one todo exists. Dismiss them with the ✓ button once done.
+
 ### Dismissing
 
 Click the **✓ checkmark** on any reminder or alert to dismiss it. Dismissed items are remembered and will not reappear.
+
+---
+
+## Text Highlighting & Colour
+
+### Highlight
+
+Wrap text in `==` to apply a yellow highlight (Obsidian-compatible):
+
+```markdown
+This is ==very important== and should not be missed.
+```
+
+### Coloured text
+
+Use `[c=color]...[/c]` or the long form `[color=color]...[/color]`:
+
+```markdown
+[c=red]Critical issue[/c] — needs attention.
+[color=green]All tests pass.[/color]
+[c=#6c63ff]Custom hex colour.[/c]
+```
+
+Supported named colours: `red`, `orange`, `yellow`, `green`, `blue`, `purple`, `pink`, `teal`, `gray`
+
+Any 3- or 6-digit hex code (e.g. `#f00`, `#ff5252`) is also accepted.
 
 ---
 

@@ -34,6 +34,22 @@
         </v-badge>
       </v-btn>
 
+      <!-- ToDos (only when exist) -->
+      <v-btn
+        v-if="todoCount > 0"
+        icon
+        size="small"
+        variant="text"
+        class="strip-btn"
+        :color="activePanel === 'todos' ? 'white' : undefined"
+        :title="`To-Do (${todoCount})`"
+        @click="toggle('todos')"
+      >
+        <v-badge :content="todoCount" color="grey" offset-x="4" offset-y="-4">
+          <v-icon :color="activePanel === 'todos' ? 'white' : 'grey-lighten-1'">mdi-format-list-checks</v-icon>
+        </v-badge>
+      </v-btn>
+
       <!-- Search -->
       <v-btn
         icon
@@ -151,6 +167,41 @@
         </v-list>
       </template>
 
+      <!-- ToDos panel -->
+      <template v-else-if="activePanel === 'todos'">
+        <div class="panel-header">
+          <v-icon size="18" color="grey-lighten-1" class="mr-2">mdi-format-list-checks</v-icon>
+          <span class="font-weight-bold">To-Do</span>
+          <v-spacer />
+          <v-chip size="x-small" variant="tonal">{{ todoCount }}</v-chip>
+        </div>
+        <div v-if="remindersPending" class="d-flex justify-center pa-4">
+          <v-progress-circular indeterminate size="20" />
+        </div>
+        <div v-else-if="todoCount === 0" class="text-caption text-medium-emphasis pa-3 text-center">
+          No to-dos found.<br>
+          <span class="text-xs">Use "Todo: text" in notes</span>
+        </div>
+        <v-list v-else density="compact" class="reminder-list">
+          <v-list-item
+            v-for="todo in todos"
+            :key="`${todo.date}-${todo.text}`"
+            class="reminder-item"
+          >
+            <template #prepend>
+              <v-icon size="14" color="grey-lighten-2">mdi-checkbox-blank-outline</v-icon>
+            </template>
+            <v-list-item-title class="text-body-2 reminder-text">
+              <NuxtLink :to="`/note/${todo.date}`" class="reminder-link">{{ todo.text }}</NuxtLink>
+            </v-list-item-title>
+            <v-list-item-subtitle class="text-caption">{{ formatDate(todo.date) }}</v-list-item-subtitle>
+            <template #append>
+              <v-btn icon="mdi-check" size="x-small" variant="text" color="success" title="Mark done" @click.prevent="dismiss(todo)" />
+            </template>
+          </v-list-item>
+        </v-list>
+      </template>
+
       <!-- Reminders panel -->
       <template v-else-if="activePanel === 'reminders'">
         <div class="panel-header">
@@ -193,7 +244,7 @@
 <script setup lang="ts">
 import type { Reminder } from '#shared/types/notes'
 
-type PanelName = 'search' | 'alerts' | 'reminders' | null
+type PanelName = 'search' | 'alerts' | 'reminders' | 'todos' | null
 const activePanel = ref<PanelName>(null)
 
 // ── Reminders ──────────────────────────────────────────────────────
@@ -203,9 +254,11 @@ const { data: reminders, pending: remindersPending, refresh: refreshReminders } 
 })
 
 const alerts = computed(() => reminders.value?.filter(r => r.keyword === 'alert') ?? [])
-const regularReminders = computed(() => reminders.value?.filter(r => r.keyword !== 'alert') ?? [])
+const regularReminders = computed(() => reminders.value?.filter(r => r.keyword !== 'alert' && r.keyword !== 'todo') ?? [])
+const todos = computed(() => reminders.value?.filter(r => r.keyword === 'todo') ?? [])
 const alertCount = computed(() => alerts.value.length)
 const regularCount = computed(() => regularReminders.value.length)
+const todoCount = computed(() => todos.value.length)
 
 async function dismiss(reminder: Reminder) {
   await $fetch('/api/notes/reminders/dismiss', {
@@ -217,7 +270,7 @@ async function dismiss(reminder: Reminder) {
 
 let remindersInterval: ReturnType<typeof setInterval> | null = null
 watch(activePanel, (panel) => {
-  if (panel === 'alerts' || panel === 'reminders') {
+  if (panel === 'alerts' || panel === 'reminders' || panel === 'todos') {
     refreshReminders()
     remindersInterval = setInterval(refreshReminders, 30_000)
   } else if (remindersInterval) {
