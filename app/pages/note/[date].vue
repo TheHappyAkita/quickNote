@@ -1,33 +1,69 @@
 <template>
   <v-container fluid class="pa-4 pa-sm-6">
     <div class="d-flex align-center mb-4 gap-2">
+      <!-- Prev (older) -->
       <v-btn
         :to="prevDate ? `/note/${prevDate}` : undefined"
         :disabled="!prevDate"
         icon="mdi-chevron-left"
         variant="text"
         size="small"
+        title="Previous note"
       />
 
+      <!-- Date display -->
       <div class="text-h6 text-primary font-weight-bold flex-grow-1 text-center">
         {{ date }}
         <span class="text-caption text-medium-emphasis ml-2">{{ dayOfWeek }}</span>
       </div>
 
+      <!-- Next (newer) -->
       <v-btn
         :to="nextDate ? `/note/${nextDate}` : undefined"
         :disabled="!nextDate"
         icon="mdi-chevron-right"
         variant="text"
         size="small"
+        title="Next note"
       />
+
+      <v-divider vertical class="mx-1" style="height:24px; align-self:center" />
+
+      <!-- Jump to today -->
+      <v-btn
+        :to="isToday ? undefined : `/note/${today}`"
+        :disabled="isToday"
+        size="small"
+        variant="tonal"
+        :color="isToday ? 'success' : 'primary'"
+        title="Go to today"
+      >
+        Today
+      </v-btn>
+
+      <!-- Date picker -->
+      <v-btn
+        icon="mdi-calendar-search"
+        variant="text"
+        size="small"
+        title="Jump to date"
+        @click="openDatePicker"
+      />
+      <input
+        ref="dateInputRef"
+        type="date"
+        class="hidden-date-input"
+        :value="date"
+        @change="onDatePicked"
+      />
+
+      <v-divider vertical class="mx-1" style="height:24px; align-self:center" />
 
       <v-chip
         v-if="saveStatus"
         :color="saveStatus === 'saved' ? 'success' : 'primary'"
         size="small"
         variant="tonal"
-        class="ml-2"
       >
         {{ saveStatus === 'saving' ? 'Saving…' : 'Saved' }}
       </v-chip>
@@ -81,15 +117,42 @@ watch(
 
 watch(content, () => { isDirty.value = true })
 
+const today = new Date().toISOString().split('T')[0]!
+const isToday = computed(() => date.value === today)
+
 const currentIndex = computed(() => allDates.value?.indexOf(date.value) ?? -1)
-const prevDate = computed(() =>
-  currentIndex.value > 0 ? (allDates.value?.[currentIndex.value - 1] ?? null) : null
-)
-const nextDate = computed(() =>
-  currentIndex.value < (allDates.value?.length ?? 0) - 1
-    ? (allDates.value?.[currentIndex.value + 1] ?? null)
-    : null
-)
+
+// When the current date is not yet saved (index = -1), bisect allDates to find neighbours
+const prevDate = computed(() => {
+  const dates = allDates.value ?? []
+  if (currentIndex.value > 0) return dates[currentIndex.value - 1] ?? null
+  if (currentIndex.value === -1) {
+    const before = dates.filter(d => d < date.value)
+    return before.length ? (before[before.length - 1] ?? null) : null
+  }
+  return null
+})
+const nextDate = computed(() => {
+  const dates = allDates.value ?? []
+  if (currentIndex.value !== -1 && currentIndex.value < dates.length - 1)
+    return dates[currentIndex.value + 1] ?? null
+  if (currentIndex.value === -1) {
+    const after = dates.filter(d => d > date.value)
+    return after.length ? (after[0] ?? null) : null
+  }
+  return null
+})
+
+const dateInputRef = ref<HTMLInputElement | null>(null)
+
+function openDatePicker() {
+  dateInputRef.value?.showPicker()
+}
+
+function onDatePicked(e: Event) {
+  const picked = (e.target as HTMLInputElement).value
+  if (picked) navigateTo(`/note/${picked}`)
+}
 
 async function saveNow() {
   if (!isDirty.value) return
@@ -128,3 +191,13 @@ function handleKeydown(event: KeyboardEvent) {
   }
 }
 </script>
+
+<style scoped>
+.hidden-date-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+</style>
