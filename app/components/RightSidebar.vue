@@ -2,19 +2,6 @@
   <div class="sidebar" :class="{ collapsed: activePanel === null }">
     <!-- Button strip (always visible) -->
     <div class="sidebar-strip">
-      <!-- Collapse / chevron -->
-      <v-btn
-        v-if="activePanel !== null"
-        icon
-        size="small"
-        variant="text"
-        class="strip-btn"
-        title="Close panel"
-        @click="activePanel = null"
-      >
-        <v-icon>mdi-chevron-right</v-icon>
-      </v-btn>
-
       <!-- Alerts bell (only when alerts exist) -->
       <v-btn
         v-if="alertCount > 0"
@@ -58,6 +45,22 @@
         @click="toggle('search')"
       >
         <v-icon>mdi-magnify</v-icon>
+      </v-btn>
+
+      <!-- Spacer pushes close button to bottom -->
+      <div class="strip-spacer" />
+
+      <!-- Collapse / chevron (bottom) -->
+      <v-btn
+        v-if="activePanel !== null"
+        icon
+        size="small"
+        variant="text"
+        class="strip-btn"
+        title="Close panel"
+        @click="activePanel = null"
+      >
+        <v-icon>mdi-chevron-right</v-icon>
       </v-btn>
     </div>
 
@@ -322,6 +325,10 @@ function toggle(panel: Exclude<PanelName, null>) {
 
 .strip-btn {
   flex-shrink: 0;
+}
+
+.strip-spacer {
+  flex: 1;
 }
 
 /* Panel that slides in to the left of the strip */
