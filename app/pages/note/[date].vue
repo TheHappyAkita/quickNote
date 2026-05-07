@@ -87,6 +87,7 @@
 
 <script setup lang="ts">
 const route = useRoute()
+const router = useRouter()
 const date = computed(() => route.params.date as string)
 
 useHead({
@@ -151,9 +152,12 @@ function openDatePicker() {
   dateInputRef.value?.showPicker()
 }
 
-function onDatePicked(e: Event) {
+async function onDatePicked(e: Event) {
   const picked = (e.target as HTMLInputElement).value
-  if (picked) navigateTo(`/note/${picked}`)
+  if (picked && picked !== date.value) {
+    await saveNow()
+    router.push(`/note/${picked}`)
+  }
 }
 
 async function saveNow() {
