@@ -126,6 +126,16 @@ const renderedContent = computed(() => {
     /\[\[([a-zA-Z0-9_\- ][a-zA-Z0-9_\- ]+)\]\]/g,
     '<a href="/page/$1" class="wiki-link page-link">📄 $1</a>',
   )
+  // Auto-color special note keywords (only at start of block elements, i.e. right after >)
+  // Alert YYYY-MM-DD: text → red
+  html = html.replace(/(>)(Alert(?:Me|er|a)?\s+\S+\s*:)([^<]*)/gi,
+    '$1<span style="color:#ff5252">$2$3</span>')
+  // Remind: / RemindMe: / Reminder: text → orange
+  html = html.replace(/(>)(Remind(?:Me|er)?\s*:)([^<]*)/gi,
+    '$1<span style="color:#ff9800">$2$3</span>')
+  // Todo: / ToDo: / TODO: text → grey
+  html = html.replace(/(>)(To-?Do\s*:)([^<]*)/gi,
+    '$1<span style="color:#9e9e9e">$2$3</span>')
   // ==highlight== → yellow highlight
   html = html.replace(/==([^=\n]+)==/g, '<mark class="hl">$1</mark>')
   // [c=color]text[/c], [c=color]text[/], [color=name]text[/color], [color=name]text[/] → colored span
