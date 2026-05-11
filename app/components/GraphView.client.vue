@@ -24,6 +24,7 @@ const props = defineProps<{
 const containerRef = ref<HTMLDivElement | null>(null)
 const hoveredNode = ref<string | null>(null)
 let cy: Core | null = null
+let resizeObserver: ResizeObserver | null = null
 
 const router = useRouter()
 
@@ -45,12 +46,17 @@ function updateElements() {
 
 watch(() => props.graphData, updateElements, { deep: true })
 
-onMounted(() => {
+onMounted(async () => {
   if (!containerRef.value) return
+
+  // Wait for the browser to measure the container after v-if mount
+  await nextTick()
 
   cy = cytoscape({
     container: containerRef.value,
     elements: [...props.graphData.nodes, ...props.graphData.edges],
+    minZoom: 0.05,
+    maxZoom: 5,
     style: [
       {
         selector: 'node',
@@ -168,6 +174,14 @@ onMounted(() => {
     ],
   })
 
+  // Ensure Cytoscape reads the true container dimensions after DOM layout
+  cy.resize()
+  cy.fit(undefined, 40)
+
+  // Keep Cytoscape in sync when the container is resized (e.g. window resize)
+  resizeObserver = new ResizeObserver(() => cy?.resize())
+  resizeObserver.observe(containerRef.value)
+
   cy.on('tap', 'node[type="date"]', (event) => {
     const date = event.target.data('id') as string
     router.push(`/note/${date}`)
@@ -206,6 +220,8 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  resizeObserver?.disconnect()
+  resizeObserver = null
   cy?.destroy()
   cy = null
 })
