@@ -1,5 +1,6 @@
 <template>
-  <v-container fluid class="pa-4 pa-sm-6 editor-page">
+  <v-container fluid class="pa-4 pa-sm-6">
+    <div class="editor-page">
     <div class="d-flex align-center mb-4">
       <v-btn icon variant="text" size="small" class="mr-2" to="/persons">
         <v-icon>mdi-arrow-left</v-icon>
@@ -66,21 +67,22 @@
     </div>
 
     <NoteEditor v-model="content" @blur="saveNow" />
-
-    <v-dialog v-model="deleteDialog" max-width="400">
-      <v-card>
-        <v-card-title class="text-h6">Delete Person?</v-card-title>
-        <v-card-text>
-          Delete notes for "{{ personName }}"? This cannot be undone.
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="deleteDialog = false">Cancel</v-btn>
-          <v-btn color="error" variant="flat" @click="doDelete">Delete</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    </div>
   </v-container>
+
+  <v-dialog v-model="deleteDialog" max-width="400">
+    <v-card>
+      <v-card-title class="text-h6">Delete Person?</v-card-title>
+      <v-card-text>
+        Delete notes for "{{ personName }}"? This cannot be undone.
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn variant="text" @click="deleteDialog = false">Cancel</v-btn>
+        <v-btn color="error" variant="flat" @click="doDelete">Delete</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
@@ -193,7 +195,7 @@ onMounted(() => {
 
 <style scoped>
 .editor-page {
-  height: calc(100vh - var(--v-layout-top, 64px));
+  height: calc(100vh - var(--v-layout-top, 64px) - 48px);
   display: flex;
   flex-direction: column;
 }
