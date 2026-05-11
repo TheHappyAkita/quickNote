@@ -1,3 +1,13 @@
+export interface PageMeta {
+  name: string
+  tags: string[]
+}
+
+export interface PersonMeta {
+  name: string
+  tags: string[]
+}
+
 export interface GraphNode {
   data: { id: string; label: string; type: 'date' | 'page' | 'keyword' | 'person'; weight?: number }
 }
@@ -33,11 +43,6 @@ export interface CanvasMeta {
   name: string
   createdAt: string
   updatedAt: string
-}
-
-export interface PageMeta {
-  name: string
-  tags: string[]
 }
 
 export interface Reminder {

@@ -178,6 +178,15 @@ export async function deletePerson(name: string): Promise<void> {
   try { await unlink(join(getPeopleDir(), `${name}.md`)) } catch { /* already gone */ }
 }
 
+export async function listPersonsWithMeta(): Promise<{ name: string; tags: string[] }[]> {
+  const names = await listPersons()
+  return Promise.all(names.map(async (name) => {
+    const content = await readPerson(name)
+    const tags = content ? parseTags(content) : []
+    return { name, tags }
+  }))
+}
+
 // ─── Tag utilities ───────────────────────────────────────────────────────────
 
 export function parseFrontmatterTags(content: string): string[] {

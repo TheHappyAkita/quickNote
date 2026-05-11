@@ -48,7 +48,8 @@
               @mousedown.prevent="insertSuggestion(suggestion)"
             >
               <template #prepend>
-                <v-icon v-if="/^\d{4}-\d{2}-\d{2}$/.test(suggestion)" size="14" class="mr-1">mdi-calendar</v-icon>
+                <v-icon v-if="suggestionMode === 'person'" size="14" class="mr-1" color="pink">mdi-account</v-icon>
+                <v-icon v-else-if="/^\d{4}-\d{2}-\d{2}$/.test(suggestion)" size="14" class="mr-1">mdi-calendar</v-icon>
                 <v-icon v-else size="14" class="mr-1">mdi-file-document-outline</v-icon>
               </template>
               <v-list-item-title class="text-body-2">{{ suggestion }}</v-list-item-title>
@@ -89,8 +90,11 @@ const selectedSuggestion = ref(0)
 const { data: allDates } = await useFetch<string[]>('/api/notes', { server: false, default: () => [] })
 const { data: allPagesRaw } = await useFetch<{ name: string; tags: string[] }[]>('/api/pages', { server: false, default: () => [] })
 const allPages = computed(() => allPagesRaw.value?.map(p => p.name) ?? [])
+const { data: allPersonsRaw } = await useFetch<{ name: string; tags: string[] }[]>('/api/persons', { server: false, default: () => [] })
+const allPersons = computed(() => allPersonsRaw.value?.map(p => p.name) ?? [])
 
 const dropdownStyle = ref({ top: '40px', left: '16px' })
+const suggestionMode = ref<'link' | 'person'>('link')
 
 const wordCount = computed(() => {
   const text = props.modelValue.trim()
@@ -171,19 +175,27 @@ function handleInput(event: Event) {
   const cursorPos = target.selectionStart ?? 0
   const textBeforeCursor = value.substring(0, cursorPos)
 
-  const match = textBeforeCursor.match(/\[\[([^\[\]]*)$/)
-  if (match) {
-    const query = match[1] ?? ''
+  const personMatch = textBeforeCursor.match(/@\[\[([^\[\]]*)$/)
+  const linkMatch = !personMatch && textBeforeCursor.match(/\[\[([^\[\]]*)$/)
+
+  if (personMatch) {
+    suggestionMode.value = 'person'
+    const query = personMatch[1] ?? ''
+    suggestions.value = (allPersons.value ?? [])
+      .filter(p => p.toLowerCase().includes(query.toLowerCase()))
+      .slice(0, 10)
+    selectedSuggestion.value = 0
+    showSuggestions.value = suggestions.value.length > 0
+    if (showSuggestions.value) {
+      const coords = getCursorCoords(target, cursorPos)
+      dropdownStyle.value = { top: coords.top + 'px', left: Math.max(0, coords.left) + 'px' }
+    }
+  } else if (linkMatch) {
+    suggestionMode.value = 'link'
+    const query = linkMatch[1] ?? ''
     const queryLower = query.toLowerCase()
-    // Filter dates
-    const dateMatches = (allDates.value ?? []).filter(
-      (d) => d.startsWith(query) && d !== props.date,
-    )
-    // Filter pages
-    const pageMatches = (allPages.value ?? []).filter(
-      (p) => p.toLowerCase().includes(queryLower) && p !== props.pageName,
-    )
-    // Combine: dates first, then pages
+    const dateMatches = (allDates.value ?? []).filter(d => d.startsWith(query) && d !== props.date)
+    const pageMatches = (allPages.value ?? []).filter(p => p.toLowerCase().includes(queryLower) && p !== props.pageName)
     suggestions.value = [...dateMatches, ...pageMatches].slice(0, 10)
     selectedSuggestion.value = 0
     showSuggestions.value = suggestions.value.length > 0
@@ -224,15 +236,20 @@ function insertSuggestion(date: string) {
   const cursorPos = textarea.selectionStart ?? 0
   const value = textarea.value
   const textBeforeCursor = value.substring(0, cursorPos)
-  const linkStart = textBeforeCursor.lastIndexOf('[[')
-  const newValue = value.substring(0, linkStart) + `[[${date}]]` + value.substring(cursorPos)
+  const isPerson = suggestionMode.value === 'person'
+  const openBracket = isPerson
+    ? textBeforeCursor.lastIndexOf('@[[')
+    : textBeforeCursor.lastIndexOf('[[')
+  const insertion = isPerson ? `@[[${date}]]` : `[[${date}]]`
+  const newValue = value.substring(0, openBracket) + insertion + value.substring(cursorPos)
 
   emit('update:modelValue', newValue)
   showSuggestions.value = false
 
   nextTick(() => {
     if (textareaRef.value) {
-      const newPos = linkStart + date.length + 4
+      const prefix = isPerson ? '@[[' : '[['
+      const newPos = openBracket + prefix.length + date.length + 2
       textareaRef.value.setSelectionRange(newPos, newPos)
       textareaRef.value.focus()
     }

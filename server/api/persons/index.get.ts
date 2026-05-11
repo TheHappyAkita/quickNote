@@ -1,5 +1,5 @@
-import { listPersons } from '../../utils/notes'
+import { listPersonsWithMeta } from '../../utils/notes'
 
 export default defineEventHandler(async () => {
-  return listPersons()
+  return listPersonsWithMeta()
 })
