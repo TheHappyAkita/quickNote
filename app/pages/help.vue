@@ -1,4 +1,5 @@
 <template>
+  <div class="help-scroll">
   <v-container class="help-page py-8" style="max-width: 860px">
     <div class="d-flex align-center mb-6 gap-3">
       <v-icon size="28" color="primary">mdi-help-circle-outline</v-icon>
@@ -198,6 +199,7 @@
       </v-card-text>
     </v-card>
   </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -205,6 +207,10 @@ useHead({ title: 'Help — quickNote' })
 </script>
 
 <style scoped>
+.help-scroll {
+  height: 100%;
+  overflow-y: auto;
+}
 .help-table {
   font-size: 0.85rem;
 }
