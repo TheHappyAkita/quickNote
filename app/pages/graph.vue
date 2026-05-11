@@ -38,7 +38,7 @@
     </v-alert>
 
     <ClientOnly>
-      <GraphView v-if="graphData" ref="graphViewRef" :graph-data="filteredGraphData" />
+      <GraphView ref="graphViewRef" :graph-data="filteredGraphData" />
       <template #fallback>
         <div class="d-flex justify-center align-center" style="height: 60vh">
           <v-progress-circular indeterminate color="primary" />
@@ -55,7 +55,10 @@ useHead({
   title: 'Knowledge Graph',
 })
 
-const { data: graphData, pending, refresh } = useFetch<GraphData>('/api/notes/graph', { lazy: true })
+const { data: graphData, pending, refresh } = useFetch<GraphData>('/api/notes/graph', {
+  server: false,
+  lazy: true,
+})
 
 const searchQuery = ref('')
 const graphViewRef = ref<{ fitGraph?: () => void } | null>(null)
