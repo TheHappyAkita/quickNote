@@ -53,7 +53,9 @@ export default defineNuxtConfig({
     },
     workbox: {
       navigateFallback: null,
-      globPatterns: ['**/*.{js,css,html,svg,ico,woff2}'],
+      skipWaiting: true,
+      clientsClaim: true,
+      globPatterns: ['**/*.{js,css,svg,ico,woff2}'],
       runtimeCaching: [
         {
           urlPattern: /^\/api\/notes/,
