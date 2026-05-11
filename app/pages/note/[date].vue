@@ -169,6 +169,7 @@ async function saveNow() {
     })
     isDirty.value = false
     if (res.deleted) {
+      saveStatus.value = null
       await refresh()
       router.push(`/note/${today}`)
       return
