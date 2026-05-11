@@ -41,16 +41,20 @@ function updateElements() {
     idealEdgeLength: 100,
     edgeElasticity: 100,
     gravity: 80,
+    stop: () => cy?.fit(undefined, 40),
   }).run()
 }
 
 watch(() => props.graphData, updateElements, { deep: true })
 
-onMounted(async () => {
+onMounted(() => {
   if (!containerRef.value) return
 
-  // Wait for the browser to measure the container after v-if mount
-  await nextTick()
+  // requestAnimationFrame fires just before the next browser paint,
+  // guaranteeing that layout has been computed and the container has
+  // real dimensions (getBoundingClientRect returns non-zero values).
+  requestAnimationFrame(() => {
+  if (!containerRef.value) return
 
   cy = cytoscape({
     container: containerRef.value,
@@ -217,7 +221,8 @@ onMounted(async () => {
     const label = event.target.data('label') as string
     router.push(`/person/${encodeURIComponent(label)}`)
   })
-})
+  }) // end requestAnimationFrame
+}) // end onMounted
 
 onUnmounted(() => {
   resizeObserver?.disconnect()
