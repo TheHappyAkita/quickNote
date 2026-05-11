@@ -35,11 +35,19 @@
             </tr>
             <tr>
               <td><code>&amp;[[Name|52.52,13.405]]</code></td>
-              <td>📍 Location with inline coordinates (lat,lng)</td>
+              <td>📍 Inline coord (DD) — overrides stored location coords</td>
+            </tr>
+            <tr>
+              <td><code>&amp;[[Name|41°24'12"N 2°10'26"E]]</code></td>
+              <td>📍 Inline coord (DMS) — degrees, minutes, seconds</td>
+            </tr>
+            <tr>
+              <td><code>&amp;[[Name|POINT(-0.1278 51.5074)]]</code></td>
+              <td>📍 Inline coord (WKT) — lng lat order per OGC spec</td>
             </tr>
             <tr>
               <td><code>&amp;[[52.52,13.405]]</code></td>
-              <td>📍 Anonymous coordinate pin — no location file needed</td>
+              <td>📍 Anonymous pin — any format, no location file needed</td>
             </tr>
           </tbody>
         </v-table>

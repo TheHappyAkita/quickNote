@@ -1,4 +1,5 @@
 import type { GraphData, NotePageMeta, LocationMeta } from '#shared/types/notes'
+import { parseCoords } from '#shared/utils/coords'
 import { readFile, writeFile, readdir, mkdir, unlink } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join, resolve } from 'path'
@@ -8,8 +9,8 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const PAGE_NAME_PATTERN = /^[a-zA-Z0-9_\- ]+$/
 const WIKILINK_PATTERN = /\[\[(\d{4}-\d{2}-\d{2}|[a-zA-Z0-9_\- ]+)\]\]/g
 const PERSON_PATTERN = /@\[\[([^\]]+)\]\]/g
-const LOCATION_PATTERN = /&\[\[([^|\]]+)(?:\|([\-0-9.]+),([\-0-9.]+))?\]\]/g
-const COORD_ONLY_PATTERN = /^(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)$/
+// Group 1: name-or-coord-only part; Group 2: optional coord suffix after |
+const LOCATION_PATTERN = /&\[\[([^|\]]+)(?:\|([^\]]+))?\]\]/g
 
 const PAGES_DIR = 'pages'
 
@@ -272,9 +273,8 @@ export function extractLocationMentions(content: string): string[] {
   const re = new RegExp(LOCATION_PATTERN.source, 'g')
   while ((match = re.exec(content)) !== null) {
     const raw = match[1]!.trim()
-    if (!COORD_ONLY_PATTERN.test(raw)) {
-      seen.add(raw)
-    }
+    // Skip coord-only mentions (no named location entity)
+    if (!parseCoords(raw)) seen.add(raw)
   }
   return [...seen]
 }
@@ -291,21 +291,20 @@ export function extractLocationMentionsWithCoords(content: string): LocationMent
   const re = new RegExp(LOCATION_PATTERN.source, 'g')
   while ((match = re.exec(content)) !== null) {
     const raw = match[1]!.trim()
-    const coordOnly = COORD_ONLY_PATTERN.exec(raw)
+    const coordSuffix = match[2]?.trim()
+
+    // &[[lat,lng]] or &[[DMS]] etc. — anonymous coord-only pin
+    const coordOnly = parseCoords(raw)
     if (coordOnly) {
-      // &[[lat,lng]] — anonymous coord pin
-      const lat = parseFloat(coordOnly[1]!)
-      const lng = parseFloat(coordOnly[2]!)
-      const key = `${lat},${lng}`
-      if (!seen.has(key)) seen.set(key, { name: key, lat, lng })
-    } else {
-      // &[[Name]] or &[[Name|lat,lng]]
-      const name = raw
-      if (!seen.has(name)) {
-        const lat = match[2] ? parseFloat(match[2]) : undefined
-        const lng = match[3] ? parseFloat(match[3]) : undefined
-        seen.set(name, { name, lat, lng })
-      }
+      const key = `${coordOnly.lat},${coordOnly.lng}`
+      if (!seen.has(key)) seen.set(key, { name: key, lat: coordOnly.lat, lng: coordOnly.lng })
+      continue
+    }
+
+    // &[[Name]] or &[[Name|<any coord format>]]
+    if (!seen.has(raw)) {
+      const inlineCoords = coordSuffix ? parseCoords(coordSuffix) : undefined
+      seen.set(raw, { name: raw, lat: inlineCoords?.lat, lng: inlineCoords?.lng })
     }
   }
   return [...seen.values()]

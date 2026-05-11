@@ -70,6 +70,7 @@
 
 <script setup lang="ts">
 import { marked } from 'marked'
+import { parseCoords } from '#shared/utils/coords'
 
 const props = defineProps<{
   modelValue: string
@@ -132,13 +133,12 @@ const renderedContent = computed(() => {
   html = html.replace(/@\[\[([^\]]+)\]\]/g, (_m, name: string) =>
     `<a href="/person/${encodeURIComponent(name.trim())}" class="wiki-link person-link">👤 ${name}</a>`,
   )
-  // Location mentions: &[[lat,lng]] coord-only, &[[Name]], or &[[Name|lat,lng]]
+  // Location mentions: &[[coord]], &[[Name]], or &[[Name|coord]] — coord in any format
   html = html.replace(/&amp;\[\[([^|\]]+)(?:\|[^\]]+)?\]\]/g, (_m, raw: string) => {
     const name = raw.trim()
-    const coordOnlyMatch = /^(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)$/.exec(name)
-    if (coordOnlyMatch) {
-      const lat = coordOnlyMatch[1]; const lng = coordOnlyMatch[2]
-      return `<a href="/map?lat=${lat}&lng=${lng}" class="wiki-link location-link">📍 ${lat}, ${lng}</a>`
+    const coordOnly = parseCoords(name)
+    if (coordOnly) {
+      return `<a href="/map?lat=${coordOnly.lat}&lng=${coordOnly.lng}" class="wiki-link location-link">📍 ${coordOnly.lat.toFixed(5)}, ${coordOnly.lng.toFixed(5)}</a>`
     }
     return `<a href="/location/${encodeURIComponent(name)}" class="wiki-link location-link">📍 ${name}</a>`
   })

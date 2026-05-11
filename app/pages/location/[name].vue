@@ -71,26 +71,17 @@
         <v-card-text class="pa-3">
           <div class="d-flex align-center flex-wrap gap-2">
             <v-text-field
-              v-model="latInput"
-              label="Latitude"
+              v-model="coordInput"
+              label="Coordinates (DD, DMS, DDM or WKT)"
               density="compact"
               variant="outlined"
-              hide-details
-              type="number"
-              step="0.0001"
-              class="coord-input"
+              :hint="coordHint"
+              persistent-hint
+              :error="coordInput !== '' && parsedCoords === null"
+              placeholder="e.g. 41.40338, -2.17403"
+              class="coord-field"
               @blur="saveCoordsToFrontmatter"
-            />
-            <v-text-field
-              v-model="lngInput"
-              label="Longitude"
-              density="compact"
-              variant="outlined"
-              hide-details
-              type="number"
-              step="0.0001"
-              class="coord-input"
-              @blur="saveCoordsToFrontmatter"
+              @keyup.enter="saveCoordsToFrontmatter"
             />
             <v-btn
               color="teal"
@@ -103,7 +94,8 @@
               Geocode
             </v-btn>
             <v-btn
-              to="/map"
+              v-if="hasCoords"
+              :to="`/map?lat=${parsedCoords!.lat}&lng=${parsedCoords!.lng}`"
               color="teal"
               variant="text"
               size="small"
@@ -144,6 +136,7 @@
 
 <script setup lang="ts">
 import type { LocationMeta } from '#shared/types/notes'
+import { parseCoords, formatDD } from '#shared/utils/coords'
 
 const route = useRoute()
 const router = useRouter()
@@ -187,22 +180,32 @@ function parseFrontmatterCoords(raw: string): { lat?: number; lng?: number } {
   }
 }
 
-const latInput = ref<string>('')
-const lngInput = ref<string>('')
+const coordInput = ref<string>('')
+
+const parsedCoords = computed(() =>
+  coordInput.value.trim() ? parseCoords(coordInput.value.trim()) : null,
+)
+
+const coordHint = computed(() => {
+  if (!coordInput.value.trim()) return 'DD, DMS, DDM or WKT POINT accepted'
+  if (parsedCoords.value) return `→ ${parsedCoords.value.lat.toFixed(6)}, ${parsedCoords.value.lng.toFixed(6)}`
+  return 'Unrecognised format'
+})
 
 watch(content, (raw) => {
   const c = parseFrontmatterCoords(raw)
-  if (c.lat != null) latInput.value = String(c.lat)
-  if (c.lng != null) lngInput.value = String(c.lng)
+  if (c.lat != null && c.lng != null) {
+    coordInput.value = formatDD(c.lat, c.lng)
+  }
 }, { immediate: true })
 
-const hasCoords = computed(() => latInput.value !== '' && lngInput.value !== '')
+const hasCoords = computed(() => parsedCoords.value != null)
 
 const currentLocationMeta = computed<LocationMeta>(() => ({
   name: locationName.value,
   tags: currentTags.value,
-  lat: latInput.value !== '' ? parseFloat(latInput.value) : undefined,
-  lng: lngInput.value !== '' ? parseFloat(lngInput.value) : undefined,
+  lat: parsedCoords.value?.lat,
+  lng: parsedCoords.value?.lng,
 }))
 
 function upsertFrontmatterField(raw: string, key: string, value: string): string {
@@ -232,10 +235,11 @@ function removeFrontmatterField(raw: string, key: string): string {
 }
 
 function saveCoordsToFrontmatter() {
+  const coords = parsedCoords.value
   let raw = content.value
-  if (latInput.value !== '' && lngInput.value !== '') {
-    raw = upsertFrontmatterField(raw, 'lat', latInput.value)
-    raw = upsertFrontmatterField(raw, 'lng', lngInput.value)
+  if (coords) {
+    raw = upsertFrontmatterField(raw, 'lat', String(coords.lat))
+    raw = upsertFrontmatterField(raw, 'lng', String(coords.lng))
   } else {
     raw = removeFrontmatterField(raw, 'lat')
     raw = removeFrontmatterField(raw, 'lng')
@@ -258,8 +262,9 @@ async function geocode() {
       geocodeError.value = 'Location not found'
       return
     }
-    latInput.value = parseFloat(results[0]!.lat).toFixed(6)
-    lngInput.value = parseFloat(results[0]!.lon).toFixed(6)
+    const lat = parseFloat(results[0]!.lat)
+    const lng = parseFloat(results[0]!.lon)
+    coordInput.value = formatDD(lat, lng)
     saveCoordsToFrontmatter()
   } catch {
     geocodeError.value = 'Geocoding failed'
@@ -362,8 +367,9 @@ onMounted(() => {
 .gap-1 { gap: 4px; }
 .tag-input { max-width: 120px; }
 
-.coord-input {
-  max-width: 140px;
+.coord-field {
+  min-width: 280px;
+  flex: 1;
 }
 
 .coords-card {
