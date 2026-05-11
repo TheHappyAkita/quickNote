@@ -60,14 +60,14 @@ const { data: graphData, pending, refresh } = useFetch<GraphData>('/api/notes/gr
   lazy: true,
 })
 
-const searchQuery = ref('')
+const searchQuery = ref<string | null>('')
 const graphViewRef = ref<{ fitGraph?: () => void } | null>(null)
 
 const filteredGraphData = computed<GraphData>(() => {
   if (!graphData.value) return { nodes: [], edges: [] }
-  if (!searchQuery.value.trim()) return graphData.value
+  if (!searchQuery.value?.trim()) return graphData.value
 
-  const query = searchQuery.value.toLowerCase().trim()
+  const query = searchQuery.value!.toLowerCase().trim()
   const matchedNodes = new Set<string>()
 
   // Step 1: find nodes directly matching the query
@@ -107,7 +107,8 @@ const nodeCount = computed(() => {
 })
 
 function filterGraph() {
-  // Auto-fit when filter changes
+  // Vuetify clearable sets value to null — normalise to empty string
+  if (searchQuery.value === null) searchQuery.value = ''
   nextTick(() => {
     graphViewRef.value?.fitGraph?.()
   })
