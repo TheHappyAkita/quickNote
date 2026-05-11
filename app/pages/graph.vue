@@ -55,7 +55,7 @@ useHead({
   title: 'Knowledge Graph',
 })
 
-const { data: graphData, pending, refresh } = await useFetch<GraphData>('/api/notes/graph')
+const { data: graphData, pending, refresh } = useFetch<GraphData>('/api/notes/graph', { lazy: true })
 
 const searchQuery = ref('')
 const graphViewRef = ref<{ fitGraph?: () => void } | null>(null)

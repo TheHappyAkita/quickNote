@@ -305,61 +305,65 @@ function extractKeywords(content: string): string[] {
 
 const DATE_PATTERN_GRAPH = /^\d{4}-\d{2}-\d{2}$/
 
+/** Read items in parallel batches to avoid overwhelming the filesystem. */
+async function readInBatches<T>(
+  items: string[],
+  fn: (item: string) => Promise<T | null>,
+  batchSize = 50,
+): Promise<Array<T | null>> {
+  const results: Array<T | null> = []
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = await Promise.all(items.slice(i, i + batchSize).map(fn))
+    results.push(...batch)
+  }
+  return results
+}
+
 export async function buildGraph(): Promise<GraphData> {
   const dates = await listNotes()
   const pages = await listPages()
   const dateSet = new Set(dates)
   const pageSet = new Set(pages)
 
-  // Create nodes for dates and pages
+  // ── Phase 1: read ALL files in parallel batches ──────────────────────────
+  const [dateContents, pageContents] = await Promise.all([
+    readInBatches(dates, readNote),
+    readInBatches(pages, readPage),
+  ])
+
+  // ── Phase 2: pure CPU processing (no I/O) ────────────────────────────────
   const nodes: GraphData['nodes'] = [
-    ...dates.map((date) => ({
-      data: { id: date, label: date, type: 'date' as const },
-    })),
-    ...pages.map((page) => ({
-      data: { id: `page:${page}`, label: page, type: 'page' as const },
-    })),
+    ...dates.map((date) => ({ data: { id: date, label: date, type: 'date' as const } })),
+    ...pages.map((page) => ({ data: { id: `page:${page}`, label: page, type: 'page' as const } })),
   ]
   const edges: GraphData['edges'] = []
   const seenEdges = new Set<string>()
-
   const kwFreq = new Map<string, { total: number; dates: Set<string> }>()
+  const personMentions = new Map<string, Set<string>>()
 
-  const personMentions = new Map<string, Set<string>>() // person name -> set of note/page IDs
-
-  // Process daily notes
-  for (const date of dates) {
-    const content = await readNote(date)
+  for (let i = 0; i < dates.length; i++) {
+    const date = dates[i]!
+    const content = dateContents[i] ?? null
     if (!content) continue
 
-    // Person mentions
     for (const name of extractPersonMentions(content)) {
       if (!personMentions.has(name)) personMentions.set(name, new Set())
       personMentions.get(name)!.add(date)
     }
 
-    const links = extractLinks(content)
-    for (const target of links) {
-      // Link to another date
+    for (const target of extractLinks(content)) {
       if (dateSet.has(target)) {
         const edgeKey = `${date}->${target}`
-        if (seenEdges.has(edgeKey)) continue
-        seenEdges.add(edgeKey)
-        edges.push({ data: { id: edgeKey, source: date, target, type: 'wikilink' as const } })
-      }
-      // Link to a page
-      else if (pageSet.has(target)) {
+        if (!seenEdges.has(edgeKey)) { seenEdges.add(edgeKey); edges.push({ data: { id: edgeKey, source: date, target, type: 'wikilink' as const } }) }
+      } else if (pageSet.has(target)) {
         const pageId = `page:${target}`
         const edgeKey = `${date}->${pageId}`
-        if (seenEdges.has(edgeKey)) continue
-        seenEdges.add(edgeKey)
-        edges.push({ data: { id: edgeKey, source: date, target: pageId, type: 'wikilink' as const } })
+        if (!seenEdges.has(edgeKey)) { seenEdges.add(edgeKey); edges.push({ data: { id: edgeKey, source: date, target: pageId, type: 'wikilink' as const } }) }
       }
     }
 
-    const words = extractKeywords(content)
     const seen = new Set<string>()
-    for (const w of words) {
+    for (const w of extractKeywords(content)) {
       if (!kwFreq.has(w)) kwFreq.set(w, { total: 0, dates: new Set() })
       const entry = kwFreq.get(w)!
       entry.total++
@@ -367,33 +371,26 @@ export async function buildGraph(): Promise<GraphData> {
     }
   }
 
-  // Process pages for links to dates and keywords
-  for (const page of pages) {
-    const content = await readPage(page)
+  for (let i = 0; i < pages.length; i++) {
+    const page = pages[i]!
+    const content = pageContents[i] ?? null
     if (!content) continue
 
-    // Person mentions
     for (const name of extractPersonMentions(content)) {
       if (!personMentions.has(name)) personMentions.set(name, new Set())
       personMentions.get(name)!.add(`page:${page}`)
     }
 
-    const links = extractLinks(content)
-    for (const target of links) {
-      // Page links to a date
+    for (const target of extractLinks(content)) {
       if (dateSet.has(target)) {
         const pageId = `page:${page}`
         const edgeKey = `${pageId}->${target}`
-        if (seenEdges.has(edgeKey)) continue
-        seenEdges.add(edgeKey)
-        edges.push({ data: { id: edgeKey, source: pageId, target, type: 'wikilink' as const } })
+        if (!seenEdges.has(edgeKey)) { seenEdges.add(edgeKey); edges.push({ data: { id: edgeKey, source: pageId, target, type: 'wikilink' as const } }) }
       }
     }
 
-    // Extract keywords from pages too (optional - can be removed if not desired)
-    const words = extractKeywords(content)
     const seen = new Set<string>()
-    for (const w of words) {
+    for (const w of extractKeywords(content)) {
       if (!kwFreq.has(w)) kwFreq.set(w, { total: 0, dates: new Set() })
       const entry = kwFreq.get(w)!
       entry.total++
@@ -401,7 +398,6 @@ export async function buildGraph(): Promise<GraphData> {
     }
   }
 
-  // Add person nodes and edges
   for (const [name, sources] of personMentions) {
     const personId = `person:${name}`
     nodes.push({ data: { id: personId, label: name, type: 'person' as const } })
@@ -423,8 +419,7 @@ export async function buildGraph(): Promise<GraphData> {
     const kwId = `kw:${word}`
     nodes.push({ data: { id: kwId, label: word, type: 'keyword' as const, weight: total } })
     for (const date of kwDates) {
-      const edgeKey = `${date}->kw:${word}`
-      edges.push({ data: { id: edgeKey, source: date, target: kwId, type: 'keyword' as const } })
+      edges.push({ data: { id: `${date}->kw:${word}`, source: date, target: kwId, type: 'keyword' as const } })
     }
   }
 

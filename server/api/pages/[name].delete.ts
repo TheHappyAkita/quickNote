@@ -1,4 +1,5 @@
 import { deletePage, readPage, isValidPageName } from '../../utils/notes'
+import { cacheInvalidate } from '../../utils/cache'
 
 export default defineEventHandler(async (event) => {
   const name = getRouterParam(event, 'name')
@@ -13,5 +14,6 @@ export default defineEventHandler(async (event) => {
   }
 
   await deletePage(name)
+  cacheInvalidate('graph')
   return { success: true, name }
 })

@@ -1,7 +1,8 @@
 import type { Reminder } from '#shared/types/notes'
 import { join } from 'path'
 import { readFile, writeFile } from 'fs/promises'
-import { getNotesDir } from '../../utils/notes'
+import { getNotesDir, listNotes, readNote } from '../../utils/notes'
+import { cacheGet, cacheSet, CACHE_TTL } from '../../utils/cache'
 
 const REMINDER_PATTERN = /^(.*?)(remind|remindme|reminder)(?:\s*:\s*|\s+)(.+)$/i
 const ALERT_PATTERN = /^(.*?)(alert|alertme|alerter|alerta)\s+(\S+)\s*:\s*(.+)$/i
@@ -85,12 +86,24 @@ function isAlertDue(alertDate: string): boolean {
 }
 
 export default defineEventHandler(async (): Promise<Reminder[]> => {
-  const dismissed = await loadDismissed()
-  const dates = await listNotes()
+  const cached = cacheGet<Reminder[]>('reminders')
+  if (cached) return cached
+
+  const [dismissed, dates] = await Promise.all([loadDismissed(), listNotes()])
+
+  // Read all note files in parallel batches
+  const BATCH = 50
+  const allContents: Array<string | null> = []
+  for (let i = 0; i < dates.length; i += BATCH) {
+    const batch = await Promise.all(dates.slice(i, i + BATCH).map(d => readNote(d)))
+    allContents.push(...batch)
+  }
+
   const reminders: Reminder[] = []
 
-  for (const noteDate of dates) {
-    const content = await readNote(noteDate)
+  for (let idx = 0; idx < dates.length; idx++) {
+    const noteDate = dates[idx]!
+    const content = allContents[idx]
     if (!content) continue
 
     const lines = content.split('\n')
@@ -139,7 +152,7 @@ export default defineEventHandler(async (): Promise<Reminder[]> => {
   }
 
   // Sort: alerts first (by alert date), then reminders by note date
-  return reminders.sort((a, b) => {
+  const result = reminders.sort((a, b) => {
     // Alerts come before regular reminders
     if (a.keyword === 'alert' && b.keyword !== 'alert') return -1
     if (a.keyword !== 'alert' && b.keyword === 'alert') return 1
@@ -150,4 +163,6 @@ export default defineEventHandler(async (): Promise<Reminder[]> => {
     // Both regular: sort by note date desc
     return b.date.localeCompare(a.date)
   })
+  cacheSet('reminders', result, CACHE_TTL.REMINDERS)
+  return result
 })

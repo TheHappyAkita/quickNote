@@ -1,6 +1,7 @@
 import { join } from 'path'
 import { readFile, writeFile } from 'fs/promises'
 import { getNotesDir } from '../../../utils/notes'
+import { cacheInvalidate } from '../../../utils/cache'
 
 const DISMISSED_FILE = '.dismissed_reminders.json'
 
@@ -33,5 +34,6 @@ export default defineEventHandler(async (event) => {
     await saveDismissed(dismissed)
   }
 
+  cacheInvalidate('reminders')
   return { ok: true }
 })

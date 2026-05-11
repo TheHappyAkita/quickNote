@@ -1,4 +1,5 @@
 import { writePage, isValidPageName } from '../../utils/notes'
+import { cacheInvalidate } from '../../utils/cache'
 
 export default defineEventHandler(async (event) => {
   const name = getRouterParam(event, 'name')
@@ -12,5 +13,6 @@ export default defineEventHandler(async (event) => {
   }
 
   await writePage(name, body.content)
+  cacheInvalidate('graph')
   return { success: true, name }
 })

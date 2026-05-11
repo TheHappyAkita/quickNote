@@ -1,4 +1,5 @@
 import { writePerson, deletePerson, isValidPersonName } from '../../utils/notes'
+import { cacheInvalidate } from '../../utils/cache'
 
 export default defineEventHandler(async (event) => {
   const name = decodeURIComponent(getRouterParam(event, 'name') ?? '')
@@ -11,8 +12,10 @@ export default defineEventHandler(async (event) => {
   }
   if (!body.content.trim()) {
     await deletePerson(name)
+    cacheInvalidate('graph')
     return { ok: true, deleted: true }
   }
   await writePerson(name, body.content)
+  cacheInvalidate('graph')
   return { ok: true, deleted: false }
 })

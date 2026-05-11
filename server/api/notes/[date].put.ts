@@ -1,5 +1,6 @@
 import { deleteNote } from '../../utils/notes'
 import { removeNoteCardFromAllCanvases } from '../../utils/canvas'
+import { cacheInvalidate } from '../../utils/cache'
 
 export default defineEventHandler(async (event) => {
   const date = getRouterParam(event, 'date')
@@ -15,9 +16,11 @@ export default defineEventHandler(async (event) => {
   if (!body.content.trim()) {
     await deleteNote(date)
     await removeNoteCardFromAllCanvases(date)
+    cacheInvalidate('graph', 'reminders')
     return { ok: true, deleted: true }
   }
 
   await writeNote(date, body.content)
+  cacheInvalidate('graph', 'reminders')
   return { ok: true, deleted: false }
 })
