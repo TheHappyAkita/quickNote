@@ -1,4 +1,4 @@
-import type { GraphData, PageMeta } from '#shared/types/notes'
+import type { GraphData, NotePageMeta } from '#shared/types/notes'
 import { readFile, writeFile, readdir, mkdir, unlink } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join, resolve } from 'path'
@@ -250,7 +250,7 @@ export function setFrontmatterTags(content: string, tags: string[]): string {
   return content
 }
 
-export async function listPagesWithMeta(): Promise<PageMeta[]> {
+export async function listPagesWithMeta(): Promise<NotePageMeta[]> {
   const names = await listPages()
   return Promise.all(names.map(async (name) => {
     const content = await readPage(name)

@@ -1,4 +1,4 @@
-export interface PageMeta {
+export interface NotePageMeta {
   name: string
   tags: string[]
 }

@@ -127,13 +127,13 @@
 </template>
 
 <script setup lang="ts">
-import type { PageMeta } from '#shared/types/notes'
+import type { NotePageMeta } from '#shared/types/notes'
 
 useHead({
   title: 'Pages',
 })
 
-const { data: pages, pending, error, refresh } = await useFetch<PageMeta[]>('/api/pages', {
+const { data: pages, pending, error, refresh } = await useFetch<NotePageMeta[]>('/api/pages', {
   server: false,
   default: () => [],
 })
