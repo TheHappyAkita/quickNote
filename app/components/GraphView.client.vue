@@ -58,7 +58,7 @@ onMounted(() => {
 
   cy = cytoscape({
     container: containerRef.value,
-    elements: [...props.graphData.nodes, ...props.graphData.edges],
+    elements: [],
     minZoom: 0.05,
     maxZoom: 5,
     style: [
@@ -180,7 +180,6 @@ onMounted(() => {
 
   // Ensure Cytoscape reads the true container dimensions after DOM layout
   cy.resize()
-  cy.fit(undefined, 40)
 
   // Keep Cytoscape in sync when the container is resized (e.g. window resize)
   resizeObserver = new ResizeObserver(() => cy?.resize())
@@ -221,6 +220,11 @@ onMounted(() => {
     const label = event.target.data('label') as string
     router.push(`/person/${encodeURIComponent(label)}`)
   })
+
+  // Always run the cose layout with current data — this is the only place
+  // that positions nodes. The watch() above only fires on *subsequent* changes,
+  // so without this call the graph would be blank on initial mount (F5 / first load).
+  updateElements()
   }) // end requestAnimationFrame
 }) // end onMounted
 
