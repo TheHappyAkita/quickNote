@@ -136,11 +136,17 @@ const prevDate = computed(() => {
 })
 const nextDate = computed(() => {
   const dates = allDates.value ?? []
-  if (currentIndex.value !== -1 && currentIndex.value < dates.length - 1)
-    return dates[currentIndex.value + 1] ?? null
+  // Find the next saved note that is <= today
+  if (currentIndex.value !== -1) {
+    const next = dates[currentIndex.value + 1] ?? null
+    if (next && next <= today) return next
+    // No saved note ahead (or it's in the future): navigate to today if not already there
+    return date.value < today ? today : null
+  }
+  // Current date is unsaved: find the nearest saved date after it, capped at today
   if (currentIndex.value === -1) {
-    const after = dates.filter(d => d > date.value)
-    return after.length ? (after[0] ?? null) : null
+    const after = dates.filter(d => d > date.value && d <= today)
+    return after.length ? (after[0] ?? null) : (date.value < today ? today : null)
   }
   return null
 })
