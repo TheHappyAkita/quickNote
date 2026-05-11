@@ -37,6 +37,10 @@
               <td><code>&amp;[[Name|52.52,13.405]]</code></td>
               <td>📍 Location with inline coordinates (lat,lng)</td>
             </tr>
+            <tr>
+              <td><code>&amp;[[52.52,13.405]]</code></td>
+              <td>📍 Anonymous coordinate pin — no location file needed</td>
+            </tr>
           </tbody>
         </v-table>
         <div class="text-caption text-medium-emphasis mt-2">

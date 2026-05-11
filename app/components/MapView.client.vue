@@ -85,6 +85,18 @@ function panTo(name: string) {
   markers.find(m => m.options.title === name)?.openPopup()
 }
 
+let coordPinMarker: L.Marker | null = null
+
+function panToCoords(lat: number, lng: number) {
+  if (!map) return
+  map.setView([lat, lng], 13, { animate: true })
+  coordPinMarker?.remove()
+  coordPinMarker = L.marker([lat, lng], { title: `${lat},${lng}` })
+    .bindPopup(`<div style="font-family:sans-serif"><strong>📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}</strong></div>`)
+    .addTo(map)
+  coordPinMarker.openPopup()
+}
+
 watch(() => props.locations, renderMarkers, { deep: true })
 watch(() => props.selectedName, (name) => {
   if (name) panTo(name)
@@ -109,7 +121,7 @@ onUnmounted(() => {
   markers = []
 })
 
-defineExpose({ panTo })
+defineExpose({ panTo, panToCoords })
 </script>
 
 <style scoped>

@@ -147,9 +147,20 @@ const { data: locations, pending } = useFetch<LocationMeta[]>('/api/locations/ma
   default: () => [],
 })
 
+const route = useRoute()
 const searchQuery = ref<string | null>('')
 const selectedName = ref<string | undefined>(undefined)
-const mapViewRef = ref<{ panTo?: (name: string) => void } | null>(null)
+const mapViewRef = ref<{ panTo?: (name: string) => void; panToCoords?: (lat: number, lng: number) => void } | null>(null)
+
+// Pan to ?lat=&lng= query params (from coord-only &[[lat,lng]] links)
+const queryLat = computed(() => route.query.lat ? parseFloat(route.query.lat as string) : null)
+const queryLng = computed(() => route.query.lng ? parseFloat(route.query.lng as string) : null)
+
+watch(mapViewRef, (ref) => {
+  if (ref && queryLat.value != null && queryLng.value != null) {
+    setTimeout(() => ref.panToCoords?.(queryLat.value!, queryLng.value!), 300)
+  }
+})
 
 // ── Date range derived from all distinct dates across all location mentions ──
 const allDates = computed<string[]>(() => {

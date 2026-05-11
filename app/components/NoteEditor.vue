@@ -132,10 +132,16 @@ const renderedContent = computed(() => {
   html = html.replace(/@\[\[([^\]]+)\]\]/g, (_m, name: string) =>
     `<a href="/person/${encodeURIComponent(name.trim())}" class="wiki-link person-link">👤 ${name}</a>`,
   )
-  // Location mentions: &[[Location Name]] or &[[Location Name|lat,lng]]
-  html = html.replace(/&amp;\[\[([^|\]]+)(?:\|[^\]]+)?\]\]/g, (_m, name: string) =>
-    `<a href="/location/${encodeURIComponent(name.trim())}" class="wiki-link location-link">📍 ${name.trim()}</a>`,
-  )
+  // Location mentions: &[[lat,lng]] coord-only, &[[Name]], or &[[Name|lat,lng]]
+  html = html.replace(/&amp;\[\[([^|\]]+)(?:\|[^\]]+)?\]\]/g, (_m, raw: string) => {
+    const name = raw.trim()
+    const coordOnlyMatch = /^(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)$/.exec(name)
+    if (coordOnlyMatch) {
+      const lat = coordOnlyMatch[1]; const lng = coordOnlyMatch[2]
+      return `<a href="/map?lat=${lat}&lng=${lng}" class="wiki-link location-link">📍 ${lat}, ${lng}</a>`
+    }
+    return `<a href="/location/${encodeURIComponent(name)}" class="wiki-link location-link">📍 ${name}</a>`
+  })
   // Page links: [[Page Name]] (non-date format)
   html = html.replace(
     /\[\[([a-zA-Z0-9_\- ][a-zA-Z0-9_\- ]+)\]\]/g,

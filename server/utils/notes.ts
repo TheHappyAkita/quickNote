@@ -9,6 +9,7 @@ const PAGE_NAME_PATTERN = /^[a-zA-Z0-9_\- ]+$/
 const WIKILINK_PATTERN = /\[\[(\d{4}-\d{2}-\d{2}|[a-zA-Z0-9_\- ]+)\]\]/g
 const PERSON_PATTERN = /@\[\[([^\]]+)\]\]/g
 const LOCATION_PATTERN = /&\[\[([^|\]]+)(?:\|([\-0-9.]+),([\-0-9.]+))?\]\]/g
+const COORD_ONLY_PATTERN = /^(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)$/
 
 const PAGES_DIR = 'pages'
 
@@ -270,7 +271,10 @@ export function extractLocationMentions(content: string): string[] {
   let match: RegExpExecArray | null
   const re = new RegExp(LOCATION_PATTERN.source, 'g')
   while ((match = re.exec(content)) !== null) {
-    seen.add(match[1]!.trim())
+    const raw = match[1]!.trim()
+    if (!COORD_ONLY_PATTERN.test(raw)) {
+      seen.add(raw)
+    }
   }
   return [...seen]
 }
@@ -286,11 +290,22 @@ export function extractLocationMentionsWithCoords(content: string): LocationMent
   let match: RegExpExecArray | null
   const re = new RegExp(LOCATION_PATTERN.source, 'g')
   while ((match = re.exec(content)) !== null) {
-    const name = match[1]!.trim()
-    if (!seen.has(name)) {
-      const lat = match[2] ? parseFloat(match[2]) : undefined
-      const lng = match[3] ? parseFloat(match[3]) : undefined
-      seen.set(name, { name, lat, lng })
+    const raw = match[1]!.trim()
+    const coordOnly = COORD_ONLY_PATTERN.exec(raw)
+    if (coordOnly) {
+      // &[[lat,lng]] — anonymous coord pin
+      const lat = parseFloat(coordOnly[1]!)
+      const lng = parseFloat(coordOnly[2]!)
+      const key = `${lat},${lng}`
+      if (!seen.has(key)) seen.set(key, { name: key, lat, lng })
+    } else {
+      // &[[Name]] or &[[Name|lat,lng]]
+      const name = raw
+      if (!seen.has(name)) {
+        const lat = match[2] ? parseFloat(match[2]) : undefined
+        const lng = match[3] ? parseFloat(match[3]) : undefined
+        seen.set(name, { name, lat, lng })
+      }
     }
   }
   return [...seen.values()]
