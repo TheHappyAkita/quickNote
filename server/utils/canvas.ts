@@ -90,6 +90,22 @@ export async function renameCanvas(id: string, name: string): Promise<CanvasMeta
   return meta
 }
 
+export async function removeNoteCardFromAllCanvases(date: string): Promise<void> {
+  const list = await loadCanvasList()
+  for (const meta of list) {
+    const state = await loadCanvas(meta.id)
+    const removedIds = new Set(
+      state.cards
+        .filter(c => c.type === 'note' && c.date === date)
+        .map(c => c.id),
+    )
+    if (removedIds.size === 0) continue
+    state.cards = state.cards.filter(c => !removedIds.has(c.id))
+    state.edges = state.edges.filter(e => !removedIds.has(e.source) && !removedIds.has(e.target))
+    await saveCanvas(meta.id, state)
+  }
+}
+
 export async function deleteCanvas(id: string): Promise<void> {
   const list = await loadCanvasList()
   const idx = list.findIndex((c) => c.id === id)

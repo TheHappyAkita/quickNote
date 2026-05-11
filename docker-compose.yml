@@ -2,7 +2,7 @@ services:
   quicknote:
     build: .
     ports:
-      - "3001:3000"
+      - "5551:3000"
     env_file:
       - .env
     environment:

@@ -1,5 +1,5 @@
 import type { GraphData, PageMeta } from '#shared/types/notes'
-import { readFile, writeFile, readdir, mkdir } from 'fs/promises'
+import { readFile, writeFile, readdir, mkdir, unlink } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join, resolve } from 'path'
 import { homedir } from 'os'
@@ -56,6 +56,12 @@ export async function writeNote(date: string, content: string): Promise<void> {
   await ensureNotesDir()
   const filePath = join(getNotesDir(), `${date}.md`)
   await writeFile(filePath, content, 'utf-8')
+}
+
+export async function deleteNote(date: string): Promise<void> {
+  if (!DATE_PATTERN.test(date)) throw new Error('Invalid date format')
+  const filePath = join(getNotesDir(), `${date}.md`)
+  try { await unlink(filePath) } catch { /* already gone */ }
 }
 
 // Named notes (pages) functions

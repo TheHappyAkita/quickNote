@@ -163,11 +163,16 @@ async function saveNow() {
   if (!isDirty.value) return
   saveStatus.value = 'saving'
   try {
-    await $fetch(`/api/notes/${date.value}` as string, {
+    const res = await $fetch<{ ok: boolean; deleted?: boolean }>(`/api/notes/${date.value}` as string, {
       method: 'PUT' as 'GET',
       body: { content: content.value },
     })
     isDirty.value = false
+    if (res.deleted) {
+      await refresh()
+      router.push(`/note/${today}`)
+      return
+    }
     if (!allDates.value?.includes(date.value)) {
       await refresh()
     }
