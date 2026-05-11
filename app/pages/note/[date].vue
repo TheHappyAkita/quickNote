@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="pa-4 pa-sm-6">
+  <v-container fluid class="pa-4 pa-sm-6 editor-page">
     <div class="d-flex align-center mb-4 gap-2">
       <!-- Prev (older) -->
       <v-btn
@@ -210,6 +210,12 @@ function handleKeydown(event: KeyboardEvent) {
 </script>
 
 <style scoped>
+.editor-page {
+  height: calc(100vh - var(--v-layout-top, 64px));
+  display: flex;
+  flex-direction: column;
+}
+
 .hidden-date-input {
   position: absolute;
   inset: 0;

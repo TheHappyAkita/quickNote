@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="pa-4 pa-sm-6">
+  <v-container fluid class="pa-4 pa-sm-6 editor-page">
     <div class="d-flex align-center mb-4">
       <v-btn icon variant="text" size="small" class="mr-2" to="/persons">
         <v-icon>mdi-arrow-left</v-icon>
@@ -190,3 +190,11 @@ onMounted(() => {
   onUnmounted(() => document.removeEventListener('keydown', handler))
 })
 </script>
+
+<style scoped>
+.editor-page {
+  height: calc(100vh - var(--v-layout-top, 64px));
+  display: flex;
+  flex-direction: column;
+}
+</style>

@@ -259,7 +259,8 @@ function insertSuggestion(date: string) {
 
 <style scoped>
 .editor-wrapper {
-  height: calc(100vh - 148px);
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
