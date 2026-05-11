@@ -38,7 +38,7 @@
               </template>
             </v-text-field>
             <div class="text-caption text-medium-emphasis">
-              Mention in notes with <code>&amp;[[Location Name]]</code>
+              Mention in notes with <code>&amp;[[Location Name]]</code> or <code>&amp;[[Name|lat,lng]]</code> (inline coords)
             </div>
           </v-form>
         </v-card-text>

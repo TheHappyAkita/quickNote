@@ -132,9 +132,9 @@ const renderedContent = computed(() => {
   html = html.replace(/@\[\[([^\]]+)\]\]/g, (_m, name: string) =>
     `<a href="/person/${encodeURIComponent(name.trim())}" class="wiki-link person-link">👤 ${name}</a>`,
   )
-  // Location mentions: &[[Location Name]]
-  html = html.replace(/&\[\[([^\]]+)\]\]/g, (_m, name: string) =>
-    `<a href="/location/${encodeURIComponent(name.trim())}" class="wiki-link location-link">📍 ${name}</a>`,
+  // Location mentions: &[[Location Name]] or &[[Location Name|lat,lng]]
+  html = html.replace(/&amp;\[\[([^|\]]+)(?:\|[^\]]+)?\]\]/g, (_m, name: string) =>
+    `<a href="/location/${encodeURIComponent(name.trim())}" class="wiki-link location-link">📍 ${name.trim()}</a>`,
   )
   // Page links: [[Page Name]] (non-date format)
   html = html.replace(

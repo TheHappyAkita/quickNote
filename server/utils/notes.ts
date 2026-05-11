@@ -8,7 +8,7 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const PAGE_NAME_PATTERN = /^[a-zA-Z0-9_\- ]+$/
 const WIKILINK_PATTERN = /\[\[(\d{4}-\d{2}-\d{2}|[a-zA-Z0-9_\- ]+)\]\]/g
 const PERSON_PATTERN = /@\[\[([^\]]+)\]\]/g
-const LOCATION_PATTERN = /&\[\[([^\]]+)\]\]/g
+const LOCATION_PATTERN = /&\[\[([^|\]]+)(?:\|([\-0-9.]+),([\-0-9.]+))?\]\]/g
 
 const PAGES_DIR = 'pages'
 
@@ -266,13 +266,34 @@ export async function listLocationsWithMeta(): Promise<LocationMeta[]> {
 }
 
 export function extractLocationMentions(content: string): string[] {
-  const mentions: string[] = []
+  const seen = new Set<string>()
   let match: RegExpExecArray | null
   const re = new RegExp(LOCATION_PATTERN.source, 'g')
   while ((match = re.exec(content)) !== null) {
-    mentions.push(match[1]!.trim())
+    seen.add(match[1]!.trim())
   }
-  return [...new Set(mentions)]
+  return [...seen]
+}
+
+export interface LocationMention {
+  name: string
+  lat?: number
+  lng?: number
+}
+
+export function extractLocationMentionsWithCoords(content: string): LocationMention[] {
+  const seen = new Map<string, LocationMention>()
+  let match: RegExpExecArray | null
+  const re = new RegExp(LOCATION_PATTERN.source, 'g')
+  while ((match = re.exec(content)) !== null) {
+    const name = match[1]!.trim()
+    if (!seen.has(name)) {
+      const lat = match[2] ? parseFloat(match[2]) : undefined
+      const lng = match[3] ? parseFloat(match[3]) : undefined
+      seen.set(name, { name, lat, lng })
+    }
+  }
+  return [...seen.values()]
 }
 
 // ─── Tag utilities ───────────────────────────────────────────────────────────

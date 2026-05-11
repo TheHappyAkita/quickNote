@@ -29,6 +29,14 @@
               <td><code>@[[Lastname, Forename]]</code></td>
               <td>👤 Person mention — creates a node in the graph</td>
             </tr>
+            <tr>
+              <td><code>&amp;[[Location Name]]</code></td>
+              <td>📍 Location mention — pins the location on the map &amp; graph</td>
+            </tr>
+            <tr>
+              <td><code>&amp;[[Name|52.52,13.405]]</code></td>
+              <td>📍 Location with inline coordinates (lat,lng)</td>
+            </tr>
           </tbody>
         </v-table>
         <div class="text-caption text-medium-emphasis mt-2">
@@ -161,6 +169,9 @@
           </v-chip>
           <v-chip color="pink" variant="tonal" size="small">
             <v-icon start size="14">mdi-account</v-icon>Person <code class="ml-1">@[[…]]</code>
+          </v-chip>
+          <v-chip color="teal" variant="tonal" size="small">
+            <v-icon start size="14">mdi-map-marker</v-icon>Location <code class="ml-1">&amp;[[…]]</code>
           </v-chip>
           <v-chip color="teal" variant="tonal" size="small">
             <v-icon start size="14">mdi-pound</v-icon>Keyword / tag

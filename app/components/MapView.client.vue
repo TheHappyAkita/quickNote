@@ -53,10 +53,15 @@ function renderMarkers() {
       icon: isSelected ? highlightIcon : new L.Icon.Default(),
       title: loc.name,
     })
+    const dates = loc.mentionedInDates ?? []
+    const datesHtml = dates.length
+      ? `<br/><span style="color:#aaa;font-size:11px">📅 ${dates.length} note${dates.length !== 1 ? 's' : ''} · last: ${dates[dates.length - 1]}</span>`
+      : ''
     marker.bindPopup(`
-      <div style="font-family:sans-serif; min-width:120px">
-        <strong style="font-size:14px">${loc.name}</strong>
+      <div style="font-family:sans-serif; min-width:140px">
+        <strong style="font-size:14px">📍 ${loc.name}</strong>
         ${loc.tags.length ? `<br/><span style="color:#888;font-size:11px">${loc.tags.map(t => '#' + t).join(' ')}</span>` : ''}
+        ${datesHtml}
         <br/><a href="/location/${encodeURIComponent(loc.name)}" style="font-size:12px;color:#6c63ff">Open →</a>
       </div>
     `)

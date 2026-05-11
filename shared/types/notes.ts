@@ -13,6 +13,7 @@ export interface LocationMeta {
   tags: string[]
   lat?: number
   lng?: number
+  mentionedInDates?: string[]  // YYYY-MM-DD dates where this location is mentioned
 }
 
 export interface GraphNode {

@@ -8,13 +8,14 @@
           <h1 class="text-h6 font-weight-bold">Map</h1>
           <v-spacer />
           <v-chip size="small" variant="tonal" color="teal">
-            {{ geocodedLocations.length }} pins
+            {{ visibleLocations.length }} / {{ allGeocodedCount }} pins
           </v-chip>
         </div>
 
+        <!-- Search -->
         <v-text-field
           v-model="searchQuery"
-          placeholder="Search..."
+          placeholder="Search locations..."
           variant="outlined"
           density="compact"
           hide-details
@@ -23,10 +24,48 @@
           class="mb-3"
         />
 
+        <!-- Time range filter -->
+        <v-card variant="outlined" class="mb-3 pa-3">
+          <div class="d-flex align-center mb-1">
+            <v-icon size="14" color="teal" class="mr-1">mdi-calendar-range</v-icon>
+            <span class="text-caption font-weight-medium">Time range</span>
+            <v-spacer />
+            <v-btn
+              v-if="timeFiltered"
+              size="x-small"
+              variant="text"
+              color="teal"
+              @click="resetTimeFilter"
+            >
+              Reset
+            </v-btn>
+          </div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            {{ sliderStartDate }} → {{ sliderEndDate }}
+          </div>
+          <v-range-slider
+            v-model="dateRange"
+            :min="0"
+            :max="Math.max(allDates.length - 1, 0)"
+            :step="1"
+            color="teal"
+            track-color="surface-variant"
+            density="compact"
+            hide-details
+            thumb-size="12"
+            :disabled="allDates.length < 2"
+          />
+          <div class="d-flex justify-space-between text-caption text-medium-emphasis mt-1">
+            <span>{{ allDates[0] ?? '—' }}</span>
+            <span>{{ allDates[allDates.length - 1] ?? '—' }}</span>
+          </div>
+        </v-card>
+
+        <!-- Location list -->
         <div class="location-list">
           <v-list density="compact" class="pa-0">
             <v-list-item
-              v-for="loc in filteredLocations"
+              v-for="loc in visibleLocations"
               :key="loc.name"
               :active="selectedName === loc.name"
               active-color="teal"
@@ -34,16 +73,17 @@
               @click="selectLocation(loc.name)"
             >
               <template #prepend>
-                <v-icon
-                  :color="loc.lat != null ? 'teal' : 'grey'"
-                  size="18"
-                >
+                <v-icon :color="loc.lat != null ? 'teal' : 'grey'" size="18">
                   {{ loc.lat != null ? 'mdi-map-marker' : 'mdi-map-marker-question' }}
                 </v-icon>
               </template>
               <v-list-item-title class="text-body-2">{{ loc.name }}</v-list-item-title>
-              <v-list-item-subtitle v-if="loc.lat != null" class="text-caption">
-                {{ loc.lat.toFixed(3) }}, {{ loc.lng!.toFixed(3) }}
+              <v-list-item-subtitle class="text-caption">
+                <span v-if="loc.mentionedInDates?.length">
+                  {{ loc.mentionedInDates.length }} note{{ loc.mentionedInDates.length !== 1 ? 's' : '' }}
+                  · {{ loc.mentionedInDates[loc.mentionedInDates.length - 1] }}
+                </span>
+                <span v-else-if="loc.lat != null">{{ loc.lat.toFixed(3) }}, {{ loc.lng!.toFixed(3) }}</span>
               </v-list-item-subtitle>
               <template #append>
                 <v-btn
@@ -55,9 +95,9 @@
                 />
               </template>
             </v-list-item>
-            <v-list-item v-if="filteredLocations.length === 0 && !pending">
+            <v-list-item v-if="visibleLocations.length === 0 && !pending">
               <v-list-item-title class="text-caption text-medium-emphasis">
-                No locations found
+                No locations in this time range
               </v-list-item-title>
             </v-list-item>
           </v-list>
@@ -81,7 +121,7 @@
         <ClientOnly>
           <MapView
             ref="mapViewRef"
-            :locations="locations ?? []"
+            :locations="visibleLocations"
             :selected-name="selectedName"
             @select="selectLocation"
           />
@@ -101,7 +141,7 @@ import type { LocationMeta } from '#shared/types/notes'
 
 useHead({ title: 'Map' })
 
-const { data: locations, pending } = useFetch<LocationMeta[]>('/api/locations', {
+const { data: locations, pending } = useFetch<LocationMeta[]>('/api/locations/map', {
   server: false,
   lazy: true,
   default: () => [],
@@ -111,16 +151,55 @@ const searchQuery = ref<string | null>('')
 const selectedName = ref<string | undefined>(undefined)
 const mapViewRef = ref<{ panTo?: (name: string) => void } | null>(null)
 
-const geocodedLocations = computed(() =>
-  (locations.value ?? []).filter(l => l.lat != null),
+// ── Date range derived from all distinct dates across all location mentions ──
+const allDates = computed<string[]>(() => {
+  const dateSet = new Set<string>()
+  for (const loc of (locations.value ?? [])) {
+    for (const d of (loc.mentionedInDates ?? [])) dateSet.add(d)
+  }
+  return [...dateSet].sort()
+})
+
+const dateRange = ref<[number, number]>([0, 0])
+watch(allDates, (dates) => {
+  dateRange.value = [0, Math.max(dates.length - 1, 0)]
+}, { immediate: true })
+
+const sliderStartDate = computed(() => allDates.value[dateRange.value[0]] ?? '—')
+const sliderEndDate = computed(() => allDates.value[dateRange.value[1]] ?? '—')
+
+const timeFiltered = computed(() =>
+  allDates.value.length > 0 &&
+  (dateRange.value[0] !== 0 || dateRange.value[1] !== allDates.value.length - 1),
 )
 
-const filteredLocations = computed(() => {
+function resetTimeFilter() {
+  dateRange.value = [0, Math.max(allDates.value.length - 1, 0)]
+}
+
+// ── Filtering ─────────────────────────────────────────────────────────────────
+const allGeocodedCount = computed(() =>
+  (locations.value ?? []).filter(l => l.lat != null).length,
+)
+
+const visibleLocations = computed<LocationMeta[]>(() => {
   const q = searchQuery.value?.trim().toLowerCase() ?? ''
-  if (!q) return locations.value ?? []
-  return (locations.value ?? []).filter(
-    l => l.name.toLowerCase().includes(q) || l.tags.some(t => t.includes(q)),
-  )
+  const startDate = sliderStartDate.value
+  const endDate = sliderEndDate.value
+  const hasTimeFilter = allDates.value.length > 0
+
+  return (locations.value ?? []).filter(loc => {
+    // Text search
+    if (q && !loc.name.toLowerCase().includes(q) && !loc.tags.some(t => t.includes(q))) return false
+
+    // Time filter: keep if location has at least one mention within the selected range
+    if (hasTimeFilter && loc.mentionedInDates && loc.mentionedInDates.length > 0) {
+      const inRange = loc.mentionedInDates.some(d => d >= startDate && d <= endDate)
+      if (!inRange) return false
+    }
+
+    return true
+  })
 })
 
 function selectLocation(name: string) {
@@ -144,7 +223,7 @@ function selectLocation(name: string) {
 }
 
 .map-sidebar {
-  width: 260px;
+  width: 280px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
