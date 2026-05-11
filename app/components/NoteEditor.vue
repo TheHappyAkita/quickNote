@@ -143,6 +143,8 @@ const renderedContent = computed(() => {
     const color = resolveColor(rawColor.trim())
     return color ? `<span style="color:${color}">${text}</span>` : text
   })
+  // Open all links in a new tab
+  html = html.replace(/<a /g, '<a target="_blank" rel="noopener noreferrer" ')
   return html
 })
 
