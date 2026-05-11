@@ -1,7 +1,7 @@
-import { listNotes, readNote, listPages, readPage } from '../utils/notes'
+import { listNotes, readNote, listPages, readPage, listLocations, readLocation } from '../utils/notes'
 
 export interface SearchResult {
-  type: 'note' | 'page'
+  type: 'note' | 'page' | 'location'
   id: string // date for notes, name for pages
   title: string
   excerpt: string
@@ -58,6 +58,28 @@ export default defineEventHandler(async (event): Promise<SearchResult[]> => {
         type: 'page',
         id: page,
         title: page,
+        excerpt: excerpt.slice(0, 200),
+        matches: countMatches(contentLower, searchTerm),
+      })
+    }
+  }))
+
+  // Search locations
+  const locations = await listLocations()
+  await Promise.all(locations.map(async (loc) => {
+    const content = await readLocation(loc)
+    const nameMatch = loc.toLowerCase().includes(searchTerm)
+    const contentMatch = content?.toLowerCase().includes(searchTerm)
+
+    if (nameMatch || contentMatch) {
+      const contentLower = content?.toLowerCase() ?? ''
+      const excerpts = content ? extractExcerpts(content, searchTerm, 3) : []
+      const excerpt = excerpts.join(' … ') || (content?.slice(0, 160) ?? '')
+
+      results.push({
+        type: 'location',
+        id: loc,
+        title: loc,
         excerpt: excerpt.slice(0, 200),
         matches: countMatches(contentLower, searchTerm),
       })

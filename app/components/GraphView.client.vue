@@ -111,6 +111,20 @@ onMounted(() => {
         },
       },
       {
+        selector: 'node[type="location"]',
+        style: {
+          'background-color': '#0d3d35',
+          'border-color': '#2dd4bf',
+          'border-width': 2,
+          'font-size': 10,
+          'shape': 'diamond',
+          'width': 44,
+          'height': 44,
+          'color': '#99f6e4',
+          'text-outline-color': '#051f1a',
+        },
+      },
+      {
         selector: 'node[type="keyword"]',
         style: {
           'background-color': '#1a6b5a',
@@ -207,6 +221,8 @@ onMounted(() => {
       hoveredNode.value = `📄 ${label}`
     } else if (type === 'person') {
       hoveredNode.value = `👤 ${label}`
+    } else if (type === 'location') {
+      hoveredNode.value = `📍 ${label}`
     } else {
       hoveredNode.value = `#${label}`
     }
@@ -219,6 +235,11 @@ onMounted(() => {
   cy.on('tap', 'node[type="person"]', (event) => {
     const label = event.target.data('label') as string
     router.push(`/person/${encodeURIComponent(label)}`)
+  })
+
+  cy.on('tap', 'node[type="location"]', (event) => {
+    const label = event.target.data('label') as string
+    router.push(`/location/${encodeURIComponent(label)}`)
   })
 
   // Always run the cose layout with current data — this is the only place

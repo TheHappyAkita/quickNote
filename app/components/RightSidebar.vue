@@ -113,12 +113,13 @@
           <v-list-item
             v-for="result in searchResults"
             :key="`${result.type}-${result.id}`"
-            :to="result.type === 'note' ? `/note/${result.id}` : `/page/${encodeURIComponent(result.id)}`"
+            :to="result.type === 'note' ? `/note/${result.id}` : result.type === 'location' ? `/location/${encodeURIComponent(result.id)}` : `/page/${encodeURIComponent(result.id)}`"
             class="result-item"
             @click="activePanel = null"
           >
             <template #prepend>
               <v-icon v-if="result.type === 'note'" size="16" color="primary">mdi-calendar</v-icon>
+              <v-icon v-else-if="result.type === 'location'" size="16" color="teal">mdi-map-marker</v-icon>
               <v-icon v-else size="16" color="secondary">mdi-file-document-outline</v-icon>
             </template>
             <v-list-item-title class="text-body-2">

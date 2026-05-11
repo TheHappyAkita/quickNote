@@ -16,7 +16,7 @@
         @update:model-value="filterGraph"
       />
       <v-chip size="small" variant="tonal" color="primary">
-        {{ nodeCount.dates }} dates, {{ nodeCount.pages }} pages
+        {{ nodeCount.dates }} dates, {{ nodeCount.pages }} pages, {{ nodeCount.locations }} locations
       </v-chip>
       <v-btn
         icon="mdi-refresh"
@@ -103,7 +103,8 @@ const nodeCount = computed(() => {
   const nodes = graphData.value?.nodes ?? []
   const dates = nodes.filter(n => n.data.type === 'date').length
   const pages = nodes.filter(n => n.data.type === 'page').length
-  return { total: nodes.length, dates, pages }
+  const locations = nodes.filter(n => n.data.type === 'location').length
+  return { total: nodes.length, dates, pages, locations }
 })
 
 function filterGraph() {

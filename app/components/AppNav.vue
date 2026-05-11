@@ -39,6 +39,26 @@
       </v-btn>
 
       <v-btn
+        to="/locations"
+        :active="isLocations"
+        prepend-icon="mdi-map-marker-multiple"
+        variant="text"
+        size="small"
+      >
+        Locations
+      </v-btn>
+
+      <v-btn
+        to="/map"
+        :active="isMap"
+        prepend-icon="mdi-map"
+        variant="text"
+        size="small"
+      >
+        Map
+      </v-btn>
+
+      <v-btn
         to="/graph"
         :active="isGraph"
         prepend-icon="mdi-graph"
@@ -103,6 +123,8 @@ const isPages = computed(() => route.path === '/pages' || route.path.startsWith(
 const isGraph = computed(() => route.path === '/graph')
 const isCanvas = computed(() => route.path === '/canvas')
 const isPersons = computed(() => route.path === '/persons' || route.path.startsWith('/person/'))
+const isLocations = computed(() => route.path === '/locations' || route.path.startsWith('/location/'))
+const isMap = computed(() => route.path === '/map')
 const isHelp = computed(() => route.path === '/help')
 const username = computed(() => (user.value as { username?: string } | null)?.username ?? '')
 

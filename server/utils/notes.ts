@@ -1,4 +1,4 @@
-import type { GraphData, NotePageMeta } from '#shared/types/notes'
+import type { GraphData, NotePageMeta, LocationMeta } from '#shared/types/notes'
 import { readFile, writeFile, readdir, mkdir, unlink } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join, resolve } from 'path'
@@ -8,6 +8,7 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const PAGE_NAME_PATTERN = /^[a-zA-Z0-9_\- ]+$/
 const WIKILINK_PATTERN = /\[\[(\d{4}-\d{2}-\d{2}|[a-zA-Z0-9_\- ]+)\]\]/g
 const PERSON_PATTERN = /@\[\[([^\]]+)\]\]/g
+const LOCATION_PATTERN = /&\[\[([^\]]+)\]\]/g
 
 const PAGES_DIR = 'pages'
 
@@ -187,6 +188,93 @@ export async function listPersonsWithMeta(): Promise<{ name: string; tags: strin
   }))
 }
 
+// ─── Locations ───────────────────────────────────────────────────────────────
+
+const LOCATION_NAME_PATTERN = /^[a-zA-Z0-9,\. _\-äöüÄÖÜáéíóúàèìòùâêîôûãõ]+$/
+const LOCATIONS_DIR = 'locations'
+
+function getLocationsDir(): string {
+  return join(getNotesDir(), LOCATIONS_DIR)
+}
+
+async function ensureLocationsDir(): Promise<void> {
+  const dir = getLocationsDir()
+  if (!existsSync(dir)) {
+    await mkdir(dir, { recursive: true })
+  }
+}
+
+export function isValidLocationName(name: string): boolean {
+  return LOCATION_NAME_PATTERN.test(name) && name.length > 0 && name.length <= 120
+}
+
+export async function listLocations(): Promise<string[]> {
+  await ensureLocationsDir()
+  try {
+    const files = await readdir(getLocationsDir())
+    return files
+      .filter(f => f.endsWith('.md'))
+      .map(f => f.replace('.md', ''))
+      .sort()
+  } catch {
+    return []
+  }
+}
+
+export async function readLocation(name: string): Promise<string | null> {
+  if (!isValidLocationName(name)) return null
+  await ensureLocationsDir()
+  try {
+    return await readFile(join(getLocationsDir(), `${name}.md`), 'utf-8')
+  } catch {
+    return null
+  }
+}
+
+export async function writeLocation(name: string, content: string): Promise<void> {
+  if (!isValidLocationName(name)) throw new Error('Invalid location name')
+  await ensureLocationsDir()
+  await writeFile(join(getLocationsDir(), `${name}.md`), content, 'utf-8')
+}
+
+export async function deleteLocation(name: string): Promise<void> {
+  if (!isValidLocationName(name)) throw new Error('Invalid location name')
+  try { await unlink(join(getLocationsDir(), `${name}.md`)) } catch { /* already gone */ }
+}
+
+function parseLocationCoords(content: string): { lat?: number; lng?: number } {
+  if (!content.startsWith('---')) return {}
+  const end = content.indexOf('\n---', 3)
+  if (end === -1) return {}
+  const fm = content.slice(3, end)
+  const latMatch = /^lat:\s*([\-0-9.]+)/m.exec(fm)
+  const lngMatch = /^lng:\s*([\-0-9.]+)/m.exec(fm)
+  return {
+    lat: latMatch ? parseFloat(latMatch[1]!) : undefined,
+    lng: lngMatch ? parseFloat(lngMatch[1]!) : undefined,
+  }
+}
+
+export async function listLocationsWithMeta(): Promise<LocationMeta[]> {
+  const names = await listLocations()
+  return Promise.all(names.map(async (name) => {
+    const content = await readLocation(name)
+    const tags = content ? parseTags(content) : []
+    const coords = content ? parseLocationCoords(content) : {}
+    return { name, tags, ...coords }
+  }))
+}
+
+export function extractLocationMentions(content: string): string[] {
+  const mentions: string[] = []
+  let match: RegExpExecArray | null
+  const re = new RegExp(LOCATION_PATTERN.source, 'g')
+  while ((match = re.exec(content)) !== null) {
+    mentions.push(match[1]!.trim())
+  }
+  return [...new Set(mentions)]
+}
+
 // ─── Tag utilities ───────────────────────────────────────────────────────────
 
 export function parseFrontmatterTags(content: string): string[] {
@@ -322,6 +410,7 @@ async function readInBatches<T>(
 export async function buildGraph(): Promise<GraphData> {
   const dates = await listNotes()
   const pages = await listPages()
+  const locations = await listLocations()
   const dateSet = new Set(dates)
   const pageSet = new Set(pages)
 
@@ -340,6 +429,7 @@ export async function buildGraph(): Promise<GraphData> {
   const seenEdges = new Set<string>()
   const kwFreq = new Map<string, { total: number; dates: Set<string> }>()
   const personMentions = new Map<string, Set<string>>()
+  const locationMentions = new Map<string, Set<string>>()
 
   for (let i = 0; i < dates.length; i++) {
     const date = dates[i]!
@@ -349,6 +439,11 @@ export async function buildGraph(): Promise<GraphData> {
     for (const name of extractPersonMentions(content)) {
       if (!personMentions.has(name)) personMentions.set(name, new Set())
       personMentions.get(name)!.add(date)
+    }
+
+    for (const name of extractLocationMentions(content)) {
+      if (!locationMentions.has(name)) locationMentions.set(name, new Set())
+      locationMentions.get(name)!.add(date)
     }
 
     for (const target of extractLinks(content)) {
@@ -381,6 +476,11 @@ export async function buildGraph(): Promise<GraphData> {
       personMentions.get(name)!.add(`page:${page}`)
     }
 
+    for (const name of extractLocationMentions(content)) {
+      if (!locationMentions.has(name)) locationMentions.set(name, new Set())
+      locationMentions.get(name)!.add(`page:${page}`)
+    }
+
     for (const target of extractLinks(content)) {
       if (dateSet.has(target)) {
         const pageId = `page:${page}`
@@ -395,6 +495,18 @@ export async function buildGraph(): Promise<GraphData> {
       const entry = kwFreq.get(w)!
       entry.total++
       if (!seen.has(w)) { entry.dates.add(`page:${page}`); seen.add(w) }
+    }
+  }
+
+  for (const [name, sources] of locationMentions) {
+    const locationId = `location:${name}`
+    nodes.push({ data: { id: locationId, label: name, type: 'location' as const } })
+    for (const source of sources) {
+      const edgeKey = `${source}->${locationId}`
+      if (!seenEdges.has(edgeKey)) {
+        seenEdges.add(edgeKey)
+        edges.push({ data: { id: edgeKey, source, target: locationId, type: 'wikilink' as const } })
+      }
     }
   }
 

@@ -49,6 +49,7 @@
             >
               <template #prepend>
                 <v-icon v-if="suggestionMode === 'person'" size="14" class="mr-1" color="pink">mdi-account</v-icon>
+                <v-icon v-else-if="suggestionMode === 'location'" size="14" class="mr-1" color="teal">mdi-map-marker</v-icon>
                 <v-icon v-else-if="/^\d{4}-\d{2}-\d{2}$/.test(suggestion)" size="14" class="mr-1">mdi-calendar</v-icon>
                 <v-icon v-else size="14" class="mr-1">mdi-file-document-outline</v-icon>
               </template>
@@ -92,9 +93,11 @@ const { data: allPagesRaw } = await useFetch<{ name: string; tags: string[] }[]>
 const allPages = computed(() => allPagesRaw.value?.map(p => p.name) ?? [])
 const { data: allPersonsRaw } = await useFetch<{ name: string; tags: string[] }[]>('/api/persons', { server: false, default: () => [] })
 const allPersons = computed(() => allPersonsRaw.value?.map(p => p.name) ?? [])
+const { data: allLocationsRaw } = await useFetch<{ name: string; tags: string[] }[]>('/api/locations', { server: false, default: () => [] })
+const allLocations = computed(() => allLocationsRaw.value?.map(l => l.name) ?? [])
 
 const dropdownStyle = ref({ top: '40px', left: '16px' })
-const suggestionMode = ref<'link' | 'person'>('link')
+const suggestionMode = ref<'link' | 'person' | 'location'>('link')
 
 const wordCount = computed(() => {
   const text = props.modelValue.trim()
@@ -128,6 +131,10 @@ const renderedContent = computed(() => {
   // Person mentions: @[[Lastname, Forename]]
   html = html.replace(/@\[\[([^\]]+)\]\]/g, (_m, name: string) =>
     `<a href="/person/${encodeURIComponent(name.trim())}" class="wiki-link person-link">👤 ${name}</a>`,
+  )
+  // Location mentions: &[[Location Name]]
+  html = html.replace(/&\[\[([^\]]+)\]\]/g, (_m, name: string) =>
+    `<a href="/location/${encodeURIComponent(name.trim())}" class="wiki-link location-link">📍 ${name}</a>`,
   )
   // Page links: [[Page Name]] (non-date format)
   html = html.replace(
@@ -176,13 +183,26 @@ function handleInput(event: Event) {
   const textBeforeCursor = value.substring(0, cursorPos)
 
   const personMatch = textBeforeCursor.match(/@\[\[([^\[\]]*)$/)
-  const linkMatch = !personMatch && textBeforeCursor.match(/\[\[([^\[\]]*)$/)
+  const locationMatch = !personMatch && textBeforeCursor.match(/&\[\[([^\[\]]*)$/)
+  const linkMatch = !personMatch && !locationMatch && textBeforeCursor.match(/\[\[([^\[\]]*)$/)
 
   if (personMatch) {
     suggestionMode.value = 'person'
     const query = personMatch[1] ?? ''
     suggestions.value = (allPersons.value ?? [])
       .filter(p => p.toLowerCase().includes(query.toLowerCase()))
+      .slice(0, 10)
+    selectedSuggestion.value = 0
+    showSuggestions.value = suggestions.value.length > 0
+    if (showSuggestions.value) {
+      const coords = getCursorCoords(target, cursorPos)
+      dropdownStyle.value = { top: coords.top + 'px', left: Math.max(0, coords.left) + 'px' }
+    }
+  } else if (locationMatch) {
+    suggestionMode.value = 'location'
+    const query = locationMatch[1] ?? ''
+    suggestions.value = (allLocations.value ?? [])
+      .filter(l => l.toLowerCase().includes(query.toLowerCase()))
       .slice(0, 10)
     selectedSuggestion.value = 0
     showSuggestions.value = suggestions.value.length > 0
@@ -237,10 +257,13 @@ function insertSuggestion(date: string) {
   const value = textarea.value
   const textBeforeCursor = value.substring(0, cursorPos)
   const isPerson = suggestionMode.value === 'person'
+  const isLocation = suggestionMode.value === 'location'
   const openBracket = isPerson
     ? textBeforeCursor.lastIndexOf('@[[')
-    : textBeforeCursor.lastIndexOf('[[')
-  const insertion = isPerson ? `@[[${date}]]` : `[[${date}]]`
+    : isLocation
+      ? textBeforeCursor.lastIndexOf('&[[')
+      : textBeforeCursor.lastIndexOf('[[')
+  const insertion = isPerson ? `@[[${date}]]` : isLocation ? `&[[${date}]]` : `[[${date}]]`
   const newValue = value.substring(0, openBracket) + insertion + value.substring(cursorPos)
 
   emit('update:modelValue', newValue)
@@ -248,7 +271,7 @@ function insertSuggestion(date: string) {
 
   nextTick(() => {
     if (textareaRef.value) {
-      const prefix = isPerson ? '@[[' : '[['
+      const prefix = isPerson ? '@[[' : isLocation ? '&[[' : '[['
       const newPos = openBracket + prefix.length + date.length + 2
       textareaRef.value.setSelectionRange(newPos, newPos)
       textareaRef.value.focus()

@@ -8,8 +8,15 @@ export interface PersonMeta {
   tags: string[]
 }
 
+export interface LocationMeta {
+  name: string
+  tags: string[]
+  lat?: number
+  lng?: number
+}
+
 export interface GraphNode {
-  data: { id: string; label: string; type: 'date' | 'page' | 'keyword' | 'person'; weight?: number }
+  data: { id: string; label: string; type: 'date' | 'page' | 'keyword' | 'person' | 'location'; weight?: number }
 }
 
 export interface GraphEdge {
