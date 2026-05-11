@@ -52,6 +52,7 @@ export default defineNuxtConfig({
       start_url: '/',
     },
     workbox: {
+      navigateFallback: null,
       globPatterns: ['**/*.{js,css,html,svg,ico,woff2}'],
       runtimeCaching: [
         {
