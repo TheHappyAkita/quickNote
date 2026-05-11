@@ -121,6 +121,11 @@ const renderedContent = computed(() => {
     /\[\[(\d{4}-\d{2}-\d{2})\]\]/g,
     '<a href="/note/$1" class="wiki-link">📅 $1</a>',
   )
+  // Person mentions: @[[Lastname, Forename]]
+  html = html.replace(
+    /@\[\[([^\]]+)\]\]/g,
+    '<a href="/person/$1" class="wiki-link person-link">👤 $1</a>',
+  )
   // Page links: [[Page Name]] (non-date format)
   html = html.replace(
     /\[\[([a-zA-Z0-9_\- ][a-zA-Z0-9_\- ]+)\]\]/g,

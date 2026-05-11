@@ -49,6 +49,16 @@
         Canvas
       </v-btn>
 
+      <v-btn
+        to="/help"
+        :active="isHelp"
+        icon="mdi-help-circle-outline"
+        variant="text"
+        size="small"
+        title="Help & notation guide"
+        class="mr-1"
+      />
+
       <v-divider vertical class="mx-2" style="height: 24px; align-self: center" />
 
       <v-menu>
@@ -82,6 +92,7 @@ const isToday = computed(() => route.path === `/note/${today.value}`)
 const isPages = computed(() => route.path === '/pages' || route.path.startsWith('/page/'))
 const isGraph = computed(() => route.path === '/graph')
 const isCanvas = computed(() => route.path === '/canvas')
+const isHelp = computed(() => route.path === '/help')
 const username = computed(() => (user.value as { username?: string } | null)?.username ?? '')
 
 async function logout() {

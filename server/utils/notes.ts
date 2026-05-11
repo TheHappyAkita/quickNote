@@ -7,6 +7,7 @@ import { homedir } from 'os'
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const PAGE_NAME_PATTERN = /^[a-zA-Z0-9_\- ]+$/
 const WIKILINK_PATTERN = /\[\[(\d{4}-\d{2}-\d{2}|[a-zA-Z0-9_\- ]+)\]\]/g
+const PERSON_PATTERN = /@\[\[([^\]]+)\]\]/g
 
 const PAGES_DIR = 'pages'
 
@@ -207,6 +208,16 @@ export function extractLinks(content: string): string[] {
   return [...new Set(links)]
 }
 
+export function extractPersonMentions(content: string): string[] {
+  const mentions: string[] = []
+  let match: RegExpExecArray | null
+  const re = new RegExp(PERSON_PATTERN.source, 'g')
+  while ((match = re.exec(content)) !== null) {
+    mentions.push(match[1]!.trim())
+  }
+  return [...new Set(mentions)]
+}
+
 const STOPWORDS = new Set([
   'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of',
   'with', 'by', 'from', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
@@ -251,10 +262,18 @@ export async function buildGraph(): Promise<GraphData> {
 
   const kwFreq = new Map<string, { total: number; dates: Set<string> }>()
 
+  const personMentions = new Map<string, Set<string>>() // person name -> set of note/page IDs
+
   // Process daily notes
   for (const date of dates) {
     const content = await readNote(date)
     if (!content) continue
+
+    // Person mentions
+    for (const name of extractPersonMentions(content)) {
+      if (!personMentions.has(name)) personMentions.set(name, new Set())
+      personMentions.get(name)!.add(date)
+    }
 
     const links = extractLinks(content)
     for (const target of links) {
@@ -290,6 +309,12 @@ export async function buildGraph(): Promise<GraphData> {
     const content = await readPage(page)
     if (!content) continue
 
+    // Person mentions
+    for (const name of extractPersonMentions(content)) {
+      if (!personMentions.has(name)) personMentions.set(name, new Set())
+      personMentions.get(name)!.add(`page:${page}`)
+    }
+
     const links = extractLinks(content)
     for (const target of links) {
       // Page links to a date
@@ -310,6 +335,19 @@ export async function buildGraph(): Promise<GraphData> {
       const entry = kwFreq.get(w)!
       entry.total++
       if (!seen.has(w)) { entry.dates.add(`page:${page}`); seen.add(w) }
+    }
+  }
+
+  // Add person nodes and edges
+  for (const [name, sources] of personMentions) {
+    const personId = `person:${name}`
+    nodes.push({ data: { id: personId, label: name, type: 'person' as const } })
+    for (const source of sources) {
+      const edgeKey = `${source}->${personId}`
+      if (!seenEdges.has(edgeKey)) {
+        seenEdges.add(edgeKey)
+        edges.push({ data: { id: edgeKey, source, target: personId, type: 'wikilink' as const } })
+      }
     }
   }
 

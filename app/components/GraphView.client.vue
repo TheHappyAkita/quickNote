@@ -87,6 +87,20 @@ onMounted(() => {
         },
       },
       {
+        selector: 'node[type="person"]',
+        style: {
+          'background-color': '#4a2c40',
+          'border-color': '#f06292',
+          'border-width': 2,
+          'font-size': 10,
+          'shape': 'ellipse',
+          'width': 48,
+          'height': 48,
+          'color': '#f8bbd0',
+          'text-outline-color': '#2a1020',
+        },
+      },
+      {
         selector: 'node[type="keyword"]',
         style: {
           'background-color': '#1a6b5a',
@@ -174,6 +188,8 @@ onMounted(() => {
       hoveredNode.value = id
     } else if (type === 'page') {
       hoveredNode.value = `📄 ${label}`
+    } else if (type === 'person') {
+      hoveredNode.value = `👤 ${label}`
     } else {
       hoveredNode.value = `#${label}`
     }
@@ -181,6 +197,11 @@ onMounted(() => {
 
   cy.on('mouseout', 'node', () => {
     hoveredNode.value = null
+  })
+
+  cy.on('tap', 'node[type="person"]', (event) => {
+    const label = event.target.data('label') as string
+    hoveredNode.value = `👤 ${label}`
   })
 })
 
