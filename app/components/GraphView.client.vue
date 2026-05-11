@@ -201,7 +201,7 @@ onMounted(() => {
 
   cy.on('tap', 'node[type="person"]', (event) => {
     const label = event.target.data('label') as string
-    hoveredNode.value = `👤 ${label}`
+    router.push(`/person/${encodeURIComponent(label)}`)
   })
 })
 

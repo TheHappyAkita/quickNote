@@ -29,6 +29,16 @@
       </v-btn>
 
       <v-btn
+        to="/persons"
+        :active="isPersons"
+        prepend-icon="mdi-account-group"
+        variant="text"
+        size="small"
+      >
+        People
+      </v-btn>
+
+      <v-btn
         to="/graph"
         :active="isGraph"
         prepend-icon="mdi-graph"
@@ -92,6 +102,7 @@ const isToday = computed(() => route.path === `/note/${today.value}`)
 const isPages = computed(() => route.path === '/pages' || route.path.startsWith('/page/'))
 const isGraph = computed(() => route.path === '/graph')
 const isCanvas = computed(() => route.path === '/canvas')
+const isPersons = computed(() => route.path === '/persons' || route.path.startsWith('/person/'))
 const isHelp = computed(() => route.path === '/help')
 const username = computed(() => (user.value as { username?: string } | null)?.username ?? '')
 

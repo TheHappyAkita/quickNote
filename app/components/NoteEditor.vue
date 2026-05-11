@@ -122,9 +122,8 @@ const renderedContent = computed(() => {
     '<a href="/note/$1" class="wiki-link">📅 $1</a>',
   )
   // Person mentions: @[[Lastname, Forename]]
-  html = html.replace(
-    /@\[\[([^\]]+)\]\]/g,
-    '<a href="/person/$1" class="wiki-link person-link">👤 $1</a>',
+  html = html.replace(/@\[\[([^\]]+)\]\]/g, (_m, name: string) =>
+    `<a href="/person/${encodeURIComponent(name.trim())}" class="wiki-link person-link">👤 ${name}</a>`,
   )
   // Page links: [[Page Name]] (non-date format)
   html = html.replace(

@@ -124,6 +124,60 @@ export async function deletePage(name: string): Promise<void> {
   await unlink(filePath)
 }
 
+// ─── People (person pages) ───────────────────────────────────────────────────
+
+const PERSON_NAME_PATTERN = /^[a-zA-Z0-9,\. _\-]+$/
+const PEOPLE_DIR = 'people'
+
+function getPeopleDir(): string {
+  return join(getNotesDir(), PEOPLE_DIR)
+}
+
+async function ensurePeopleDir(): Promise<void> {
+  const dir = getPeopleDir()
+  if (!existsSync(dir)) {
+    await mkdir(dir, { recursive: true })
+  }
+}
+
+export function isValidPersonName(name: string): boolean {
+  return PERSON_NAME_PATTERN.test(name) && name.length > 0 && name.length <= 120
+}
+
+export async function listPersons(): Promise<string[]> {
+  await ensurePeopleDir()
+  try {
+    const files = await readdir(getPeopleDir())
+    return files
+      .filter(f => f.endsWith('.md'))
+      .map(f => f.replace('.md', ''))
+      .sort()
+  } catch {
+    return []
+  }
+}
+
+export async function readPerson(name: string): Promise<string | null> {
+  if (!isValidPersonName(name)) return null
+  await ensurePeopleDir()
+  try {
+    return await readFile(join(getPeopleDir(), `${name}.md`), 'utf-8')
+  } catch {
+    return null
+  }
+}
+
+export async function writePerson(name: string, content: string): Promise<void> {
+  if (!isValidPersonName(name)) throw new Error('Invalid person name')
+  await ensurePeopleDir()
+  await writeFile(join(getPeopleDir(), `${name}.md`), content, 'utf-8')
+}
+
+export async function deletePerson(name: string): Promise<void> {
+  if (!isValidPersonName(name)) throw new Error('Invalid person name')
+  try { await unlink(join(getPeopleDir(), `${name}.md`)) } catch { /* already gone */ }
+}
+
 // ─── Tag utilities ───────────────────────────────────────────────────────────
 
 export function parseFrontmatterTags(content: string): string[] {
