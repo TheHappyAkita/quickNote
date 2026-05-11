@@ -206,7 +206,7 @@ async function createPerson() {
 
 <style scoped>
 .persons-scroll {
-  height: 100%;
+  height: calc(100vh - var(--v-layout-top, 64px));
   overflow-y: auto;
 }
 .person-card {

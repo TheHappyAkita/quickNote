@@ -208,7 +208,7 @@ useHead({ title: 'Help — quickNote' })
 
 <style scoped>
 .help-scroll {
-  height: 100%;
+  height: calc(100vh - var(--v-layout-top, 64px));
   overflow-y: auto;
 }
 .help-table {
