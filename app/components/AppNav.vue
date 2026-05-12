@@ -79,6 +79,33 @@
         </v-list>
       </v-menu>
 
+      <!-- Theme toggle -->
+      <v-menu :close-on-content-click="true">
+        <template #activator="{ props: menuProps }">
+          <v-btn
+            v-bind="menuProps"
+            :icon="currentThemeIcon"
+            variant="text"
+            size="small"
+            title="Switch theme"
+          />
+        </template>
+        <v-list density="compact" min-width="160">
+          <v-list-subheader>Theme</v-list-subheader>
+          <v-list-item
+            v-for="t in themes"
+            :key="t.id"
+            :prepend-icon="t.icon"
+            :active="currentTheme === t.id"
+            active-color="primary"
+            rounded="lg"
+            @click="applyTheme(t.id)"
+          >
+            <v-list-item-title>{{ t.label }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+
       <v-divider vertical class="mx-2" style="height: 24px; align-self: center" />
 
       <v-menu>
@@ -157,6 +184,10 @@ function toggleFavorite(id: string) {
 const favoriteItems = computed(() =>
   allNavItems.filter(item => favorites.value.has(item.id)),
 )
+
+// ── Theme ────────────────────────────────────────────────────────────────────
+const { current: currentTheme, themes, apply: applyTheme } = useAppTheme()
+const currentThemeIcon = computed(() => themes.find(t => t.id === currentTheme.value)?.icon ?? 'mdi-weather-night')
 
 async function logout() {
   await clear()
