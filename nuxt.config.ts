@@ -4,6 +4,8 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
 
+  css: ['~/assets/css/theme-hacker.css'],
+
   modules: [
     'vuetify-nuxt-module',
     '@pinia/nuxt',

@@ -1,0 +1,245 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   HACKER GREEN THEME
+   All styles for the hackerGreen theme. Applied when <html> has class
+   "theme-hacker". This file is the single source of truth for hacker styling.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Base typography & background ──────────────────────────────────────────── */
+html.theme-hacker,
+html.theme-hacker body,
+html.theme-hacker .v-application {
+  font-family: 'Courier New', Courier, monospace !important;
+  letter-spacing: 0.03em;
+  background: #000000 !important;
+  color: #00FF41 !important;
+}
+
+/* ── Vuetify layout surfaces ────────────────────────────────────────────────── */
+html.theme-hacker .v-application__wrap,
+html.theme-hacker .v-main,
+html.theme-hacker .v-container {
+  background: #000000 !important;
+}
+
+html.theme-hacker .v-card,
+html.theme-hacker .v-sheet,
+html.theme-hacker .v-list {
+  background: #0a0a0a !important;
+  border-color: #00FF41 !important;
+  color: #00FF41 !important;
+}
+
+html.theme-hacker .v-list-item {
+  color: #00FF41 !important;
+}
+
+html.theme-hacker .v-list-item--active {
+  background: rgba(0, 255, 65, 0.15) !important;
+  color: #00FF41 !important;
+}
+
+html.theme-hacker .v-list-subheader {
+  color: #00CC33 !important;
+}
+
+html.theme-hacker .v-divider {
+  border-color: #00FF41 !important;
+  opacity: 0.4;
+}
+
+/* ── App bar / navigation ────────────────────────────────────────────────── */
+html.theme-hacker .v-app-bar {
+  background: #000000 !important;
+  border-bottom: 1px solid #00FF41 !important;
+}
+
+html.theme-hacker .v-app-bar .v-btn {
+  color: #00FF41 !important;
+}
+
+html.theme-hacker .v-app-bar .v-btn--active,
+html.theme-hacker .v-app-bar .v-btn:focus-visible {
+  background: rgba(0, 255, 65, 0.15) !important;
+  color: #00FF41 !important;
+  text-shadow: 0 0 8px #00FF41;
+}
+
+html.theme-hacker .v-app-bar .text-primary {
+  color: #00FF41 !important;
+}
+
+html.theme-hacker .v-app-bar .text-white {
+  color: #00FF41 !important;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+html.theme-hacker .v-btn {
+  color: #00FF41 !important;
+}
+
+html.theme-hacker .v-btn--active {
+  background: rgba(0, 255, 65, 0.15) !important;
+  color: #00FF41 !important;
+  text-shadow: 0 0 8px #00FF41;
+}
+
+html.theme-hacker .v-btn-toggle {
+  background: #0a0a0a !important;
+  border-color: #00FF41 !important;
+}
+
+html.theme-hacker .v-btn-toggle .v-btn {
+  border-color: #00FF41 !important;
+}
+
+/* ── Chips ───────────────────────────────────────────────────────────────── */
+html.theme-hacker .v-chip {
+  background: rgba(0, 255, 65, 0.15) !important;
+  color: #00FF41 !important;
+  border-color: #00FF41 !important;
+}
+
+/* ── Inputs & text fields ────────────────────────────────────────────────── */
+html.theme-hacker input,
+html.theme-hacker textarea {
+  caret-color: #00FF41 !important;
+  color: #00FF41 !important;
+}
+
+html.theme-hacker .v-field {
+  background: #0a0a0a !important;
+  color: #00FF41 !important;
+}
+
+html.theme-hacker .v-field__outline {
+  --v-field-border-color: #00FF41 !important;
+}
+
+html.theme-hacker .v-field--focused .v-field__outline {
+  --v-field-border-color: #00FF41 !important;
+}
+
+html.theme-hacker .v-label {
+  color: #00CC33 !important;
+}
+
+/* ── Editor panes ────────────────────────────────────────────────────────── */
+html.theme-hacker .editor-panes,
+html.theme-hacker .editor-pane {
+  background: #050505 !important;
+  border-color: #00FF41 !important;
+}
+
+html.theme-hacker .note-textarea {
+  background: #050505 !important;
+  color: #00FF41 !important;
+  border-color: #00FF41 !important;
+}
+
+html.theme-hacker .note-textarea:focus {
+  border-color: #00FF41 !important;
+  outline: none !important;
+}
+
+html.theme-hacker .suggestions-dropdown {
+  background: #000000 !important;
+  border-color: #00FF41 !important;
+  color: #00FF41 !important;
+}
+
+/* ── Preview pane (markdown rendered content) ────────────────────────────── */
+html.theme-hacker .preview-pane {
+  background: #050505 !important;
+  color: #00FF41 !important;
+  border-color: #00FF41 !important;
+}
+
+html.theme-hacker .preview-pane h1,
+html.theme-hacker .preview-pane h2,
+html.theme-hacker .preview-pane h3,
+html.theme-hacker .preview-pane h4,
+html.theme-hacker .preview-pane h5,
+html.theme-hacker .preview-pane h6 {
+  color: #00FF41 !important;
+}
+
+html.theme-hacker .preview-pane code {
+  background: #0a0a0a !important;
+  color: #00FF41 !important;
+  border-color: #00FF41 !important;
+}
+
+html.theme-hacker .preview-pane pre {
+  background: #050505 !important;
+  border-color: #00FF41 !important;
+}
+
+html.theme-hacker .preview-pane blockquote {
+  border-left-color: #00FF41 !important;
+  color: #00CC33 !important;
+}
+
+html.theme-hacker .preview-pane a,
+html.theme-hacker .wiki-link {
+  color: #00FF41 !important;
+}
+
+html.theme-hacker .wiki-link:hover {
+  color: #00CC33 !important;
+  text-shadow: 0 0 6px #00FF41;
+}
+
+html.theme-hacker mark.hl {
+  background: #FFFF00 !important;
+  color: #000000 !important;
+}
+
+/* ── Right sidebar ───────────────────────────────────────────────────────── */
+html.theme-hacker .sidebar-strip,
+html.theme-hacker .sidebar-panel {
+  background: #050505 !important;
+  border-left: 1px solid #00FF41 !important;
+  color: #00FF41 !important;
+}
+
+html.theme-hacker .panel-header {
+  border-bottom: 1px solid #00FF41 !important;
+  color: #00FF41 !important;
+}
+
+html.theme-hacker .alert-header {
+  background: rgba(255, 49, 49, 0.15) !important;
+}
+
+html.theme-hacker .alert-item {
+  background: rgba(255, 49, 49, 0.1) !important;
+  border-left: 3px solid #FF3131 !important;
+}
+
+html.theme-hacker .alert-item:hover {
+  background: rgba(255, 49, 49, 0.2) !important;
+}
+
+html.theme-hacker .reminder-link {
+  color: #00FF41 !important;
+}
+
+html.theme-hacker .reminder-link:hover {
+  color: #00CC33 !important;
+}
+
+/* ── Scanline overlay effect ─────────────────────────────────────────────── */
+html.theme-hacker .v-main::before {
+  content: '';
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.07) 2px,
+    rgba(0, 0, 0, 0.07) 4px
+  );
+  z-index: 9999;
+}
