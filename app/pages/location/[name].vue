@@ -217,7 +217,7 @@ function upsertFrontmatterField(raw: string, key: string, value: string): string
       const keyRe = new RegExp(`^${key}:.*$`, 'm')
       const newFm = keyRe.test(fm)
         ? fm.replace(keyRe, `${key}: ${value}`)
-        : fm.trim() + `\n${key}: ${value}`
+        : fm.trimEnd() + `\n${key}: ${value}`
       return `---${newFm}\n\n---${body}`
     }
   }
