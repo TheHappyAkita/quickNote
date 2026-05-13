@@ -12,8 +12,8 @@ export function useWikilinkParser() {
 
     // Datetime links: [[YYYY-MM-DD HH:MM]] or [[YYYY-MM-DD HH:MM:SS]]
     html = html.replace(
-      /\[\[(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}(?::\d{2})?)\]\]/g,
-      '<a href="/note/$1" class="wiki-link">⏰ $1</a>',
+      /\[\[(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}(?::\d{2})?)\]\]/g,
+      '<a href="/note/$1 $2" class="wiki-link">📅 $1 ⏰ $2</a>',
     )
 
     // Time notation: [[HH:MM]] or [[HH:MM:SS]] (no link, just styled)
