@@ -4,6 +4,12 @@ export function useWikilinkParser() {
   function parseWikilinks(text: string): string {
     let html = text
 
+    // Standard markdown hyperlinks: [text](url)
+    html = html.replace(
+      /\[([^\]]+)\]\(([^)]+)\)/g,
+      '<a href="$2" target="_blank" rel="noopener noreferrer" class="wiki-link">$1</a>',
+    )
+
     // Date links: [[YYYY-MM-DD]]
     html = html.replace(
       /\[\[(\d{4}-\d{2}-\d{2})\]\]/g,
