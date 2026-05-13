@@ -57,6 +57,10 @@
               <td><code>[[2025-10-14 14:30]]</code></td>
               <td>📅 2025-10-14 ⏰ 14:30 — Datetime link</td>
             </tr>
+            <tr>
+              <td><code>[Google](https://google.com)</code></td>
+              <td>🔗 Google — External link (opens in new tab)</td>
+            </tr>
           </tbody>
         </v-table>
         <div class="text-caption text-medium-emphasis mt-2">
