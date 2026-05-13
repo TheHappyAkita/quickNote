@@ -34,7 +34,7 @@ export function useWikilinkParser() {
     // Standard markdown hyperlinks: [text](url)
     html = html.replace(
       /\[([^\]]+)\]\(([^)]+)\)/g,
-      '<a href="$2" target="_blank" rel="noopener noreferrer" class="wiki-link">$1</a>',
+      '<a href="$2" target="_blank" rel="noopener noreferrer" class="wiki-link">🔗 $1</a>',
     )
 
     // Datetime links: [[YYYY-MM-DD HH:MM]] or [[YYYY-MM-DD HH:MM:SS]]
