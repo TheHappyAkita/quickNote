@@ -193,7 +193,7 @@
               <v-icon size="14" color="grey-lighten-2">mdi-checkbox-blank-outline</v-icon>
             </template>
             <v-list-item-title class="text-body-2 reminder-text">
-              <NuxtLink :to="`/note/${todo.date}`" class="reminder-link">{{ todo.text }}</NuxtLink>
+              <NuxtLink :to="`/note/${todo.date}`" class="reminder-link" v-html="parseWikilinks(todo.text)"></NuxtLink>
             </v-list-item-title>
             <v-list-item-subtitle class="text-caption">{{ formatDate(todo.date) }}</v-list-item-subtitle>
             <template #append>
