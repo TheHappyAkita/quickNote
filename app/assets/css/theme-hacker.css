@@ -189,8 +189,12 @@ html.theme-hacker .wiki-link {
 }
 
 html.theme-hacker .wiki-link:hover {
-  color: #00CC33 !important;
   text-shadow: 0 0 6px #00FF41;
+}
+
+html.theme-hacker .wiki-link.time-link {
+  color: #00FF41 !important;
+  font-weight: normal;
 }
 
 html.theme-hacker mark.hl {
