@@ -135,7 +135,7 @@ function applyTagsToContent(tags: string[]) {
     if (end !== -1) {
       const fm = c.slice(3, end).replace(/\ntags:[^\n]*(\n[ \t]+-[^\n]*)*/g, '')
       const rest = c.slice(end + 4)
-      const cleaned = fm.trim()
+      const cleaned = fm.trimEnd()
       if (tagLine) { content.value = `---\n${cleaned ? cleaned + '\n' : ''}${tagLine}\n\n---${rest}`; return }
       if (cleaned) { content.value = `---\n${cleaned}\n\n---${rest}`; return }
       content.value = rest.trimStart(); return

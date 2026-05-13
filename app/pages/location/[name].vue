@@ -299,7 +299,7 @@ function setTags(tags: string[]) {
       const body = raw.slice(end + 4)
       const newFm = /^tags:/m.test(fm)
         ? fm.replace(/^tags:.*$/m, tagLine)
-        : `\n${tagLine}` + fm
+        : fm.trimEnd() + `\n${tagLine}`
       content.value = `---${newFm}\n\n---${body}`
       return
     }

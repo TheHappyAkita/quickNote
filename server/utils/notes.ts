@@ -359,7 +359,7 @@ export function setFrontmatterTags(content: string, tags: string[]): string {
     if (end !== -1) {
       const fm = content.slice(3, end).replace(/\ntags:[^\n]*(\n[ \t]+-[^\n]*)*/g, '')
       const rest = content.slice(end + 4)
-      const cleaned = fm.trim()
+      const cleaned = fm.trimEnd()
       if (tagLine) {
         return `---\n${cleaned ? cleaned + '\n' : ''}${tagLine}\n\n---${rest}`
       } else if (cleaned) {
