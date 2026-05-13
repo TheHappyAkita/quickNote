@@ -49,10 +49,61 @@
               <td><code>&amp;[[52.52,13.405]]</code></td>
               <td>📍 Anonymous pin — any format, no location file needed</td>
             </tr>
+            <tr>
+              <td><code>[[14:30]]</code> / <code>[[14:30:45]]</code></td>
+              <td>⏰ Time notation — styled text, no link</td>
+            </tr>
+            <tr>
+              <td><code>[[2025-10-14 14:30]]</code></td>
+              <td>📅 2025-10-14 ⏰ 14:30 — Datetime link</td>
+            </tr>
           </tbody>
         </v-table>
         <div class="text-caption text-medium-emphasis mt-2">
           Wikilinks are clickable in the preview pane and appear as nodes in the Knowledge Graph.
+        </div>
+      </v-card-text>
+    </v-card>
+
+    <!-- EMOJI SHORTCODES -->
+    <v-card class="mb-4" variant="outlined">
+      <v-card-title class="text-subtitle-1 font-weight-bold pb-0">
+        <v-icon size="18" class="mr-2" color="info">mdi-emoticon-happy</v-icon>Emoji Shortcodes
+      </v-card-title>
+      <v-card-text>
+        <v-table density="compact" class="help-table">
+          <thead>
+            <tr><th>Syntax</th><th>Result</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>:car:</code> / <code>:plane:</code> / <code>:train:</code></td>
+              <td>🚗 ✈️ 🚆 — Vehicles</td>
+            </tr>
+            <tr>
+              <td><code>:home:</code> / <code>:office:</code> / <code>:hospital:</code></td>
+              <td>🏠 🏢 🏥 — Places</td>
+            </tr>
+            <tr>
+              <td><code>:sun:</code> / <code>:rain:</code> / <code>:snow:</code></td>
+              <td>☀️ 🌧️ ❄️ — Weather</td>
+            </tr>
+            <tr>
+              <td><code>:meeting:</code> / <code>:phone:</code> / <code>:email:</code></td>
+              <td>👥 📞 📧 — Activities</td>
+            </tr>
+            <tr>
+              <td><code>:coffee:</code> / <code>:pizza:</code> / <code>:beer:</code></td>
+              <td>☕ 🍕 🍺 — Food & drink</td>
+            </tr>
+            <tr>
+              <td><code>:star:</code> / <code>:heart:</code> / <code>:fire:</code></td>
+              <td>⭐ ❤️ 🔥 — Misc</td>
+            </tr>
+          </tbody>
+        </v-table>
+        <div class="text-caption text-medium-emphasis mt-2">
+          Use <code>:name:</code> syntax for emojis. Type a word between colons — if a match exists, it renders as an emoji.
         </div>
       </v-card-text>
     </v-card>
