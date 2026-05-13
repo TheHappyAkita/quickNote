@@ -81,8 +81,8 @@
               <td>🚗 ✈️ 🚆 — Vehicles</td>
             </tr>
             <tr>
-              <td><code>:home:</code> / <code>:office:</code> / <code>:hospital:</code></td>
-              <td>🏠 🏢 🏥 — Places</td>
+              <td><code>:home:</code> / <code>:office:</code> / <code>:world:</code></td>
+              <td>🏠 🏢 � — Places</td>
             </tr>
             <tr>
               <td><code>:sun:</code> / <code>:rain:</code> / <code>:snow:</code></td>
