@@ -148,16 +148,16 @@ function applyTagsToContent(tags: string[]) {
       const rest = c.slice(end + 4)
       const cleaned = fm.trim()
       if (tagLine) {
-        content.value = `---\n${cleaned ? cleaned + '\n' : ''}${tagLine}\n---${rest}`
+        content.value = `---\n${cleaned ? cleaned + '\n' : ''}${tagLine}\n\n---${rest}`
       } else if (cleaned) {
-        content.value = `---\n${cleaned}\n---${rest}`
+        content.value = `---\n${cleaned}\n\n---${rest}`
       } else {
         content.value = rest.trimStart()
       }
       return
     }
   }
-  if (tagLine) content.value = `---\n${tagLine}\n---\n${c}`
+  if (tagLine) content.value = `---\n${tagLine}\n\n---\n${c}`
 }
 
 function removeTag(tag: string) {

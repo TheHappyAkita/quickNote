@@ -300,11 +300,11 @@ function setTags(tags: string[]) {
       const newFm = /^tags:/m.test(fm)
         ? fm.replace(/^tags:.*$/m, tagLine)
         : `\n${tagLine}` + fm
-      content.value = `---${newFm}\n---${body}`
+      content.value = `---${newFm}\n\n---${body}`
       return
     }
   }
-  content.value = `---\n${tagLine}\n---\n\n${raw}`
+  content.value = `---\n${tagLine}\n\n---\n\n${raw}`
 }
 
 function removeTag(tag: string) {
