@@ -361,15 +361,15 @@ export function setFrontmatterTags(content: string, tags: string[]): string {
       const rest = content.slice(end + 4)
       const cleaned = fm.trim()
       if (tagLine) {
-        return `---\n${cleaned ? cleaned + '\n' : ''}${tagLine}\n---${rest}`
+        return `---\n${cleaned ? cleaned + '\n' : ''}${tagLine}\n\n---${rest}`
       } else if (cleaned) {
-        return `---\n${cleaned}\n---${rest}`
+        return `---\n${cleaned}\n\n---${rest}`
       } else {
         return rest.trimStart()
       }
     }
   }
-  if (tagLine) return `---\n${tagLine}\n---\n${content}`
+  if (tagLine) return `---\n${tagLine}\n\n---\n${content}`
   return content
 }
 
