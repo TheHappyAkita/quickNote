@@ -124,6 +124,21 @@ const renderedContent = computed(() => {
     gfm: true,
     breaks: false,
   }) as string
+  // Standard markdown hyperlinks: [text](url)
+  html = html.replace(
+    /\[([^\]]+)\]\(([^)]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener noreferrer" class="wiki-link">$1</a>',
+  )
+  // Datetime links: [[YYYY-MM-DD HH:MM]] or [[YYYY-MM-DD HH:MM:SS]]
+  html = html.replace(
+    /\[\[(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}(?::\d{2})?)\]\]/g,
+    '<a href="/note/$1" class="wiki-link">📅 $1</a>',
+  )
+  // Time notation: [[HH:MM]] or [[HH:MM:SS]] (no link, just styled)
+  html = html.replace(
+    /\[\[(\d{1,2}:\d{2}(?::\d{2})?)\]\]/g,
+    '<span class="wiki-link time-link">⏰ $1</span>',
+  )
   // Date links: [[YYYY-MM-DD]]
   html = html.replace(
     /\[\[(\d{4}-\d{2}-\d{2})\]\]/g,
