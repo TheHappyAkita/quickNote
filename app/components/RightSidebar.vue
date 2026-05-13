@@ -126,7 +126,7 @@
               {{ result.title }}
               <v-chip v-if="result.matches > 1" size="x-small" variant="tonal" color="info" class="ml-1">{{ result.matches }}</v-chip>
             </v-list-item-title>
-            <v-list-item-subtitle class="text-caption excerpt">{{ result.excerpt }}</v-list-item-subtitle>
+            <v-list-item-subtitle class="text-caption excerpt" v-html="parseWikilinks(result.excerpt)"></v-list-item-subtitle>
           </v-list-item>
         </v-list>
       </template>
