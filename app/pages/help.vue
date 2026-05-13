@@ -61,6 +61,10 @@
               <td><code>[Google](https://google.com)</code></td>
               <td>🔗 Google — External link (opens in new tab)</td>
             </tr>
+            <tr>
+              <td><code>user@example.com</code></td>
+              <td>📧 user@example.com — Email address (opens mail client)</td>
+            </tr>
           </tbody>
         </v-table>
         <div class="text-caption text-medium-emphasis mt-2">
