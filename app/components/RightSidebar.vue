@@ -152,7 +152,7 @@
               <v-icon size="14" color="error">mdi-bell-alert</v-icon>
             </template>
             <v-list-item-title class="text-body-2 reminder-text">
-              <NuxtLink :to="`/note/${reminder.date}`" class="reminder-link">{{ reminder.text }}</NuxtLink>
+              <NuxtLink :to="`/note/${reminder.date}`" class="reminder-link" v-html="parseWikilinks(reminder.text)"></NuxtLink>
             </v-list-item-title>
             <v-list-item-subtitle class="text-caption">
               <v-icon size="12" color="error" class="mr-1">mdi-clock-alert</v-icon>
@@ -228,7 +228,7 @@
               <v-icon size="14" :color="iconColor(reminder.keyword)">{{ iconFor(reminder.keyword) }}</v-icon>
             </template>
             <v-list-item-title class="text-body-2 reminder-text">
-              <NuxtLink :to="`/note/${reminder.date}`" class="reminder-link">{{ reminder.text }}</NuxtLink>
+              <NuxtLink :to="`/note/${reminder.date}`" class="reminder-link" v-html="parseWikilinks(reminder.text)"></NuxtLink>
             </v-list-item-title>
             <v-list-item-subtitle class="text-caption">{{ formatDate(reminder.date) }}</v-list-item-subtitle>
             <template #append>
@@ -244,9 +244,13 @@
 
 <script setup lang="ts">
 import type { Reminder } from '#shared/types/notes'
+import { useWikilinkParser } from '~/composables/useWikilinkParser'
 
 type PanelName = 'search' | 'alerts' | 'reminders' | 'todos' | null
 const activePanel = ref<PanelName>(null)
+
+// ── Wikilink parser ─────────────────────────────────────────────────────
+const { parseWikilinks } = useWikilinkParser()
 
 // ── Reminders ──────────────────────────────────────────────────────
 const { data: reminders, pending: remindersPending, refresh: refreshReminders } = await useFetch<Reminder[]>('/api/notes/reminders', {
