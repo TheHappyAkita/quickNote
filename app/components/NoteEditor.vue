@@ -71,6 +71,7 @@
 <script setup lang="ts">
 import { marked } from 'marked'
 import { parseCoords } from '#shared/utils/coords'
+import { EMOJI_MAP } from '~/composables/useWikilinkParser'
 
 const props = defineProps<{
   modelValue: string
@@ -162,6 +163,11 @@ const renderedContent = computed(() => {
     /\[\[([a-zA-Z0-9_\- ][a-zA-Z0-9_\- ]+)\]\]/g,
     '<a href="/page/$1" class="wiki-link page-link">📄 $1</a>',
   )
+  // Emoji shortcodes: :name: → emoji
+  html = html.replace(/:([a-z][a-z0-9_]*):/g, (_m, name: string) => {
+    const emoji = EMOJI_MAP[name]
+    return emoji ?? _m
+  })
   // Auto-color special note keywords (only at start of block elements, i.e. right after >)
   // Alert YYYY-MM-DD: text → red
   html = html.replace(/(>)(Alert(?:Me|er|a)?\s+\S+\s*:)([^<]*)/gi,

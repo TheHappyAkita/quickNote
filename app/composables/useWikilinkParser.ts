@@ -1,5 +1,31 @@
 import { parseCoords } from '#shared/utils/coords'
 
+export const EMOJI_MAP: Record<string, string> = {
+  // Vehicles
+  car: '🚗', bus: '🚌', train: '🚆', tram: '🚊', subway: '🚇',
+  bike: '🚲', motorcycle: '🏍️', truck: '🚚', van: '🚐',
+  plane: '✈️', helicopter: '🚁', rocket: '🚀', ship: '🚢',
+  boat: '⛵', ferry: '🛳️', taxi: '🚕',
+  // Places
+  home: '🏠', office: '🏢', hospital: '🏥', school: '🏫',
+  hotel: '🏨', restaurant: '🍽️', cafe: '☕', shop: '🛍️',
+  park: '🌳', beach: '🏖️', mountain: '⛰️', airport: '🛫',
+  // Weather
+  sun: '☀️', rain: '🌧️', snow: '❄️', cloud: '☁️',
+  storm: '⛈️', wind: '💨', fog: '🌫️',
+  // People & activities
+  meeting: '👥', phone: '📞', email: '📧', note: '📝',
+  idea: '💡', warning: '⚠️', check: '✅', cross: '❌',
+  money: '💰', gift: '🎁', party: '🎉', birthday: '🎂',
+  // Food & drink
+  coffee: '☕', tea: '🍵', beer: '🍺', wine: '🍷',
+  pizza: '🍕', burger: '🍔', sushi: '🍣',
+  // Misc
+  star: '⭐', heart: '❤️', fire: '🔥', key: '🔑',
+  lock: '🔒', book: '📚', music: '🎵', camera: '📷',
+  map: '🗺️', flag: '🚩', trophy: '🏆', target: '🎯',
+}
+
 export function useWikilinkParser() {
   function parseWikilinks(text: string): string {
     let html = text
@@ -48,6 +74,12 @@ export function useWikilinkParser() {
       /\[\[([a-zA-Z0-9_\- ][a-zA-Z0-9_\- ]+)\]\]/g,
       '<a href="/page/$1" class="wiki-link page-link">📄 $1</a>',
     )
+
+    // Emoji shortcodes: :name: → emoji (must not collide with existing syntax)
+    html = html.replace(/:([a-z][a-z0-9_]*):/g, (_m, name: string) => {
+      const emoji = EMOJI_MAP[name]
+      return emoji ?? _m
+    })
 
     return html
   }
