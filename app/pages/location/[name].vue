@@ -218,10 +218,10 @@ function upsertFrontmatterField(raw: string, key: string, value: string): string
       const newFm = keyRe.test(fm)
         ? fm.replace(keyRe, `${key}: ${value}`)
         : fm + `\n${key}: ${value}`
-      return `---${newFm}\n---${body}`
+      return `---${newFm}\n\n---${body}`
     }
   }
-  return `---\n${key}: ${value}\n---\n\n${raw}`
+  return `---\n${key}: ${value}\n\n---\n\n${raw}`
 }
 
 function removeFrontmatterField(raw: string, key: string): string {
@@ -231,7 +231,7 @@ function removeFrontmatterField(raw: string, key: string): string {
   const fm = raw.slice(3, end)
   const body = raw.slice(end + 4)
   const newFm = fm.replace(new RegExp(`\\n?${key}:.*`, 'm'), '')
-  return `---${newFm}\n---${body}`
+  return `---${newFm}\n\n---${body}`
 }
 
 function saveCoordsToFrontmatter() {
