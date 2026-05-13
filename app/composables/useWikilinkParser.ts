@@ -10,6 +10,7 @@ export const EMOJI_MAP: Record<string, string> = {
   home: '🏠', office: '🏢', hospital: '🏥', school: '🏫',
   hotel: '🏨', restaurant: '🍽️', cafe: '☕', shop: '🛍️',
   park: '🌳', beach: '🏖️', mountain: '⛰️', airport: '🛫',
+  world: '🌍', earth: '🌍', globe: '🌍',
   // Weather
   sun: '☀️', rain: '🌧️', snow: '❄️', cloud: '☁️',
   storm: '⛈️', wind: '💨', fog: '🌫️',
