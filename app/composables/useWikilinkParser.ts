@@ -76,6 +76,12 @@ export function useWikilinkParser() {
       '<a href="/page/$1" class="wiki-link page-link">📄 $1</a>',
     )
 
+    // Email addresses: user@example.com
+    html = html.replace(
+      /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g,
+      '<a href="mailto:$1" class="wiki-link">📧 $1</a>',
+    )
+
     // Emoji shortcodes: :name: → emoji (must not collide with existing syntax)
     html = html.replace(/:([a-z][a-z0-9_]*):/g, (_m, name: string) => {
       const emoji = EMOJI_MAP[name]
