@@ -76,9 +76,9 @@ export function useWikilinkParser() {
       '<a href="/page/$1" class="wiki-link page-link">📄 $1</a>',
     )
 
-    // Email addresses: user@example.com
+    // Email addresses: user@example.com (skip if already inside an href)
     html = html.replace(
-      /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g,
+      /(?<!["=>])([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(?![^<]*<\/a>)/g,
       '<a href="mailto:$1" class="wiki-link">📧 $1</a>',
     )
 

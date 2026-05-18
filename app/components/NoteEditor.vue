@@ -163,9 +163,13 @@ const renderedContent = computed(() => {
     /\[\[([a-zA-Z0-9_\- ][a-zA-Z0-9_\- ]+)\]\]/g,
     '<a href="/page/$1" class="wiki-link page-link">📄 $1</a>',
   )
-  // Email addresses: user@example.com
+  // Email addresses — decorate existing mailto links from marked, or create new ones
   html = html.replace(
-    /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g,
+    /<a href="(mailto:[^"]+)">([^<]+)<\/a>/g,
+    '<a href="$1" class="wiki-link">📧 $2</a>',
+  )
+  html = html.replace(
+    /(?<!["=>])([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(?![^<]*<\/a>)/g,
     '<a href="mailto:$1" class="wiki-link">📧 $1</a>',
   )
   // Emoji shortcodes: :name: → emoji
