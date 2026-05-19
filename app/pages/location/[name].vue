@@ -266,10 +266,10 @@ function upsertFrontmatterField(raw: string, key: string, value: string): string
       const newFm = keyRe.test(fm)
         ? fm.replace(keyRe, `${key}: ${value}`)
         : fm.trimEnd() + `\n${key}: ${value}`
-      return `---${newFm}\n---${body}`
+      return `---${newFm.trimEnd()}\n\n---${body}`
     }
   }
-  return `---\n${key}: ${value}\n---\n\n${raw}`
+  return `---\n${key}: ${value}\n\n---\n\n${raw}`
 }
 
 function removeFrontmatterField(raw: string, key: string): string {
@@ -280,7 +280,7 @@ function removeFrontmatterField(raw: string, key: string): string {
   const body = raw.slice(end + 4)
   const newFm = fm.replace(new RegExp(`\\n?${key}:.*`, 'm'), '')
   if (!newFm.trim()) return body.trimStart()
-  return `---${newFm}\n---${body}`
+  return `---${newFm.trimEnd()}\n\n---${body}`
 }
 
 function saveCoordsToFrontmatter() {
@@ -349,11 +349,11 @@ function setTags(tags: string[]) {
       const newFm = /^tags:/m.test(fm)
         ? fm.replace(/^tags:.*$/m, tagLine)
         : fm.trimEnd() + `\n${tagLine}`
-      content.value = `---${newFm}\n---${body}`
+      content.value = `---${newFm.trimEnd()}\n\n---${body}`
       return
     }
   }
-  content.value = `---\n${tagLine}\n---\n\n${raw}`
+  content.value = `---\n${tagLine}\n\n---\n\n${raw}`
 }
 
 function removeTag(tag: string) {
