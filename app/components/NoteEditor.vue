@@ -96,8 +96,15 @@ const { data: allPagesRaw } = await useFetch<{ name: string; tags: string[] }[]>
 const allPages = computed(() => allPagesRaw.value?.map(p => p.name) ?? [])
 const { data: allPersonsRaw } = await useFetch<{ name: string; tags: string[] }[]>('/api/persons', { server: false, default: () => [] })
 const allPersons = computed(() => allPersonsRaw.value?.map(p => p.name) ?? [])
-const { data: allLocationsRaw } = await useFetch<{ name: string; tags: string[]; nickname?: string }[]>('/api/locations', { server: false, default: () => [], getCachedData: () => undefined })
+const { data: allLocationsRaw } = await useFetch<{ name: string; tags: string[]; nickname?: string; lat?: number; lng?: number }[]>('/api/locations', { server: false, default: () => [], getCachedData: () => undefined })
 const allLocations = computed(() => allLocationsRaw.value?.map(l => l.name) ?? [])
+const locationMetaMap = computed(() => {
+  const map = new Map<string, { nickname?: string; lat?: number; lng?: number }>()
+  for (const l of allLocationsRaw.value ?? []) {
+    map.set(l.name, { nickname: l.nickname, lat: l.lat, lng: l.lng })
+  }
+  return map
+})
 const locationNicknameMap = computed(() => {
   const map = new Map<string, string>()
   for (const l of allLocationsRaw.value ?? []) {
@@ -128,8 +135,35 @@ function resolveColor(raw: string): string | null {
   return null
 }
 
+function renderLocationMentions(raw: string): string {
+  return raw.replace(/&\[\[([^\]]+)\]\](?:\(([^)]+)\))?/g, (_m, inner: string, nickname: string | undefined) => {
+    const parts = inner.split('|').map((p: string) => p.trim())
+    let name: string | undefined, lat: number | undefined, lng: number | undefined
+    if (parts.length === 1) {
+      const c = parseCoords(parts[0]!); if (c) { lat = c.lat; lng = c.lng } else name = parts[0]
+    } else {
+      const c = parseCoords(parts[1]!); if (c) { name = parts[0]; lat = c.lat; lng = c.lng } else name = parts[0]
+    }
+    if (!name) {
+      const display = nickname ?? `${lat!.toFixed(5)}, ${lng!.toFixed(5)}`
+      return `<a href="/map?lat=${lat}&lng=${lng}" class="wiki-link location-link">📍 ${display}</a>`
+    }
+    const meta = locationMetaMap.value.get(name)
+    const display = nickname ?? meta?.nickname ?? name
+    // Prefer inline coords, then stored coords, then fall back to location page
+    const resolvedLat = lat ?? meta?.lat
+    const resolvedLng = lng ?? meta?.lng
+    if (resolvedLat != null && resolvedLng != null) {
+      return `<a href="/map?lat=${resolvedLat}&lng=${resolvedLng}" class="wiki-link location-link">📍 ${display}</a>`
+    }
+    return `<a href="/location/${encodeURIComponent(name)}" class="wiki-link location-link">📍 ${display}</a>`
+  })
+}
+
 const renderedContent = computed(() => {
-  let html = marked.parse(props.modelValue, {
+  // Pre-process location mentions before marked so | and & aren't mangled
+  const preprocessed = renderLocationMentions(props.modelValue)
+  let html = marked.parse(preprocessed, {
     gfm: true,
     breaks: false,
   }) as string
@@ -157,25 +191,7 @@ const renderedContent = computed(() => {
   html = html.replace(/@\[\[([^\]]+)\]\]/g, (_m, name: string) =>
     `<a href="/person/${encodeURIComponent(name.trim())}" class="wiki-link person-link">👤 ${name}</a>`,
   )
-  // Location mentions: &[[...]](Nickname) or &[[...]]
-  html = html.replace(/&amp;\[\[([^\]]+)\]\](?:\(([^)]+)\))?/g, (_m, inner: string, nickname: string | undefined) => {
-    const parts = inner.split('|').map((p: string) => p.trim())
-    let name: string | undefined, lat: number | undefined, lng: number | undefined
-    if (parts.length === 1) {
-      const c = parseCoords(parts[0]!); if (c) { lat = c.lat; lng = c.lng } else name = parts[0]
-    } else {
-      const c = parseCoords(parts[1]!); if (c) { name = parts[0]; lat = c.lat; lng = c.lng } else name = parts[0]
-    }
-    if (!name) {
-      const display = nickname ?? `${lat!.toFixed(5)}, ${lng!.toFixed(5)}`
-      return `<a href="/map?lat=${lat}&lng=${lng}" class="wiki-link location-link">📍 ${display}</a>`
-    }
-    const display = nickname ?? locationNicknameMap.value.get(name) ?? name
-    if (lat != null && lng != null) {
-      return `<a href="/map?lat=${lat}&lng=${lng}" class="wiki-link location-link">📍 ${display}</a>`
-    }
-    return `<a href="/location/${encodeURIComponent(name)}" class="wiki-link location-link">📍 ${display}</a>`
-  })
+  // Location mentions already handled in pre-processing step above
   // Page links: [[Page Name]] (non-date format)
   html = html.replace(
     /\[\[([a-zA-Z0-9_\- ][a-zA-Z0-9_\- ]+)\]\]/g,
