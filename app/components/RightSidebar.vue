@@ -245,6 +245,7 @@
 <script setup lang="ts">
 import type { Reminder } from '#shared/types/notes'
 import { useWikilinkParser } from '~/composables/useWikilinkParser'
+import { sanitizeLocationSlug } from '#shared/utils/location'
 
 type PanelName = 'search' | 'alerts' | 'reminders' | 'todos' | null
 const activePanel = ref<PanelName>(null)
@@ -254,11 +255,23 @@ const { data: allLocationsRaw } = await useFetch<{ name: string; nickname?: stri
 const locationNicknameMap = computed(() => {
   const map = new Map<string, string>()
   for (const l of allLocationsRaw.value ?? []) {
-    if (l.nickname) map.set(l.name, l.nickname)
+    if (l.nickname) {
+      map.set(l.name, l.nickname)
+      const slug = sanitizeLocationSlug(l.name)
+      if (slug !== l.name) map.set(slug, l.nickname)
+    }
   }
   return map
 })
-const locationNameSet = computed(() => new Set((allLocationsRaw.value ?? []).map(l => l.name)))
+const locationNameSet = computed(() => {
+  const set = new Set<string>()
+  for (const l of allLocationsRaw.value ?? []) {
+    set.add(l.name)
+    const slug = sanitizeLocationSlug(l.name)
+    if (slug !== l.name) set.add(slug)
+  }
+  return set
+})
 const { parseWikilinks } = useWikilinkParser({
   locationNicknames: () => locationNicknameMap.value,
   locationNames: () => locationNameSet.value,

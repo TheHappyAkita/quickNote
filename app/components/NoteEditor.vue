@@ -102,14 +102,22 @@ const allLocations = computed(() => allLocationsRaw.value?.map(l => l.name) ?? [
 const locationMetaMap = computed(() => {
   const map = new Map<string, { nickname?: string; lat?: number; lng?: number }>()
   for (const l of allLocationsRaw.value ?? []) {
-    map.set(l.name, { nickname: l.nickname, lat: l.lat, lng: l.lng })
+    const meta = { nickname: l.nickname, lat: l.lat, lng: l.lng }
+    map.set(l.name, meta)
+    // Also index under sanitized slug so pre-migrated files are found
+    const slug = sanitizeLocationSlug(l.name)
+    if (slug !== l.name) map.set(slug, meta)
   }
   return map
 })
 const locationNicknameMap = computed(() => {
   const map = new Map<string, string>()
   for (const l of allLocationsRaw.value ?? []) {
-    if (l.nickname) map.set(l.name, l.nickname)
+    if (l.nickname) {
+      map.set(l.name, l.nickname)
+      const slug = sanitizeLocationSlug(l.name)
+      if (slug !== l.name) map.set(slug, l.nickname)
+    }
   }
   return map
 })
