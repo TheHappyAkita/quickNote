@@ -75,8 +75,7 @@
         hide-details
         single-line
         placeholder="e.g. Office building B"
-        class="mb-3"
-        style="max-width: 400px"
+        class="mb-3 nickname-field"
         @blur="saveNicknameToFrontmatter"
         @keyup.enter="saveNicknameToFrontmatter"
       />
@@ -412,6 +411,16 @@ onMounted(() => {
 .coord-field {
   min-width: 280px;
   flex: 1;
+}
+
+.nickname-field {
+  max-width: 480px;
+}
+
+.nickname-field :deep(.v-field__input) {
+  min-height: unset !important;
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 
 .coords-card {
