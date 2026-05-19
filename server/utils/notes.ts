@@ -192,7 +192,7 @@ export async function listPersonsWithMeta(): Promise<{ name: string; tags: strin
 
 // ─── Locations ───────────────────────────────────────────────────────────────
 
-const LOCATION_NAME_PATTERN = /^[a-zA-Z0-9,\. _\-äöüÄÖÜáéíóúàèìòùâêîôûãõ]+$/
+const LOCATION_NAME_PATTERN = /^[a-zA-Z0-9,\. _\-@äöüÄÖÜáéíóúàèìòùâêîôûãõ]+$/
 const LOCATIONS_DIR = 'locations'
 
 function getLocationsDir(): string {

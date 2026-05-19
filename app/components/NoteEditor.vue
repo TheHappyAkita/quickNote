@@ -72,6 +72,7 @@
 <script setup lang="ts">
 import { marked } from 'marked'
 import { parseCoords } from '#shared/utils/coords'
+import { sanitizeLocationSlug } from '#shared/utils/location'
 import { EMOJI_MAP } from '~/composables/useWikilinkParser'
 
 const props = defineProps<{
@@ -145,12 +146,12 @@ function renderLocationMentions(raw: string): string {
       const c = parseCoords(parts[1]!); if (c) { name = parts[0]; lat = c.lat; lng = c.lng } else name = parts[0]
     }
     if (!name) {
-      // Coord-only: check if a location file exists with this coord as its name
-      const coordKey = `${lat},${lng}`
-      const coordMeta = locationMetaMap.value.get(coordKey)
+      // Coord-only: check if a location file exists with this coord encoded as slug
+      const coordSlug = sanitizeLocationSlug(`${lat},${lng}`)
+      const coordMeta = locationMetaMap.value.get(coordSlug)
       if (coordMeta) {
-        const display = nickname ?? coordMeta.nickname ?? coordKey
-        return `<a href="/location/${encodeURIComponent(coordKey)}" class="wiki-link location-link">📍 ${display}</a>`
+        const display = nickname ?? coordMeta.nickname ?? coordSlug
+        return `<a href="/location/${encodeURIComponent(coordSlug)}" class="wiki-link location-link">📍 ${display}</a>`
       }
       // Truly anonymous pin — link to map
       const display = nickname ?? `${lat!.toFixed(5)}, ${lng!.toFixed(5)}`

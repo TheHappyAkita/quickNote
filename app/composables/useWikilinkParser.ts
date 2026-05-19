@@ -1,4 +1,5 @@
 import { parseCoords } from '#shared/utils/coords'
+import { sanitizeLocationSlug } from '#shared/utils/location'
 
 function parseLocationParts(inner: string): { name?: string; lat?: number; lng?: number } {
   const parts = inner.split('|').map(p => p.trim())
@@ -88,11 +89,10 @@ export function useWikilinkParser(options?: {
       const parsed = parseLocationParts(inner)
       if (!parsed.name) {
         const lat = parsed.lat!, lng = parsed.lng!
-        // Check if a location file exists with this coord as its name
-        const coordKey = `${lat},${lng}`
-        if (locationNames?.has(coordKey)) {
-          const display = nickname ?? locationNicknames?.get(coordKey) ?? coordKey
-          return `<a href="/location/${encodeURIComponent(coordKey)}" class="wiki-link location-link">📍 ${display}</a>`
+        const coordSlug = sanitizeLocationSlug(`${lat},${lng}`)
+        if (locationNames?.has(coordSlug)) {
+          const display = nickname ?? locationNicknames?.get(coordSlug) ?? coordSlug
+          return `<a href="/location/${encodeURIComponent(coordSlug)}" class="wiki-link location-link">📍 ${display}</a>`
         }
         const display = nickname ?? `${lat.toFixed(5)}, ${lng.toFixed(5)}`
         return `<a href="/map?lat=${lat}&lng=${lng}" class="wiki-link location-link">📍 ${display}</a>`

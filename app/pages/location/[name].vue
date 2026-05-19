@@ -154,6 +154,7 @@
 <script setup lang="ts">
 import type { LocationMeta } from '#shared/types/notes'
 import { parseCoords, formatDD } from '#shared/utils/coords'
+import { decodeCoordSlug } from '#shared/utils/location'
 
 const route = useRoute()
 const router = useRouter()
@@ -197,7 +198,9 @@ function parseFrontmatterCoords(raw: string): { lat?: number; lng?: number } {
   }
 }
 
-const coordInput = ref<string>('')
+// Pre-populate coord input if the slug is a coord-encoded filename
+const slugAsCoords = decodeCoordSlug(locationName.value)
+const coordInput = ref<string>(slugAsCoords ?? '')
 
 // ── Nickname ──────────────────────────────────────────────────────────────────
 
