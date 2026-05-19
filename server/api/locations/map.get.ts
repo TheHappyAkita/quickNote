@@ -1,15 +1,15 @@
 import type { LocationMeta } from '#shared/types/notes'
 import {
-  listNotes, readNote, listPages, readPage,
-  listPersons, readPerson,
+  listNotes, readNote, listPagesWithMeta, readPage,
+  listPersonsWithMeta, readPerson,
   listLocationsWithMeta, extractLocationMentionsWithCoords,
 } from '../../utils/notes'
 
 export default defineEventHandler(async (): Promise<LocationMeta[]> => {
-  const [dates, pages, persons, storedLocations] = await Promise.all([
+  const [dates, pagesMeta, personsMeta, storedLocations] = await Promise.all([
     listNotes(),
-    listPages(),
-    listPersons(),
+    listPagesWithMeta(),
+    listPersonsWithMeta(),
     listLocationsWithMeta(),
   ])
 
@@ -23,7 +23,7 @@ export default defineEventHandler(async (): Promise<LocationMeta[]> => {
 
   function ensureEntry(name: string) {
     if (!locationMap.has(name)) {
-      locationMap.set(name, { name, tags: [], mentionedInDates: [], mentionedInPages: [], mentionedInPeople: [] })
+      locationMap.set(name, { name, slug: name, tags: [], mentionedInDates: [], mentionedInPages: [], mentionedInPeople: [] })
     }
     return locationMap.get(name)!
   }
@@ -56,16 +56,16 @@ export default defineEventHandler(async (): Promise<LocationMeta[]> => {
     if (content) processContent(content, date)
   }))
 
-  // Read all pages
-  await Promise.all(pages.map(async (page) => {
-    const content = await readPage(page)
-    if (content) processContent(content, undefined, page)
+  // Read all pages — use display name (not slug) for mentionedInPages
+  await Promise.all(pagesMeta.map(async (p) => {
+    const content = await readPage(p.slug)
+    if (content) processContent(content, undefined, p.name)
   }))
 
-  // Read all person files
-  await Promise.all(persons.map(async (person) => {
-    const content = await readPerson(person)
-    if (content) processContent(content, undefined, undefined, person)
+  // Read all person files — use display name (not slug) for mentionedInPeople
+  await Promise.all(personsMeta.map(async (p) => {
+    const content = await readPerson(p.slug)
+    if (content) processContent(content, undefined, undefined, p.name)
   }))
 
   // Apply inline coord fallback where no stored coords exist
