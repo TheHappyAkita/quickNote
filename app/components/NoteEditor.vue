@@ -154,15 +154,14 @@ function renderLocationMentions(raw: string): string {
       const c = parseCoords(parts[1]!); if (c) { name = parts[0]; lat = c.lat; lng = c.lng } else name = parts[0]
     }
     if (!name) {
-      // Coord-only: check if a location file exists with this coord encoded as slug
       const coordSlug = sanitizeLocationSlug(`${lat},${lng}`)
       const coordMeta = locationMetaMap.value.get(coordSlug)
-      if (coordMeta) {
-        const display = nickname ?? coordMeta.nickname ?? coordSlug
+      const display = nickname ?? coordMeta?.nickname ?? `${lat!.toFixed(5)}, ${lng!.toFixed(5)}`
+      // Link to editor if: file exists OR a nickname is given (intent to save)
+      if (coordMeta || nickname) {
         return `<a href="/location/${encodeURIComponent(coordSlug)}" class="wiki-link location-link">📍 ${display}</a>`
       }
-      // Truly anonymous pin — link to map
-      const display = nickname ?? `${lat!.toFixed(5)}, ${lng!.toFixed(5)}`
+      // Truly anonymous pin — no file, no nickname
       return `<a href="/map?lat=${lat}&lng=${lng}" class="wiki-link location-link">📍 ${display}</a>`
     }
     const meta = locationMetaMap.value.get(name)

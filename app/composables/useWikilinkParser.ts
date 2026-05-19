@@ -90,11 +90,12 @@ export function useWikilinkParser(options?: {
       if (!parsed.name) {
         const lat = parsed.lat!, lng = parsed.lng!
         const coordSlug = sanitizeLocationSlug(`${lat},${lng}`)
-        if (locationNames?.has(coordSlug)) {
-          const display = nickname ?? locationNicknames?.get(coordSlug) ?? coordSlug
+        const fileExists = locationNames?.has(coordSlug) || locationNames?.has(`${lat},${lng}`)
+        const display = nickname ?? locationNicknames?.get(coordSlug) ?? `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+        // Link to editor if: file exists OR a nickname is given (intent to save)
+        if (fileExists || nickname) {
           return `<a href="/location/${encodeURIComponent(coordSlug)}" class="wiki-link location-link">📍 ${display}</a>`
         }
-        const display = nickname ?? `${lat.toFixed(5)}, ${lng.toFixed(5)}`
         return `<a href="/map?lat=${lat}&lng=${lng}" class="wiki-link location-link">📍 ${display}</a>`
       }
       const display = nickname ?? locationNicknames?.get(parsed.name) ?? parsed.name
