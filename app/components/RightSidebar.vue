@@ -258,7 +258,11 @@ const locationNicknameMap = computed(() => {
   }
   return map
 })
-const { parseWikilinks } = useWikilinkParser({ locationNicknames: () => locationNicknameMap.value })
+const locationNameSet = computed(() => new Set((allLocationsRaw.value ?? []).map(l => l.name)))
+const { parseWikilinks } = useWikilinkParser({
+  locationNicknames: () => locationNicknameMap.value,
+  locationNames: () => locationNameSet.value,
+})
 
 // ── Reminders ──────────────────────────────────────────────────────
 const { data: reminders, pending: remindersPending, refresh: refreshReminders } = await useFetch<Reminder[]>('/api/notes/reminders', {

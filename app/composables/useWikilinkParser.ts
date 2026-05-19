@@ -41,11 +41,17 @@ export const EMOJI_MAP: Record<string, string> = {
   map: '🗺️', flag: '🚩', trophy: '🏆', target: '🎯',
 }
 
-export function useWikilinkParser(options?: { locationNicknames?: Map<string, string> | (() => Map<string, string>) }) {
+export function useWikilinkParser(options?: {
+  locationNicknames?: Map<string, string> | (() => Map<string, string>)
+  locationNames?: Set<string> | (() => Set<string>)
+}) {
   function parseWikilinks(text: string): string {
     const locationNicknames = typeof options?.locationNicknames === 'function'
       ? options.locationNicknames()
       : options?.locationNicknames
+    const locationNames = typeof options?.locationNames === 'function'
+      ? options.locationNames()
+      : options?.locationNames
     let html = text
 
     // Standard markdown hyperlinks: [text](url)
@@ -82,6 +88,12 @@ export function useWikilinkParser(options?: { locationNicknames?: Map<string, st
       const parsed = parseLocationParts(inner)
       if (!parsed.name) {
         const lat = parsed.lat!, lng = parsed.lng!
+        // Check if a location file exists with this coord as its name
+        const coordKey = `${lat},${lng}`
+        if (locationNames?.has(coordKey)) {
+          const display = nickname ?? locationNicknames?.get(coordKey) ?? coordKey
+          return `<a href="/location/${encodeURIComponent(coordKey)}" class="wiki-link location-link">📍 ${display}</a>`
+        }
         const display = nickname ?? `${lat.toFixed(5)}, ${lng.toFixed(5)}`
         return `<a href="/map?lat=${lat}&lng=${lng}" class="wiki-link location-link">📍 ${display}</a>`
       }
