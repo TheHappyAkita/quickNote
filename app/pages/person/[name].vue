@@ -136,12 +136,12 @@ function applyTagsToContent(tags: string[]) {
       const fm = c.slice(3, end).replace(/\ntags:[^\n]*(\n[ \t]+-[^\n]*)*/g, '')
       const rest = c.slice(end + 4)
       const cleaned = fm.trimEnd()
-      if (tagLine) { content.value = `---\n${cleaned ? cleaned + '\n' : ''}${tagLine}\n\n---${rest}`; return }
-      if (cleaned) { content.value = `---\n${cleaned}\n\n---${rest}`; return }
+      if (tagLine) { content.value = `---\n${cleaned ? cleaned + '\n' : ''}${tagLine}\n---${rest}`; return }
+      if (cleaned) { content.value = `---\n${cleaned}\n---${rest}`; return }
       content.value = rest.trimStart(); return
     }
   }
-  if (tagLine) content.value = `---\n${tagLine}\n\n---\n${c}`
+  if (tagLine) content.value = `---\n${tagLine}\n---\n${c}`
 }
 
 function removeTag(tag: string) { applyTagsToContent(currentTags.value.filter(t => t !== tag)); saveNow() }

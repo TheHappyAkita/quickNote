@@ -250,6 +250,7 @@ const hasCoords = computed(() => parsedCoords.value != null)
 
 const currentLocationMeta = computed<LocationMeta>(() => ({
   name: locationName.value,
+  slug: locationName.value,
   tags: currentTags.value,
   lat: parsedCoords.value?.lat,
   lng: parsedCoords.value?.lng,
@@ -265,10 +266,10 @@ function upsertFrontmatterField(raw: string, key: string, value: string): string
       const newFm = keyRe.test(fm)
         ? fm.replace(keyRe, `${key}: ${value}`)
         : fm.trimEnd() + `\n${key}: ${value}`
-      return `---${newFm}\n\n---${body}`
+      return `---${newFm}\n---${body}`
     }
   }
-  return `---\n${key}: ${value}\n\n---\n\n${raw}`
+  return `---\n${key}: ${value}\n---\n\n${raw}`
 }
 
 function removeFrontmatterField(raw: string, key: string): string {
@@ -278,7 +279,8 @@ function removeFrontmatterField(raw: string, key: string): string {
   const fm = raw.slice(3, end)
   const body = raw.slice(end + 4)
   const newFm = fm.replace(new RegExp(`\\n?${key}:.*`, 'm'), '')
-  return `---${newFm}\n\n---${body}`
+  if (!newFm.trim()) return body.trimStart()
+  return `---${newFm}\n---${body}`
 }
 
 function saveCoordsToFrontmatter() {
@@ -347,11 +349,11 @@ function setTags(tags: string[]) {
       const newFm = /^tags:/m.test(fm)
         ? fm.replace(/^tags:.*$/m, tagLine)
         : fm.trimEnd() + `\n${tagLine}`
-      content.value = `---${newFm}\n\n---${body}`
+      content.value = `---${newFm}\n---${body}`
       return
     }
   }
-  content.value = `---\n${tagLine}\n\n---\n\n${raw}`
+  content.value = `---\n${tagLine}\n---\n\n${raw}`
 }
 
 function removeTag(tag: string) {
