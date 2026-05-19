@@ -50,6 +50,18 @@
               <td>📍 Anonymous pin — any format, no location file needed</td>
             </tr>
             <tr>
+              <td><code>&amp;[[Name]](Nickname)</code></td>
+              <td>📍 Nickname — inline display label overrides stored nickname &amp; file name</td>
+            </tr>
+            <tr>
+              <td><code>&amp;[[Name|52.52,13.405]](Office B)</code></td>
+              <td>📍 Office B — nickname + inline coords combined</td>
+            </tr>
+            <tr>
+              <td><code>&amp;[[52.52,13.405]](Back entrance)</code></td>
+              <td>📍 Back entrance — nicknamed anonymous pin, no location file needed</td>
+            </tr>
+            <tr>
               <td><code>[[14:30]]</code> / <code>[[14:30:45]]</code></td>
               <td>⏰ Time notation — styled text, no link</td>
             </tr>
