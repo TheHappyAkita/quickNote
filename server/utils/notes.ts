@@ -244,16 +244,18 @@ export async function deleteLocation(name: string): Promise<void> {
   try { await unlink(join(getLocationsDir(), `${name}.md`)) } catch { /* already gone */ }
 }
 
-function parseLocationCoords(content: string): { lat?: number; lng?: number } {
+function parseLocationCoords(content: string): { lat?: number; lng?: number; nickname?: string } {
   if (!content.startsWith('---')) return {}
   const end = content.indexOf('\n---', 3)
   if (end === -1) return {}
   const fm = content.slice(3, end)
   const latMatch = /^lat:\s*([\-0-9.]+)/m.exec(fm)
   const lngMatch = /^lng:\s*([\-0-9.]+)/m.exec(fm)
+  const nickMatch = /^nickname:\s*(.+)/m.exec(fm)
   return {
     lat: latMatch ? parseFloat(latMatch[1]!) : undefined,
     lng: lngMatch ? parseFloat(lngMatch[1]!) : undefined,
+    nickname: nickMatch ? nickMatch[1]!.trim() : undefined,
   }
 }
 

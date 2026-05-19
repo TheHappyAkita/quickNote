@@ -66,6 +66,20 @@
         </v-btn>
       </div>
 
+      <!-- Nickname row -->
+      <v-text-field
+        v-model="nicknameInput"
+        label="Nickname (optional display name for autocomplete)"
+        density="compact"
+        variant="outlined"
+        hide-details
+        placeholder="e.g. Office building B, Back entrance"
+        class="mb-3"
+        prepend-inner-icon="mdi-label-outline"
+        @blur="saveNicknameToFrontmatter"
+        @keyup.enter="saveNicknameToFrontmatter"
+      />
+
       <!-- Coordinates row -->
       <v-card variant="outlined" class="mb-3 coords-card">
         <v-card-text class="pa-3">
@@ -181,6 +195,33 @@ function parseFrontmatterCoords(raw: string): { lat?: number; lng?: number } {
 }
 
 const coordInput = ref<string>('')
+
+// ── Nickname ──────────────────────────────────────────────────────────────────
+
+function parseFrontmatterNickname(raw: string): string {
+  if (!raw.startsWith('---')) return ''
+  const end = raw.indexOf('\n---', 3)
+  if (end === -1) return ''
+  const fm = raw.slice(3, end)
+  const m = /^nickname:\s*(.+)/m.exec(fm)
+  return m ? m[1]!.trim() : ''
+}
+
+const nicknameInput = ref<string>('')
+
+watch(content, (raw) => {
+  nicknameInput.value = parseFrontmatterNickname(raw)
+}, { immediate: true })
+
+function saveNicknameToFrontmatter() {
+  const val = nicknameInput.value.trim()
+  if (val) {
+    content.value = upsertFrontmatterField(content.value, 'nickname', val)
+  } else {
+    content.value = removeFrontmatterField(content.value, 'nickname')
+  }
+  saveNow()
+}
 
 const parsedCoords = computed(() =>
   coordInput.value.trim() ? parseCoords(coordInput.value.trim()) : null,

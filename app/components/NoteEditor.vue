@@ -54,6 +54,7 @@
                 <v-icon v-else size="14" class="mr-1">mdi-file-document-outline</v-icon>
               </template>
               <v-list-item-title class="text-body-2">{{ suggestion }}</v-list-item-title>
+              <v-list-item-subtitle v-if="suggestionMode === 'location' && locationNicknameMap.get(suggestion)" class="text-caption">{{ locationNicknameMap.get(suggestion) }}</v-list-item-subtitle>
             </v-list-item>
           </v-list>
         </v-card>
@@ -95,8 +96,15 @@ const { data: allPagesRaw } = await useFetch<{ name: string; tags: string[] }[]>
 const allPages = computed(() => allPagesRaw.value?.map(p => p.name) ?? [])
 const { data: allPersonsRaw } = await useFetch<{ name: string; tags: string[] }[]>('/api/persons', { server: false, default: () => [] })
 const allPersons = computed(() => allPersonsRaw.value?.map(p => p.name) ?? [])
-const { data: allLocationsRaw } = await useFetch<{ name: string; tags: string[] }[]>('/api/locations', { server: false, default: () => [] })
+const { data: allLocationsRaw } = await useFetch<{ name: string; tags: string[]; nickname?: string }[]>('/api/locations', { server: false, default: () => [] })
 const allLocations = computed(() => allLocationsRaw.value?.map(l => l.name) ?? [])
+const locationNicknameMap = computed(() => {
+  const map = new Map<string, string>()
+  for (const l of allLocationsRaw.value ?? []) {
+    if (l.nickname) map.set(l.name, l.nickname)
+  }
+  return map
+})
 
 const dropdownStyle = ref({ top: '40px', left: '16px' })
 const suggestionMode = ref<'link' | 'person' | 'location'>('link')
@@ -237,8 +245,10 @@ function handleInput(event: Event) {
   } else if (locationMatch) {
     suggestionMode.value = 'location'
     const query = locationMatch[1] ?? ''
-    suggestions.value = (allLocations.value ?? [])
-      .filter(l => l.toLowerCase().includes(query.toLowerCase()))
+    const queryLower = query.toLowerCase()
+    suggestions.value = (allLocationsRaw.value ?? [])
+      .filter(l => l.name.toLowerCase().includes(queryLower) || (l.nickname ?? '').toLowerCase().includes(queryLower))
+      .map(l => l.name)
       .slice(0, 10)
     selectedSuggestion.value = 0
     showSuggestions.value = suggestions.value.length > 0
