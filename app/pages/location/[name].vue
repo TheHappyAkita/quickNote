@@ -75,7 +75,6 @@
             density="compact"
             variant="outlined"
             hide-details
-            single-line
             placeholder="e.g. Office building B"
             style="max-width: 480px"
             @blur="saveNicknameToFrontmatter"
