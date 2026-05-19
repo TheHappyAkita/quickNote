@@ -1,11 +1,15 @@
-import { writeLocation, deleteLocation, isValidLocationName } from '../../utils/notes'
+import { writeLocation, deleteLocation, isValidLocationName, renameLocationFile } from '../../utils/notes'
+import { sanitizeLocationSlug } from '#shared/utils/location'
 import { cacheInvalidate } from '../../utils/cache'
 
 export default defineEventHandler(async (event) => {
-  const name = decodeURIComponent(getRouterParam(event, 'name') ?? '')
+  const raw = decodeURIComponent(getRouterParam(event, 'name') ?? '')
+  const name = sanitizeLocationSlug(raw)
   if (!name || !isValidLocationName(name)) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid location name' })
   }
+  // Migrate old file if name changed after sanitization
+  if (raw !== name) await renameLocationFile(raw, name)
   const body = await readBody<{ content: string }>(event)
   if (typeof body?.content !== 'string') {
     throw createError({ statusCode: 400, statusMessage: 'Content field required' })
@@ -17,5 +21,5 @@ export default defineEventHandler(async (event) => {
   }
   await writeLocation(name, body.content)
   cacheInvalidate('graph')
-  return { ok: true, deleted: false }
+  return { ok: true, deleted: false, name }
 })

@@ -225,6 +225,13 @@ export function isValidLocationName(name: string): boolean {
   return LOCATION_NAME_PATTERN.test(name) && name.length > 0 && name.length <= 120
 }
 
+export async function renameLocationFile(oldName: string, newName: string): Promise<void> {
+  if (oldName === newName) return
+  const oldPath = join(getLocationsDir(), `${oldName}.md`)
+  const newPath = join(getLocationsDir(), `${newName}.md`)
+  if (existsSync(oldPath) && !existsSync(newPath)) await rename(oldPath, newPath)
+}
+
 export async function listLocations(): Promise<string[]> {
   await ensureLocationsDir()
   try {
