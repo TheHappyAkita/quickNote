@@ -11,7 +11,8 @@ export interface PersonMeta {
 }
 
 export interface LocationMeta {
-  name: string
+  name: string      // display name (from frontmatter name: or slug)
+  slug: string      // filesystem-safe filename without extension
   tags: string[]
   lat?: number
   lng?: number

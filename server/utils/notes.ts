@@ -303,12 +303,13 @@ function parseLocationCoords(content: string): { lat?: number; lng?: number; nic
 }
 
 export async function listLocationsWithMeta(): Promise<LocationMeta[]> {
-  const names = await listLocations()
-  return Promise.all(names.map(async (name) => {
-    const content = await readLocation(name)
+  const slugs = await listLocations()
+  return Promise.all(slugs.map(async (slug) => {
+    const content = await readLocation(slug)
     const tags = content ? parseTags(content) : []
     const coords = content ? parseLocationCoords(content) : {}
-    return { name, tags, ...coords }
+    const name = (content ? parseFrontmatterName(content) : null) ?? slug
+    return { name, slug, tags, ...coords }
   }))
 }
 
