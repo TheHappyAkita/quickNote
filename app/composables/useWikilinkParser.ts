@@ -44,15 +44,11 @@ export const EMOJI_MAP: Record<string, string> = {
 
 export function useWikilinkParser(options?: {
   locationNicknames?: Map<string, string> | (() => Map<string, string>)
-  locationNames?: Set<string> | (() => Set<string>)
 }) {
   function parseWikilinks(text: string): string {
     const locationNicknames = typeof options?.locationNicknames === 'function'
       ? options.locationNicknames()
       : options?.locationNicknames
-    const locationNames = typeof options?.locationNames === 'function'
-      ? options.locationNames()
-      : options?.locationNames
     let html = text
 
     // Standard markdown hyperlinks: [text](url)
@@ -90,13 +86,8 @@ export function useWikilinkParser(options?: {
       if (!parsed.name) {
         const lat = parsed.lat!, lng = parsed.lng!
         const coordSlug = sanitizeLocationSlug(`${lat},${lng}`)
-        const fileExists = locationNames?.has(coordSlug) || locationNames?.has(`${lat},${lng}`)
         const display = nickname ?? locationNicknames?.get(coordSlug) ?? `${lat.toFixed(5)}, ${lng.toFixed(5)}`
-        // Link to editor if: file exists OR a nickname is given (intent to save)
-        if (fileExists || nickname) {
-          return `<a href="/location/${encodeURIComponent(coordSlug)}" class="wiki-link location-link">📍 ${display}</a>`
-        }
-        return `<a href="/map?lat=${lat}&lng=${lng}" class="wiki-link location-link">📍 ${display}</a>`
+        return `<a href="/location/${encodeURIComponent(coordSlug)}" class="wiki-link location-link">📍 ${display}</a>`
       }
       const display = nickname ?? locationNicknames?.get(parsed.name) ?? parsed.name
       // Named locations always link to the location editor page

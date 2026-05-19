@@ -263,18 +263,8 @@ const locationNicknameMap = computed(() => {
   }
   return map
 })
-const locationNameSet = computed(() => {
-  const set = new Set<string>()
-  for (const l of allLocationsRaw.value ?? []) {
-    set.add(l.name)
-    const slug = sanitizeLocationSlug(l.name)
-    if (slug !== l.name) set.add(slug)
-  }
-  return set
-})
 const { parseWikilinks } = useWikilinkParser({
   locationNicknames: () => locationNicknameMap.value,
-  locationNames: () => locationNameSet.value,
 })
 
 // ── Reminders ──────────────────────────────────────────────────────
