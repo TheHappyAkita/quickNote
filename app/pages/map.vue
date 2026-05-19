@@ -13,16 +13,19 @@
         </div>
 
         <!-- Search -->
-        <v-text-field
-          v-model="searchQuery"
-          placeholder="Search locations..."
-          variant="outlined"
-          density="compact"
-          hide-details
-          clearable
-          prepend-inner-icon="mdi-magnify"
-          class="mb-3"
-        />
+        <v-card variant="outlined" class="mb-3">
+          <v-card-text class="pa-2">
+            <v-text-field
+              v-model="searchQuery"
+              placeholder="Search locations..."
+              variant="outlined"
+              density="compact"
+              hide-details
+              clearable
+              prepend-inner-icon="mdi-magnify"
+            />
+          </v-card-text>
+        </v-card>
 
         <!-- Time range filter -->
         <v-card variant="outlined" class="mb-3 pa-3">
