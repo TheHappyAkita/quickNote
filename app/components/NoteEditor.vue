@@ -157,14 +157,23 @@ const renderedContent = computed(() => {
   html = html.replace(/@\[\[([^\]]+)\]\]/g, (_m, name: string) =>
     `<a href="/person/${encodeURIComponent(name.trim())}" class="wiki-link person-link">👤 ${name}</a>`,
   )
-  // Location mentions: &[[coord]], &[[Name]], or &[[Name|coord]] — coord in any format
-  html = html.replace(/&amp;\[\[([^|\]]+)(?:\|[^\]]+)?\]\]/g, (_m, raw: string) => {
-    const name = raw.trim()
-    const coordOnly = parseCoords(name)
-    if (coordOnly) {
-      return `<a href="/map?lat=${coordOnly.lat}&lng=${coordOnly.lng}" class="wiki-link location-link">📍 ${coordOnly.lat.toFixed(5)}, ${coordOnly.lng.toFixed(5)}</a>`
+  // Location mentions: (Nickname)&[[...]] or &[[...]]
+  html = html.replace(/(?:\(([^)]+)\))?&amp;\[\[([^\]]+)\]\]/g, (_m, nickname: string | undefined, inner: string) => {
+    const parts = inner.split('|').map((p: string) => p.trim())
+    let name: string | undefined, lat: number | undefined, lng: number | undefined
+    if (parts.length === 1) {
+      const c = parseCoords(parts[0]!); if (c) { lat = c.lat; lng = c.lng } else name = parts[0]
+    } else {
+      const c = parseCoords(parts[1]!); if (c) { name = parts[0]; lat = c.lat; lng = c.lng } else name = parts[0]
     }
-    const display = locationNicknameMap.value.get(name) ?? name
+    if (!name) {
+      const display = nickname ?? `${lat!.toFixed(5)}, ${lng!.toFixed(5)}`
+      return `<a href="/map?lat=${lat}&lng=${lng}" class="wiki-link location-link">📍 ${display}</a>`
+    }
+    const display = nickname ?? locationNicknameMap.value.get(name) ?? name
+    if (lat != null && lng != null) {
+      return `<a href="/map?lat=${lat}&lng=${lng}" class="wiki-link location-link">📍 ${display}</a>`
+    }
     return `<a href="/location/${encodeURIComponent(name)}" class="wiki-link location-link">📍 ${display}</a>`
   })
   // Page links: [[Page Name]] (non-date format)
@@ -305,12 +314,21 @@ function insertSuggestion(date: string) {
   const textBeforeCursor = value.substring(0, cursorPos)
   const isPerson = suggestionMode.value === 'person'
   const isLocation = suggestionMode.value === 'location'
+  const ampPos = textBeforeCursor.lastIndexOf('&[[')
   const openBracket = isPerson
     ? textBeforeCursor.lastIndexOf('@[[')
     : isLocation
-      ? textBeforeCursor.lastIndexOf('&[[')
+      ? (ampPos > 0 && textBeforeCursor[ampPos - 1] === ')' ? textBeforeCursor.lastIndexOf('(', ampPos) : ampPos)
       : textBeforeCursor.lastIndexOf('[[')
-  const insertion = isPerson ? `@[[${date}]]` : isLocation ? `&[[${date}]]` : `[[${date}]]`
+  let insertion: string
+  if (isPerson) {
+    insertion = `@[[${date}]]`
+  } else if (isLocation) {
+    const nick = locationNicknameMap.value.get(date)
+    insertion = nick ? `(${nick})&[[${date}]]` : `&[[${date}]]`
+  } else {
+    insertion = `[[${date}]]`
+  }
   const newValue = value.substring(0, openBracket) + insertion + value.substring(cursorPos)
 
   emit('update:modelValue', newValue)

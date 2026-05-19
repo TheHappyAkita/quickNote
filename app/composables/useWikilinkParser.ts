@@ -1,5 +1,19 @@
 import { parseCoords } from '#shared/utils/coords'
 
+function parseLocationParts(inner: string): { name?: string; lat?: number; lng?: number } {
+  const parts = inner.split('|').map(p => p.trim())
+  if (parts.length === 1) {
+    const coordOnly = parseCoords(parts[0]!)
+    if (coordOnly) return { lat: coordOnly.lat, lng: coordOnly.lng }
+    return { name: parts[0] }
+  }
+  // &[[Name|coords]]
+  const maybeCoords = parseCoords(parts[1]!)
+  if (maybeCoords) return { name: parts[0], lat: maybeCoords.lat, lng: maybeCoords.lng }
+  // fallback: treat as name only
+  return { name: parts[0] }
+}
+
 export const EMOJI_MAP: Record<string, string> = {
   // Vehicles
   car: '🚗', bus: '🚌', train: '🚆', tram: '🚊', subway: '🚇',
@@ -63,15 +77,19 @@ export function useWikilinkParser(options?: { locationNicknames?: Map<string, st
       `<a href="/person/${encodeURIComponent(name.trim())}" class="wiki-link person-link">👤 ${name}</a>`,
     )
 
-    // Location mentions: &[[coord]], &[[Name]], or &[[Name|coord]]
-    html = html.replace(/&\[\[([^|\]]+)(?:\|[^\]]+)?\]\]/g, (_m, raw: string) => {
-      const name = raw.trim()
-      const coordOnly = parseCoords(name)
-      if (coordOnly) {
-        return `<a href="/map?lat=${coordOnly.lat}&lng=${coordOnly.lng}" class="wiki-link location-link">📍 ${coordOnly.lat.toFixed(5)}, ${coordOnly.lng.toFixed(5)}</a>`
+    // Location mentions: (Nickname)&[[...]] or &[[...]]
+    html = html.replace(/(?:\(([^)]+)\))?&\[\[([^\]]+)\]\]/g, (_m, nickname: string | undefined, inner: string) => {
+      const parsed = parseLocationParts(inner)
+      if (!parsed.name) {
+        const lat = parsed.lat!, lng = parsed.lng!
+        const display = nickname ?? `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+        return `<a href="/map?lat=${lat}&lng=${lng}" class="wiki-link location-link">📍 ${display}</a>`
       }
-      const display = locationNicknames?.get(name) ?? name
-      return `<a href="/location/${encodeURIComponent(name)}" class="wiki-link location-link">📍 ${display}</a>`
+      const display = nickname ?? locationNicknames?.get(parsed.name) ?? parsed.name
+      if (parsed.lat != null && parsed.lng != null) {
+        return `<a href="/map?lat=${parsed.lat}&lng=${parsed.lng}" class="wiki-link location-link">📍 ${display}</a>`
+      }
+      return `<a href="/location/${encodeURIComponent(parsed.name)}" class="wiki-link location-link">📍 ${display}</a>`
     })
 
     // Page links: [[Page Name]] (non-date format)

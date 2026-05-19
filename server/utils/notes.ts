@@ -9,8 +9,8 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const PAGE_NAME_PATTERN = /^[a-zA-Z0-9_\- ]+$/
 const WIKILINK_PATTERN = /\[\[(\d{4}-\d{2}-\d{2}|[a-zA-Z0-9_\- ]+)\]\]/g
 const PERSON_PATTERN = /@\[\[([^\]]+)\]\]/g
-// Group 1: name-or-coord-only part; Group 2: optional coord suffix after |
-const LOCATION_PATTERN = /&\[\[([^|\]]+)(?:\|([^\]]+))?\]\]/g
+// Captures all pipe-separated parts inside &[[...]]
+const LOCATION_PATTERN = /&\[\[([^\]]+)\]\]/g
 
 const PAGES_DIR = 'pages'
 
@@ -269,14 +269,29 @@ export async function listLocationsWithMeta(): Promise<LocationMeta[]> {
   }))
 }
 
+function parseLocationParts(inner: string): { name?: string; lat?: number; lng?: number } {
+  const parts = inner.split('|').map(p => p.trim())
+  if (parts.length === 1) {
+    const coordOnly = parseCoords(parts[0]!)
+    if (coordOnly) return { lat: coordOnly.lat, lng: coordOnly.lng }
+    return { name: parts[0] }
+  }
+  // &[[Name|coords]]
+  const maybeCoords = parseCoords(parts[1]!)
+  if (maybeCoords) return { name: parts[0], lat: maybeCoords.lat, lng: maybeCoords.lng }
+  return { name: parts[0] }
+}
+
+// Matches optional (Nickname) prefix + &[[inner]]
+const LOCATION_FULL_PATTERN = /(?:\([^)]+\))?&\[\[([^\]]+)\]\]/g
+
 export function extractLocationMentions(content: string): string[] {
   const seen = new Set<string>()
   let match: RegExpExecArray | null
-  const re = new RegExp(LOCATION_PATTERN.source, 'g')
+  const re = new RegExp(LOCATION_FULL_PATTERN.source, 'g')
   while ((match = re.exec(content)) !== null) {
-    const raw = match[1]!.trim()
-    // Skip coord-only mentions (no named location entity)
-    if (!parseCoords(raw)) seen.add(raw)
+    const parsed = parseLocationParts(match[1]!)
+    if (parsed.name) seen.add(parsed.name)
   }
   return [...seen]
 }
@@ -290,23 +305,18 @@ export interface LocationMention {
 export function extractLocationMentionsWithCoords(content: string): LocationMention[] {
   const seen = new Map<string, LocationMention>()
   let match: RegExpExecArray | null
-  const re = new RegExp(LOCATION_PATTERN.source, 'g')
+  const re = new RegExp(LOCATION_FULL_PATTERN.source, 'g')
   while ((match = re.exec(content)) !== null) {
-    const raw = match[1]!.trim()
-    const coordSuffix = match[2]?.trim()
-
-    // &[[lat,lng]] or &[[DMS]] etc. — anonymous coord-only pin
-    const coordOnly = parseCoords(raw)
-    if (coordOnly) {
-      const key = `${coordOnly.lat},${coordOnly.lng}`
-      if (!seen.has(key)) seen.set(key, { name: key, lat: coordOnly.lat, lng: coordOnly.lng })
+    const parsed = parseLocationParts(match[1]!)
+    if (!parsed.name) {
+      if (parsed.lat != null && parsed.lng != null) {
+        const key = `${parsed.lat},${parsed.lng}`
+        if (!seen.has(key)) seen.set(key, { name: key, lat: parsed.lat, lng: parsed.lng })
+      }
       continue
     }
-
-    // &[[Name]] or &[[Name|<any coord format>]]
-    if (!seen.has(raw)) {
-      const inlineCoords = coordSuffix ? parseCoords(coordSuffix) : undefined
-      seen.set(raw, { name: raw, lat: inlineCoords?.lat, lng: inlineCoords?.lng })
+    if (!seen.has(parsed.name)) {
+      seen.set(parsed.name, { name: parsed.name, lat: parsed.lat, lng: parsed.lng })
     }
   }
   return [...seen.values()]
