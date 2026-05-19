@@ -14,7 +14,9 @@ export interface LocationMeta {
   lat?: number
   lng?: number
   nickname?: string
-  mentionedInDates?: string[]  // YYYY-MM-DD dates where this location is mentioned
+  mentionedInDates?: string[]   // YYYY-MM-DD dates where this location is mentioned
+  mentionedInPages?: string[]   // page names where this location is mentioned
+  mentionedInPeople?: string[]  // person names where this location is mentioned
 }
 
 export interface GraphNode {

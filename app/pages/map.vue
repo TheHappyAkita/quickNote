@@ -103,6 +103,77 @@
           </v-list>
         </div>
 
+        <!-- Selected location detail panel -->
+        <v-card v-if="selectedLocation" variant="outlined" class="mt-3">
+          <v-card-text class="pa-3">
+            <div class="d-flex align-center mb-2">
+              <v-icon size="16" color="teal" class="mr-1">mdi-map-marker</v-icon>
+              <span class="text-body-2 font-weight-medium">{{ selectedLocation.nickname ?? selectedLocation.name }}</span>
+              <v-spacer />
+              <v-btn
+                :to="`/location/${encodeURIComponent(selectedLocation.name)}`"
+                icon="mdi-open-in-new"
+                variant="text"
+                size="x-small"
+                color="teal"
+              />
+            </div>
+
+            <!-- Notes -->
+            <template v-if="selectedLocation.mentionedInDates?.length">
+              <div class="text-caption text-medium-emphasis mb-1">📅 Notes</div>
+              <div class="mention-chips">
+                <v-chip
+                  v-for="date in selectedLocation.mentionedInDates"
+                  :key="date"
+                  :to="`/note/${date}`"
+                  size="x-small"
+                  variant="tonal"
+                  color="teal"
+                  class="mr-1 mb-1"
+                >{{ date }}</v-chip>
+              </div>
+            </template>
+
+            <!-- Pages -->
+            <template v-if="selectedLocation.mentionedInPages?.length">
+              <div class="text-caption text-medium-emphasis mb-1 mt-2">📄 Pages</div>
+              <div class="mention-chips">
+                <v-chip
+                  v-for="page in selectedLocation.mentionedInPages"
+                  :key="page"
+                  :to="`/page/${encodeURIComponent(page)}`"
+                  size="x-small"
+                  variant="tonal"
+                  color="purple"
+                  class="mr-1 mb-1"
+                >{{ page }}</v-chip>
+              </div>
+            </template>
+
+            <!-- People -->
+            <template v-if="selectedLocation.mentionedInPeople?.length">
+              <div class="text-caption text-medium-emphasis mb-1 mt-2">👤 People</div>
+              <div class="mention-chips">
+                <v-chip
+                  v-for="person in selectedLocation.mentionedInPeople"
+                  :key="person"
+                  :to="`/person/${encodeURIComponent(person)}`"
+                  size="x-small"
+                  variant="tonal"
+                  color="orange"
+                  class="mr-1 mb-1"
+                >{{ person }}</v-chip>
+              </div>
+            </template>
+
+            <div
+              v-if="!selectedLocation.mentionedInDates?.length && !selectedLocation.mentionedInPages?.length && !selectedLocation.mentionedInPeople?.length"
+              class="text-caption text-medium-emphasis"
+            >Not mentioned anywhere yet</div>
+          </v-card-text>
+        </v-card>
+
         <v-btn
           to="/locations"
           color="teal"
@@ -213,6 +284,10 @@ const visibleLocations = computed<LocationMeta[]>(() => {
   })
 })
 
+const selectedLocation = computed<LocationMeta | undefined>(() =>
+  selectedName.value ? (locations.value ?? []).find(l => l.name === selectedName.value) : undefined,
+)
+
 function selectLocation(name: string) {
   selectedName.value = name
   mapViewRef.value?.panTo?.(name)
@@ -249,6 +324,11 @@ function selectLocation(name: string) {
 
 .location-list-item {
   cursor: pointer;
+}
+
+.mention-chips {
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .map-area {
