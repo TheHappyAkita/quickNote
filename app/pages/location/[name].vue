@@ -223,7 +223,7 @@ function saveNicknameToFrontmatter() {
   } else {
     content.value = removeFrontmatterField(content.value, 'nickname')
   }
-  saveNow()
+  saveNow().then(() => refreshNuxtData())
 }
 
 const parsedCoords = computed(() =>

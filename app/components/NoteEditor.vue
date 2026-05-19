@@ -96,7 +96,7 @@ const { data: allPagesRaw } = await useFetch<{ name: string; tags: string[] }[]>
 const allPages = computed(() => allPagesRaw.value?.map(p => p.name) ?? [])
 const { data: allPersonsRaw } = await useFetch<{ name: string; tags: string[] }[]>('/api/persons', { server: false, default: () => [] })
 const allPersons = computed(() => allPersonsRaw.value?.map(p => p.name) ?? [])
-const { data: allLocationsRaw } = await useFetch<{ name: string; tags: string[]; nickname?: string }[]>('/api/locations', { server: false, default: () => [] })
+const { data: allLocationsRaw } = await useFetch<{ name: string; tags: string[]; nickname?: string }[]>('/api/locations', { server: false, default: () => [], getCachedData: () => undefined })
 const allLocations = computed(() => allLocationsRaw.value?.map(l => l.name) ?? [])
 const locationNicknameMap = computed(() => {
   const map = new Map<string, string>()
