@@ -73,10 +73,10 @@
         density="compact"
         variant="outlined"
         hide-details
+        single-line
         placeholder="e.g. Office building B"
         class="mb-3"
         style="max-width: 400px"
-        prepend-inner-icon="mdi-label-outline"
         @blur="saveNicknameToFrontmatter"
         @keyup.enter="saveNicknameToFrontmatter"
       />
