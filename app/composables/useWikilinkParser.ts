@@ -27,8 +27,11 @@ export const EMOJI_MAP: Record<string, string> = {
   map: '🗺️', flag: '🚩', trophy: '🏆', target: '🎯',
 }
 
-export function useWikilinkParser() {
+export function useWikilinkParser(options?: { locationNicknames?: Map<string, string> | (() => Map<string, string>) }) {
   function parseWikilinks(text: string): string {
+    const locationNicknames = typeof options?.locationNicknames === 'function'
+      ? options.locationNicknames()
+      : options?.locationNicknames
     let html = text
 
     // Standard markdown hyperlinks: [text](url)
@@ -67,7 +70,8 @@ export function useWikilinkParser() {
       if (coordOnly) {
         return `<a href="/map?lat=${coordOnly.lat}&lng=${coordOnly.lng}" class="wiki-link location-link">📍 ${coordOnly.lat.toFixed(5)}, ${coordOnly.lng.toFixed(5)}</a>`
       }
-      return `<a href="/location/${encodeURIComponent(name)}" class="wiki-link location-link">📍 ${name}</a>`
+      const display = locationNicknames?.get(name) ?? name
+      return `<a href="/location/${encodeURIComponent(name)}" class="wiki-link location-link">📍 ${display}</a>`
     })
 
     // Page links: [[Page Name]] (non-date format)

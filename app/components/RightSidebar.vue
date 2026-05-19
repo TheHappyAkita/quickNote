@@ -250,7 +250,15 @@ type PanelName = 'search' | 'alerts' | 'reminders' | 'todos' | null
 const activePanel = ref<PanelName>(null)
 
 // ── Wikilink parser ─────────────────────────────────────────────────────
-const { parseWikilinks } = useWikilinkParser()
+const { data: allLocationsRaw } = await useFetch<{ name: string; nickname?: string }[]>('/api/locations', { server: false, default: () => [] })
+const locationNicknameMap = computed(() => {
+  const map = new Map<string, string>()
+  for (const l of allLocationsRaw.value ?? []) {
+    if (l.nickname) map.set(l.name, l.nickname)
+  }
+  return map
+})
+const { parseWikilinks } = useWikilinkParser({ locationNicknames: () => locationNicknameMap.value })
 
 // ── Reminders ──────────────────────────────────────────────────────
 const { data: reminders, pending: remindersPending, refresh: refreshReminders } = await useFetch<Reminder[]>('/api/notes/reminders', {
@@ -318,7 +326,7 @@ function formatDate(dateStr: string): string {
 }
 
 // ── Search ─────────────────────────────────────────────────────────
-interface SearchResult { type: 'note' | 'page'; id: string; title: string; excerpt: string; matches: number }
+interface SearchResult { type: 'note' | 'page' | 'location'; id: string; title: string; excerpt: string; matches: number }
 const searchQuery = ref('')
 const searchResults = ref<SearchResult[]>([])
 const searchLoading = ref(false)

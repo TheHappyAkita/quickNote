@@ -69,12 +69,13 @@
       <!-- Nickname row -->
       <v-text-field
         v-model="nicknameInput"
-        label="Nickname (optional display name for autocomplete)"
+        label="Nickname"
         density="compact"
         variant="outlined"
         hide-details
-        placeholder="e.g. Office building B, Back entrance"
+        placeholder="e.g. Office building B"
         class="mb-3"
+        style="max-width: 400px"
         prepend-inner-icon="mdi-label-outline"
         @blur="saveNicknameToFrontmatter"
         @keyup.enter="saveNicknameToFrontmatter"

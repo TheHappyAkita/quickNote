@@ -164,7 +164,8 @@ const renderedContent = computed(() => {
     if (coordOnly) {
       return `<a href="/map?lat=${coordOnly.lat}&lng=${coordOnly.lng}" class="wiki-link location-link">📍 ${coordOnly.lat.toFixed(5)}, ${coordOnly.lng.toFixed(5)}</a>`
     }
-    return `<a href="/location/${encodeURIComponent(name)}" class="wiki-link location-link">📍 ${name}</a>`
+    const display = locationNicknameMap.value.get(name) ?? name
+    return `<a href="/location/${encodeURIComponent(name)}" class="wiki-link location-link">📍 ${display}</a>`
   })
   // Page links: [[Page Name]] (non-date format)
   html = html.replace(
