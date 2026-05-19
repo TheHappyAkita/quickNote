@@ -86,9 +86,7 @@ export function useWikilinkParser(options?: { locationNicknames?: Map<string, st
         return `<a href="/map?lat=${lat}&lng=${lng}" class="wiki-link location-link">📍 ${display}</a>`
       }
       const display = nickname ?? locationNicknames?.get(parsed.name) ?? parsed.name
-      if (parsed.lat != null && parsed.lng != null) {
-        return `<a href="/map?lat=${parsed.lat}&lng=${parsed.lng}" class="wiki-link location-link">📍 ${display}</a>`
-      }
+      // Named locations always link to the location editor page
       return `<a href="/location/${encodeURIComponent(parsed.name)}" class="wiki-link location-link">📍 ${display}</a>`
     })
 

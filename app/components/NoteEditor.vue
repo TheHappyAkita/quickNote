@@ -150,12 +150,7 @@ function renderLocationMentions(raw: string): string {
     }
     const meta = locationMetaMap.value.get(name)
     const display = nickname ?? meta?.nickname ?? name
-    // Prefer inline coords, then stored coords, then fall back to location page
-    const resolvedLat = lat ?? meta?.lat
-    const resolvedLng = lng ?? meta?.lng
-    if (resolvedLat != null && resolvedLng != null) {
-      return `<a href="/map?lat=${resolvedLat}&lng=${resolvedLng}" class="wiki-link location-link">📍 ${display}</a>`
-    }
+    // Named locations always link to the location editor page
     return `<a href="/location/${encodeURIComponent(name)}" class="wiki-link location-link">📍 ${display}</a>`
   })
 }
