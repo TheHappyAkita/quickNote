@@ -282,8 +282,8 @@ function parseLocationParts(inner: string): { name?: string; lat?: number; lng?:
   return { name: parts[0] }
 }
 
-// Matches optional (Nickname) prefix + &[[inner]]
-const LOCATION_FULL_PATTERN = /(?:\([^)]+\))?&\[\[([^\]]+)\]\]/g
+// Matches &[[inner]] with optional (Nickname) suffix
+const LOCATION_FULL_PATTERN = /&\[\[([^\]]+)\]\](?:\([^)]+\))?/g
 
 export function extractLocationMentions(content: string): string[] {
   const seen = new Set<string>()

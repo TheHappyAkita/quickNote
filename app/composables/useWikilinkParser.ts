@@ -77,8 +77,8 @@ export function useWikilinkParser(options?: { locationNicknames?: Map<string, st
       `<a href="/person/${encodeURIComponent(name.trim())}" class="wiki-link person-link">👤 ${name}</a>`,
     )
 
-    // Location mentions: (Nickname)&[[...]] or &[[...]]
-    html = html.replace(/(?:\(([^)]+)\))?&\[\[([^\]]+)\]\]/g, (_m, nickname: string | undefined, inner: string) => {
+    // Location mentions: &[[...]](Nickname) or &[[...]]
+    html = html.replace(/&\[\[([^\]]+)\]\](?:\(([^)]+)\))?/g, (_m, inner: string, nickname: string | undefined) => {
       const parsed = parseLocationParts(inner)
       if (!parsed.name) {
         const lat = parsed.lat!, lng = parsed.lng!
