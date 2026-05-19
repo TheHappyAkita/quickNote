@@ -1,10 +1,12 @@
 export interface NotePageMeta {
-  name: string
+  name: string   // display name (from frontmatter name: or slug)
+  slug: string   // filesystem-safe filename without extension
   tags: string[]
 }
 
 export interface PersonMeta {
-  name: string
+  name: string   // display name (from frontmatter name: or slug)
+  slug: string   // filesystem-safe filename without extension
   tags: string[]
 }
 

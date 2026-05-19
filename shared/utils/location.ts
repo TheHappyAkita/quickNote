@@ -1,29 +1,72 @@
 import { parseCoords } from './coords'
 
 /** Chars unsafe on common filesystems (Windows + Unix). */
-const UNSAFE_CHARS = /[#&?:*"<>|\\\/@!]/g
+const UNSAFE_CHARS = /[#&?:*"<>|\\\/@!,]/g
 
 /**
- * Sanitize a person name for use as a filename.
- * Preserves: letters (incl. accented), digits, comma, period, space, hyphen.
- * e.g. "O'Brien, John #2" → "OBrien, John 2"
+ * Convert a display name into a filesystem-safe slug.
+ * Replaces all unsafe chars (incl. comma) with underscore, collapses runs, trims.
+ * e.g. "Deer, John"  → "Deer_ John"  → collapsed → "Deer_John"
+ * e.g. "O'Brien #2!" → "O_Brien _2_" → collapsed → "O_Brien_2"
  */
-export function sanitizePersonName(raw: string): string {
+export function toSlug(raw: string): string {
   return raw
-    .replace(UNSAFE_CHARS, '')
-    .replace(/\s+/g, ' ')
+    .replace(UNSAFE_CHARS, '_')
+    .replace(/'+/g, '')           // strip apostrophes entirely
+    .replace(/_+/g, '_')          // collapse multiple underscores
+    .replace(/\s+/g, ' ')         // collapse whitespace
+    .replace(/[ _]+$/g, '')       // trim trailing
+    .replace(/^[ _]+/g, '')       // trim leading
     .trim()
 }
 
 /**
- * Sanitize a page name for use as a filename.
- * Same rules as person name.
+ * Extract the display name from frontmatter `name:` field.
+ * Returns null if not present.
+ */
+export function parseFrontmatterName(content: string): string | null {
+  if (!content.startsWith('---')) return null
+  const end = content.indexOf('\n---', 3)
+  if (end === -1) return null
+  const fm = content.slice(3, end)
+  const m = /^name:\s*(.+)/m.exec(fm)
+  return m ? m[1]!.trim() : null
+}
+
+/**
+ * Inject or update the `name:` field in frontmatter.
+ * If no frontmatter exists, prepends a new block.
+ */
+export function injectFrontmatterName(content: string, displayName: string): string {
+  if (content.startsWith('---')) {
+    const end = content.indexOf('\n---', 3)
+    if (end !== -1) {
+      const fm = content.slice(3, end)
+      if (/^name:/m.test(fm)) {
+        // Already has name: — replace it
+        return '---' + fm.replace(/^name:.+$/m, `name: ${displayName}`) + content.slice(end)
+      }
+      // Insert name: as first field
+      return `---\nname: ${displayName}${fm}\n---${content.slice(end + 4)}`
+    }
+  }
+  // No frontmatter — prepend
+  return `---\nname: ${displayName}\n---\n${content}`
+}
+
+/**
+ * @deprecated Use toSlug() instead.
+ * Kept for backwards compat — strips same unsafe chars but preserves commas.
+ */
+export function sanitizePersonName(raw: string): string {
+  return toSlug(raw)
+}
+
+/**
+ * @deprecated Use toSlug() instead.
  */
 export function sanitizePageName(raw: string): string {
-  return raw
-    .replace(UNSAFE_CHARS, '')
-    .replace(/\s+/g, ' ')
-    .trim()
+  return toSlug(raw)
 }
 
 /**

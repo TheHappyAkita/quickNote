@@ -1,13 +1,13 @@
 import type { GraphData, NotePageMeta, LocationMeta } from '#shared/types/notes'
 import { parseCoords } from '#shared/utils/coords'
-import { sanitizePersonName, sanitizePageName, sanitizeLocationSlug } from '#shared/utils/location'
+import { toSlug, sanitizeLocationSlug, parseFrontmatterName, injectFrontmatterName } from '#shared/utils/location'
 import { readFile, writeFile, readdir, mkdir, unlink, rename } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join, resolve } from 'path'
 import { homedir } from 'os'
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
-const PAGE_NAME_PATTERN = /^[a-zA-Z0-9_\-\. äöüÄÖÜáéíóúàèìòùâêîôûãõ]+$/
+const PAGE_NAME_PATTERN = /^[a-zA-Z0-9_\-\. äöüÄÖÜáéíóúàèìòùâêîôûãõ_]+$/
 const WIKILINK_PATTERN = /\[\[(\d{4}-\d{2}-\d{2}|[a-zA-Z0-9_\- ]+)\]\]/g
 const PERSON_PATTERN = /@\[\[([^\]]+)\]\]/g
 // Captures all pipe-separated parts inside &[[...]]
@@ -137,7 +137,7 @@ export async function deletePage(name: string): Promise<void> {
 
 // ─── People (person pages) ───────────────────────────────────────────────────
 
-const PERSON_NAME_PATTERN = /^[a-zA-Z0-9,\. _\-äöüÄÖÜáéíóúàèìòùâêîôûãõ]+$/
+const PERSON_NAME_PATTERN = /^[a-zA-Z0-9\. _\-äöüÄÖÜáéíóúàèìòùâêîôûãõ_]+$/
 const PEOPLE_DIR = 'people'
 
 function getPeopleDir(): string {
@@ -175,6 +175,26 @@ export async function listPersons(): Promise<string[]> {
   }
 }
 
+/** Returns display name for a person slug (from frontmatter name: or falls back to slug). */
+export async function getPersonDisplayName(slug: string): Promise<string> {
+  const content = await readPerson(slug)
+  if (content) {
+    const n = parseFrontmatterName(content)
+    if (n) return n
+  }
+  return slug
+}
+
+/** Returns display name for a page slug (from frontmatter name: or falls back to slug). */
+export async function getPageDisplayName(slug: string): Promise<string> {
+  const content = await readPage(slug)
+  if (content) {
+    const n = parseFrontmatterName(content)
+    if (n) return n
+  }
+  return slug
+}
+
 export async function readPerson(name: string): Promise<string | null> {
   if (!isValidPersonName(name)) return null
   await ensurePeopleDir()
@@ -196,12 +216,13 @@ export async function deletePerson(name: string): Promise<void> {
   try { await unlink(join(getPeopleDir(), `${name}.md`)) } catch { /* already gone */ }
 }
 
-export async function listPersonsWithMeta(): Promise<{ name: string; tags: string[] }[]> {
-  const names = await listPersons()
-  return Promise.all(names.map(async (name) => {
-    const content = await readPerson(name)
+export async function listPersonsWithMeta(): Promise<{ name: string; slug: string; tags: string[] }[]> {
+  const slugs = await listPersons()
+  return Promise.all(slugs.map(async (slug) => {
+    const content = await readPerson(slug)
     const tags = content ? parseTags(content) : []
-    return { name, tags }
+    const name = (content ? parseFrontmatterName(content) : null) ?? slug
+    return { name, slug, tags }
   }))
 }
 
@@ -408,11 +429,12 @@ export function setFrontmatterTags(content: string, tags: string[]): string {
 }
 
 export async function listPagesWithMeta(): Promise<NotePageMeta[]> {
-  const names = await listPages()
-  return Promise.all(names.map(async (name) => {
-    const content = await readPage(name)
+  const slugs = await listPages()
+  return Promise.all(slugs.map(async (slug) => {
+    const content = await readPage(slug)
     const tags = content ? parseTags(content) : []
-    return { name, tags }
+    const name = (content ? parseFrontmatterName(content) : null) ?? slug
+    return { name, slug, tags }
   }))
 }
 
@@ -492,7 +514,10 @@ export async function buildGraph(): Promise<GraphData> {
   // ── Phase 2: pure CPU processing (no I/O) ────────────────────────────────
   const nodes: GraphData['nodes'] = [
     ...dates.map((date) => ({ data: { id: date, label: date, type: 'date' as const } })),
-    ...pages.map((page) => ({ data: { id: `page:${page}`, label: page, type: 'page' as const } })),
+    ...pages.map((page, i) => {
+      const label = (pageContents[i] ? parseFrontmatterName(pageContents[i]!) : null) ?? page
+      return { data: { id: `page:${page}`, label, type: 'page' as const } }
+    }),
   ]
   const edges: GraphData['edges'] = []
   const seenEdges = new Set<string>()
