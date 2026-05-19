@@ -64,6 +64,43 @@
           </div>
         </v-card>
 
+        <!-- Mention filter -->
+        <v-card variant="outlined" class="mb-3 pa-3">
+          <div class="d-flex align-center mb-2">
+            <v-icon size="14" color="teal" class="mr-1">mdi-filter</v-icon>
+            <span class="text-caption font-weight-medium">Mentioned in</span>
+          </div>
+          <div class="d-flex flex-wrap gap-1">
+            <v-chip
+              size="small"
+              :variant="mentionFilter.includes('people') ? 'flat' : 'outlined'"
+              :color="mentionFilter.includes('people') ? 'teal' : undefined"
+              prepend-icon="mdi-account"
+              @click="toggleMentionFilter('people')"
+            >
+              People
+            </v-chip>
+            <v-chip
+              size="small"
+              :variant="mentionFilter.includes('pages') ? 'flat' : 'outlined'"
+              :color="mentionFilter.includes('pages') ? 'teal' : undefined"
+              prepend-icon="mdi-file-document"
+              @click="toggleMentionFilter('pages')"
+            >
+              Pages
+            </v-chip>
+            <v-chip
+              size="small"
+              :variant="mentionFilter.includes('notes') ? 'flat' : 'outlined'"
+              :color="mentionFilter.includes('notes') ? 'teal' : undefined"
+              prepend-icon="mdi-calendar"
+              @click="toggleMentionFilter('notes')"
+            >
+              Notes
+            </v-chip>
+          </div>
+        </v-card>
+
         <!-- Location list -->
         <div class="location-list">
           <v-list density="compact" class="pa-0">
@@ -218,17 +255,22 @@ useHead({ title: 'Map' })
 const { data: locations, pending } = useFetch<LocationMeta[]>('/api/locations/map', {
   server: false,
   lazy: true,
-  default: () => [],
 })
 
 const route = useRoute()
-const searchQuery = ref<string | null>('')
-const selectedName = ref<string | undefined>(undefined)
-const mapViewRef = ref<{ panTo?: (name: string) => void; panToCoords?: (lat: number, lng: number) => void } | null>(null)
-
-// Pan to ?lat=&lng= query params (from coord-only &[[lat,lng]] links)
 const queryLat = computed(() => route.query.lat ? parseFloat(route.query.lat as string) : null)
 const queryLng = computed(() => route.query.lng ? parseFloat(route.query.lng as string) : null)
+
+const mapViewRef = ref<{ panTo?: (name: string) => void; panToCoords?: (lat: number, lng: number) => void } | null>(null)
+const searchQuery = ref<string | null>('')
+const selectedName = ref<string | null>(null)
+const mentionFilter = ref<string[]>([])
+
+function toggleMentionFilter(type: string) {
+  const idx = mentionFilter.value.indexOf(type)
+  if (idx === -1) mentionFilter.value.push(type)
+  else mentionFilter.value.splice(idx, 1)
+}
 
 watch(mapViewRef, (ref) => {
   if (ref && queryLat.value != null && queryLng.value != null) {
@@ -273,6 +315,8 @@ const visibleLocations = computed<LocationMeta[]>(() => {
   const endDate = sliderEndDate.value
   const hasTimeFilter = allDates.value.length > 0
 
+  const mf = mentionFilter.value
+
   return (locations.value ?? []).filter(loc => {
     // Text search
     if (q && !loc.name.toLowerCase().includes(q) && !loc.tags.some(t => t.includes(q))) return false
@@ -282,6 +326,11 @@ const visibleLocations = computed<LocationMeta[]>(() => {
       const inRange = loc.mentionedInDates.some(d => d >= startDate && d <= endDate)
       if (!inRange) return false
     }
+
+    // Mention filter: location must be mentioned in ALL selected types
+    if (mf.includes('people') && !(loc.mentionedInPeople?.length)) return false
+    if (mf.includes('pages') && !(loc.mentionedInPages?.length)) return false
+    if (mf.includes('notes') && !(loc.mentionedInDates?.length)) return false
 
     return true
   })
