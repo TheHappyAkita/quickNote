@@ -67,18 +67,22 @@
       </div>
 
       <!-- Nickname row -->
-      <v-text-field
-        v-model="nicknameInput"
-        label="Nickname"
-        density="compact"
-        variant="outlined"
-        hide-details
-        single-line
-        placeholder="e.g. Office building B"
-        class="mb-3 nickname-field"
-        @blur="saveNicknameToFrontmatter"
-        @keyup.enter="saveNicknameToFrontmatter"
-      />
+      <v-card variant="outlined" class="mb-3">
+        <v-card-text class="pa-3">
+          <v-text-field
+            v-model="nicknameInput"
+            label="Nickname"
+            density="compact"
+            variant="outlined"
+            hide-details
+            single-line
+            placeholder="e.g. Office building B"
+            style="max-width: 480px"
+            @blur="saveNicknameToFrontmatter"
+            @keyup.enter="saveNicknameToFrontmatter"
+          />
+        </v-card-text>
+      </v-card>
 
       <!-- Coordinates row -->
       <v-card variant="outlined" class="mb-3 coords-card">
@@ -411,16 +415,6 @@ onMounted(() => {
 .coord-field {
   min-width: 280px;
   flex: 1;
-}
-
-.nickname-field {
-  max-width: 480px;
-}
-
-.nickname-field :deep(.v-field__input) {
-  min-height: unset !important;
-  padding-top: 4px;
-  padding-bottom: 4px;
 }
 
 .coords-card {
