@@ -1,5 +1,31 @@
 import { parseCoords } from './coords'
 
+/** Chars unsafe on common filesystems (Windows + Unix). */
+const UNSAFE_CHARS = /[#&?:*"<>|\\\/@!]/g
+
+/**
+ * Sanitize a person name for use as a filename.
+ * Preserves: letters (incl. accented), digits, comma, period, space, hyphen.
+ * e.g. "O'Brien, John #2" → "OBrien, John 2"
+ */
+export function sanitizePersonName(raw: string): string {
+  return raw
+    .replace(UNSAFE_CHARS, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+/**
+ * Sanitize a page name for use as a filename.
+ * Same rules as person name.
+ */
+export function sanitizePageName(raw: string): string {
+  return raw
+    .replace(UNSAFE_CHARS, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 /**
  * Sanitize a location slug for use as a filename.
  *

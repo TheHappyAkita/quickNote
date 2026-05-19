@@ -1,12 +1,13 @@
 import type { GraphData, NotePageMeta, LocationMeta } from '#shared/types/notes'
 import { parseCoords } from '#shared/utils/coords'
-import { readFile, writeFile, readdir, mkdir, unlink } from 'fs/promises'
+import { sanitizePersonName, sanitizePageName, sanitizeLocationSlug } from '#shared/utils/location'
+import { readFile, writeFile, readdir, mkdir, unlink, rename } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join, resolve } from 'path'
 import { homedir } from 'os'
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
-const PAGE_NAME_PATTERN = /^[a-zA-Z0-9_\- ]+$/
+const PAGE_NAME_PATTERN = /^[a-zA-Z0-9_\-\. äöüÄÖÜáéíóúàèìòùâêîôûãõ]+$/
 const WIKILINK_PATTERN = /\[\[(\d{4}-\d{2}-\d{2}|[a-zA-Z0-9_\- ]+)\]\]/g
 const PERSON_PATTERN = /@\[\[([^\]]+)\]\]/g
 // Captures all pipe-separated parts inside &[[...]]
@@ -84,6 +85,13 @@ export function isValidPageName(name: string): boolean {
   return PAGE_NAME_PATTERN.test(name) && name.length > 0 && name.length <= 100
 }
 
+export async function renamePageFile(oldName: string, newName: string): Promise<void> {
+  if (oldName === newName) return
+  const oldPath = join(getPagesDir(), `${oldName}.md`)
+  const newPath = join(getPagesDir(), `${newName}.md`)
+  if (existsSync(oldPath) && !existsSync(newPath)) await rename(oldPath, newPath)
+}
+
 export async function listPages(): Promise<string[]> {
   await ensurePagesDir()
   const dir = getPagesDir()
@@ -129,7 +137,7 @@ export async function deletePage(name: string): Promise<void> {
 
 // ─── People (person pages) ───────────────────────────────────────────────────
 
-const PERSON_NAME_PATTERN = /^[a-zA-Z0-9,\. _\-]+$/
+const PERSON_NAME_PATTERN = /^[a-zA-Z0-9,\. _\-äöüÄÖÜáéíóúàèìòùâêîôûãõ]+$/
 const PEOPLE_DIR = 'people'
 
 function getPeopleDir(): string {
@@ -145,6 +153,13 @@ async function ensurePeopleDir(): Promise<void> {
 
 export function isValidPersonName(name: string): boolean {
   return PERSON_NAME_PATTERN.test(name) && name.length > 0 && name.length <= 120
+}
+
+export async function renamePersonFile(oldName: string, newName: string): Promise<void> {
+  if (oldName === newName) return
+  const oldPath = join(getPeopleDir(), `${oldName}.md`)
+  const newPath = join(getPeopleDir(), `${newName}.md`)
+  if (existsSync(oldPath) && !existsSync(newPath)) await rename(oldPath, newPath)
 }
 
 export async function listPersons(): Promise<string[]> {

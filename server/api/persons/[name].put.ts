@@ -1,11 +1,15 @@
-import { writePerson, deletePerson, isValidPersonName } from '../../utils/notes'
+import { writePerson, deletePerson, isValidPersonName, renamePersonFile } from '../../utils/notes'
+import { sanitizePersonName } from '#shared/utils/location'
 import { cacheInvalidate } from '../../utils/cache'
 
 export default defineEventHandler(async (event) => {
-  const name = decodeURIComponent(getRouterParam(event, 'name') ?? '')
+  const raw = decodeURIComponent(getRouterParam(event, 'name') ?? '')
+  const name = sanitizePersonName(raw)
   if (!name || !isValidPersonName(name)) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid person name' })
   }
+  // Migrate old file if name changed after sanitization
+  if (raw !== name) await renamePersonFile(raw, name)
   const body = await readBody<{ content: string }>(event)
   if (typeof body?.content !== 'string') {
     throw createError({ statusCode: 400, statusMessage: 'Content field required' })
@@ -17,5 +21,5 @@ export default defineEventHandler(async (event) => {
   }
   await writePerson(name, body.content)
   cacheInvalidate('graph')
-  return { ok: true, deleted: false }
+  return { ok: true, deleted: false, name }
 })
