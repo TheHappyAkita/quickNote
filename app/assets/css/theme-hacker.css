@@ -151,6 +151,21 @@ html.theme-hacker .suggestions-dropdown {
   color: #00FF41 !important;
 }
 
+html.theme-hacker .suggestions-dropdown .v-list-item {
+  background: transparent !important;
+  color: #00FF41 !important;
+}
+
+html.theme-hacker .suggestions-dropdown .v-list-item--active {
+  background: rgba(0, 255, 65, 0.2) !important;
+  color: #00FF41 !important;
+}
+
+html.theme-hacker .suggestions-dropdown .v-list-subheader {
+  background: transparent !important;
+  color: #00CC33 !important;
+}
+
 /* ── Preview pane (markdown rendered content) ────────────────────────────── */
 html.theme-hacker .preview-pane {
   background: #050505 !important;
