@@ -380,7 +380,7 @@ function toggle(panel: Exclude<PanelName, null>) {
   bottom: 0;
   display: flex;
   flex-direction: row;
-  z-index: 200;
+  z-index: 1100;
 }
 
 /* Narrow button strip - always visible */
