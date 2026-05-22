@@ -30,8 +30,13 @@ html.theme-hacker .v-list {
   color: #00FF41 !important;
 }
 
-html.theme-hacker .v-list-item {
+html.theme-hacker .v-list-item,
+html.theme-hacker .v-list-item-title,
+html.theme-hacker .v-list-item-subtitle,
+html.theme-hacker .v-list-item__content {
   color: #00FF41 !important;
+  font-family: 'Fira Code', 'Courier New', Courier, monospace !important;
+  font-feature-settings: "calt" 1 !important;
 }
 
 html.theme-hacker .v-list-item--active {
@@ -228,6 +233,12 @@ html.theme-hacker .sidebar-panel {
   background: #050505 !important;
   border-left: 1px solid #00FF41 !important;
   color: #00FF41 !important;
+}
+
+html.theme-hacker .sidebar-strip *,
+html.theme-hacker .sidebar-panel * {
+  font-family: 'Fira Code', 'Courier New', Courier, monospace !important;
+  font-feature-settings: "calt" 1 !important;
 }
 
 html.theme-hacker .panel-header {
