@@ -8,7 +8,8 @@
 html.theme-hacker,
 html.theme-hacker body,
 html.theme-hacker .v-application {
-  font-family: 'Courier New', Courier, monospace !important;
+  font-family: 'Fira Code', 'Courier New', Courier, monospace !important;
+  font-feature-settings: "calt" 1;
   letter-spacing: 0.03em;
   background: #333333 !important;
   color: #00FF41 !important;
