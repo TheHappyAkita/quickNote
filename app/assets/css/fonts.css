@@ -1,6 +1,6 @@
 /* ══════════════════════════════════════════════════════════════════════════════
    Fira Code Font (local, no network dependency)
-   Ligatures enabled for code rendering
+   Ligatures enabled globally via font-feature-settings
    ══════════════════════════════════════════════════════════════════════════════ */
 
 @font-face {
@@ -17,4 +17,12 @@
   font-weight: 500;
   font-style: normal;
   font-display: swap;
+}
+
+/* ── Apply Fira Code globally for the default dark theme ─────────────────── */
+html:not(.theme-hacker) body,
+html:not(.theme-hacker) .v-application,
+html:not(.theme-hacker) .v-application * {
+  font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', monospace !important;
+  font-feature-settings: "calt" 1;
 }
