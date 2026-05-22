@@ -186,11 +186,15 @@ html.theme-hacker .preview-pane code {
   background: #0a0a0a !important;
   color: #00FF41 !important;
   border-color: #00FF41 !important;
+  font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', monospace !important;
+  font-feature-settings: "calt" 1 !important;
 }
 
 html.theme-hacker .preview-pane pre {
   background: #050505 !important;
   border-color: #00FF41 !important;
+  font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', monospace !important;
+  font-feature-settings: "calt" 1 !important;
 }
 
 html.theme-hacker .preview-pane blockquote {

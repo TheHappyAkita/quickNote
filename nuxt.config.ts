@@ -4,7 +4,7 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
 
-  css: ['~/assets/css/theme-hacker.css'],
+  css: ['~/assets/css/fonts.css', '~/assets/css/theme-hacker.css'],
 
   modules: [
     'vuetify-nuxt-module',

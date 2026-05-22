@@ -462,8 +462,9 @@ function insertSuggestion(date: string) {
   color: #c8c0ff;
   padding: 2px 6px;
   border-radius: 4px;
-  font-family: monospace;
+  font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', monospace;
   font-size: 13px;
+  font-feature-settings: "calt" 1;
 }
 
 :deep(.preview-pane pre) {
@@ -472,6 +473,8 @@ function insertSuggestion(date: string) {
   border-radius: 8px;
   overflow-x: auto;
   border: 1px solid #2e2e4e;
+  font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', monospace;
+  font-feature-settings: "calt" 1;
 }
 
 :deep(.preview-pane blockquote) {
