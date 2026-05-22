@@ -419,6 +419,8 @@ function insertSuggestion(date: string) {
   border: 1px solid #2e2e4e;
   border-radius: 8px;
   color: #e2e2e2;
+  font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', monospace;
+  font-feature-settings: "calt" 1;
   font-size: 15px;
   line-height: 1.8;
 }
