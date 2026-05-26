@@ -222,6 +222,35 @@ html.theme-hacker .wiki-link.time-link {
   font-weight: normal;
 }
 
+html.theme-hacker .preview-pane table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  font-size: 14px;
+}
+
+html.theme-hacker .preview-pane th,
+html.theme-hacker .preview-pane td {
+  border: 1px solid #00FF41 !important;
+  padding: 6px 12px;
+  text-align: left;
+  color: #00FF41 !important;
+  background: transparent !important;
+}
+
+html.theme-hacker .preview-pane th {
+  background: rgba(0, 255, 65, 0.1) !important;
+  font-weight: 600;
+}
+
+html.theme-hacker .preview-pane tr:nth-child(even) td {
+  background: rgba(0, 255, 65, 0.05) !important;
+}
+
+html.theme-hacker .preview-pane tr:hover td {
+  background: rgba(0, 255, 65, 0.12) !important;
+}
+
 html.theme-hacker mark.hl {
   background: #FFFF00 !important;
   color: #000000 !important;

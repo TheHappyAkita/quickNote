@@ -505,4 +505,32 @@ function insertSuggestion(date: string) {
 :deep(.preview-pane li > ol) {
   margin: 0.1em 0;
 }
+
+:deep(.preview-pane table) {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  font-size: 14px;
+}
+
+:deep(.preview-pane th),
+:deep(.preview-pane td) {
+  border: 1px solid #4a4a6e;
+  padding: 6px 12px;
+  text-align: left;
+}
+
+:deep(.preview-pane th) {
+  background: #2e2e4e;
+  color: #c8c0ff;
+  font-weight: 600;
+}
+
+:deep(.preview-pane tr:nth-child(even) td) {
+  background: rgba(108, 99, 255, 0.05);
+}
+
+:deep(.preview-pane tr:hover td) {
+  background: rgba(108, 99, 255, 0.1);
+}
 </style>
