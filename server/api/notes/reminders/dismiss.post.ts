@@ -1,3 +1,6 @@
+// Copyright (C) 2026 TheHappyAkita
+// SPDX-License-Identifier: GPL-3.0-only
+
 import { join } from 'path'
 import { readFile, writeFile } from 'fs/promises'
 import { getNotesDir } from '../../../utils/notes'

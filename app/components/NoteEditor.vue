@@ -1,3 +1,4 @@
+<!-- Copyright (C) 2026 TheHappyAkita - SPDX-License-Identifier: GPL-3.0-only -->
 <template>
   <div class="editor-wrapper">
     <div class="d-flex align-center mb-2 gap-2">

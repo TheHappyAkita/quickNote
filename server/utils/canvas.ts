@@ -1,3 +1,6 @@
+// Copyright (C) 2026 TheHappyAkita
+// SPDX-License-Identifier: GPL-3.0-only
+
 import { readFile, writeFile, mkdir, unlink, access } from 'fs/promises'
 import { join } from 'path'
 import type { CanvasState, CanvasMeta } from '#shared/types/notes'

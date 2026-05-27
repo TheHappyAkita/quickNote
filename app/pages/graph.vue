@@ -1,3 +1,4 @@
+<!-- Copyright (C) 2026 TheHappyAkita - SPDX-License-Identifier: GPL-3.0-only -->
 <template>
   <v-container fluid class="pa-4 pa-sm-6">
     <div class="d-flex align-center mb-4">

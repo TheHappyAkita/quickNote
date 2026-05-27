@@ -1,3 +1,6 @@
+// Copyright (C) 2026 TheHappyAkita
+// SPDX-License-Identifier: GPL-3.0-only
+
 import type { GraphData, NotePageMeta, LocationMeta } from '#shared/types/notes'
 import { parseCoords } from '#shared/utils/coords'
 import { toSlug, sanitizeLocationSlug, parseFrontmatterName, injectFrontmatterName } from '#shared/utils/location'

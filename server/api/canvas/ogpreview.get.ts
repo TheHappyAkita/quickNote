@@ -1,3 +1,6 @@
+// Copyright (C) 2026 TheHappyAkita
+// SPDX-License-Identifier: GPL-3.0-only
+
 export default defineEventHandler(async (event) => {
   const url = getQuery(event).url as string | undefined
   if (!url) throw createError({ statusCode: 400, message: 'url required' })

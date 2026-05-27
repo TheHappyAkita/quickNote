@@ -1,3 +1,4 @@
+<!-- Copyright (C) 2026 TheHappyAkita - SPDX-License-Identifier: GPL-3.0-only -->
 <template>
   <v-app>
     <v-main class="bg-background d-flex align-center justify-center" style="min-height: 100vh">

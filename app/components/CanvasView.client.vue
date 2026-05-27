@@ -1,3 +1,4 @@
+<!-- Copyright (C) 2026 TheHappyAkita - SPDX-License-Identifier: GPL-3.0-only -->
 <template>
   <div class="canvas-wrapper">
     <div class="canvas-toolbar pa-2 d-flex align-center gap-2">

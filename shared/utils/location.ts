@@ -1,3 +1,6 @@
+// Copyright (C) 2026 TheHappyAkita
+// SPDX-License-Identifier: GPL-3.0-only
+
 import { parseCoords } from './coords'
 
 /** Chars unsafe on common filesystems (Windows + Unix). */

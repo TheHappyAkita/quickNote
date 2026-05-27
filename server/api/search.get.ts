@@ -1,3 +1,6 @@
+// Copyright (C) 2026 TheHappyAkita
+// SPDX-License-Identifier: GPL-3.0-only
+
 import { listNotes, readNote, listPages, readPage, listLocations, readLocation } from '../utils/notes'
 
 export interface SearchResult {

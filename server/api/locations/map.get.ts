@@ -1,3 +1,6 @@
+// Copyright (C) 2026 TheHappyAkita
+// SPDX-License-Identifier: GPL-3.0-only
+
 import type { LocationMeta } from '#shared/types/notes'
 import {
   listNotes, readNote, listPagesWithMeta, readPage,

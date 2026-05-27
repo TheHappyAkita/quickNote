@@ -1,3 +1,4 @@
+<!-- Copyright (C) 2026 TheHappyAkita - SPDX-License-Identifier: GPL-3.0-only -->
 <template>
   <div class="reminders-panel" :class="{ collapsed: isCollapsed }">
     <!-- Alert Bell Toggle (only shown when alerts exist) -->

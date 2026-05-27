@@ -1,3 +1,6 @@
+// Copyright (C) 2026 TheHappyAkita
+// SPDX-License-Identifier: GPL-3.0-only
+
 import { buildGraph } from '../../utils/notes'
 import { cacheGet, cacheSet, CACHE_TTL } from '../../utils/cache'
 import type { GraphData } from '#shared/types/notes'

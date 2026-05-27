@@ -1,3 +1,6 @@
+// Copyright (C) 2026 TheHappyAkita
+// SPDX-License-Identifier: GPL-3.0-only
+
 /**
  * Simple module-level TTL cache for Nitro server.
  * Survives across requests within the same process lifetime.

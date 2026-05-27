@@ -1,3 +1,6 @@
+// Copyright (C) 2026 TheHappyAkita
+// SPDX-License-Identifier: GPL-3.0-only
+
 /**
  * Parse geographic coordinates from any of the four supported formats
  * and return { lat, lng } in decimal degrees, or null if not recognised.

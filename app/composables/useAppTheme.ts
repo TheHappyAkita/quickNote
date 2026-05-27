@@ -1,3 +1,6 @@
+// Copyright (C) 2026 TheHappyAkita
+// SPDX-License-Identifier: GPL-3.0-only
+
 import { useTheme } from 'vuetify'
 
 const STORAGE_KEY = 'quicknote:theme'

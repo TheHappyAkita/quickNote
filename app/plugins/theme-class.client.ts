@@ -1,3 +1,6 @@
+// Copyright (C) 2026 TheHappyAkita
+// SPDX-License-Identifier: GPL-3.0-only
+
 // Applies the theme-hacker CSS class to <html> synchronously from localStorage
 // before Vue mounts, so all components see the correct class on first render.
 export default defineNuxtPlugin(() => {

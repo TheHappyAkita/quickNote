@@ -1,3 +1,6 @@
+// Copyright (C) 2026 TheHappyAkita
+// SPDX-License-Identifier: GPL-3.0-only
+
 import { readPage, listPagesWithMeta } from '../../utils/notes'
 import { toSlug } from '#shared/utils/location'
 

@@ -1,3 +1,6 @@
+// Copyright (C) 2026 TheHappyAkita
+// SPDX-License-Identifier: GPL-3.0-only
+
 export interface NotePageMeta {
   name: string   // display name (from frontmatter name: or slug)
   slug: string   // filesystem-safe filename without extension

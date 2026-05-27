@@ -1,3 +1,6 @@
+// Copyright (C) 2026 TheHappyAkita
+// SPDX-License-Identifier: GPL-3.0-only
+
 import { parseCoords } from '#shared/utils/coords'
 import { sanitizeLocationSlug } from '#shared/utils/location'
 

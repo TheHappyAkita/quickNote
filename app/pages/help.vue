@@ -1,3 +1,4 @@
+<!-- Copyright (C) 2026 TheHappyAkita - SPDX-License-Identifier: GPL-3.0-only -->
 <template>
   <div class="help-scroll">
   <v-container class="help-page py-8" style="max-width: 860px">
