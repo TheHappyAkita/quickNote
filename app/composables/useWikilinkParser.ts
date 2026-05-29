@@ -35,6 +35,7 @@ export const EMOJI_MAP: Record<string, string> = {
   // People & activities
   meeting: '👥', phone: '📞', email: '📧', note: '📝',
   idea: '💡', warning: '⚠️', check: '✅', cross: '❌',
+  tick: '✅', question: '❓', exclamation: '❗',
   money: '💰', gift: '🎁', party: '🎉', birthday: '🎂',
   // Food & drink
   coffee: '☕', tea: '🍵', beer: '🍺', wine: '🍷',
