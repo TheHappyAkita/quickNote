@@ -98,28 +98,36 @@
           </thead>
           <tbody>
             <tr>
-              <td><code>:car:</code> / <code>:plane:</code> / <code>:train:</code></td>
-              <td>🚗 ✈️ 🚆 — Vehicles</td>
+              <td><code>:car:</code> / <code>:bus:</code> / <code>:train:</code> / <code>:plane:</code> / <code>:bike:</code></td>
+              <td>🚗 🚌 🚆 ✈️ � — Vehicles</td>
             </tr>
             <tr>
-              <td><code>:home:</code> / <code>:office:</code> / <code>:world:</code></td>
-              <td>🏠 🏢 � — Places</td>
+              <td><code>:home:</code> / <code>:office:</code> / <code>:hospital:</code> / <code>:school:</code> / <code>:park:</code></td>
+              <td>🏠 🏢 🏥 🏫 🌳 — Places</td>
             </tr>
             <tr>
-              <td><code>:sun:</code> / <code>:rain:</code> / <code>:snow:</code></td>
-              <td>☀️ 🌧️ ❄️ — Weather</td>
+              <td><code>:sun:</code> / <code>:rain:</code> / <code>:snow:</code> / <code>:cloud:</code> / <code>:storm:</code></td>
+              <td>☀️ 🌧️ ❄️ ☁️ ⛈️ — Weather</td>
             </tr>
             <tr>
-              <td><code>:meeting:</code> / <code>:phone:</code> / <code>:email:</code></td>
-              <td>👥 📞 📧 — Activities</td>
+              <td><code>:meeting:</code> / <code>:phone:</code> / <code>:email:</code> / <code>:note:</code> / <code>:idea:</code></td>
+              <td>👥 📞 📧 📝 💡 — Activities</td>
             </tr>
             <tr>
-              <td><code>:coffee:</code> / <code>:pizza:</code> / <code>:beer:</code></td>
-              <td>☕ 🍕 🍺 — Food & drink</td>
+              <td><code>:warning:</code> / <code>:check:</code> / <code>:cross:</code> / <code>:tick:</code> / <code>:question:</code> / <code>:exclamation:</code></td>
+              <td>⚠️ ✅ ❌ ✅ ❓ ❗ — Status & symbols</td>
             </tr>
             <tr>
-              <td><code>:star:</code> / <code>:heart:</code> / <code>:fire:</code></td>
-              <td>⭐ ❤️ 🔥 — Misc</td>
+              <td><code>:money:</code> / <code>:gift:</code> / <code>:party:</code> / <code>:birthday:</code></td>
+              <td>💰 🎁 🎉 🎂 — Events</td>
+            </tr>
+            <tr>
+              <td><code>:coffee:</code> / <code>:tea:</code> / <code>:beer:</code> / <code>:wine:</code> / <code>:pizza:</code></td>
+              <td>☕ � 🍺 🍷 🍕 — Food & drink</td>
+            </tr>
+            <tr>
+              <td><code>:star:</code> / <code>:heart:</code> / <code>:fire:</code> / <code>:key:</code> / <code>:lock:</code> / <code>:book:</code></td>
+              <td>⭐ ❤️ 🔥 🔑 🔒 📚 — Misc</td>
             </tr>
           </tbody>
         </v-table>
