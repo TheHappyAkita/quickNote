@@ -153,14 +153,16 @@
               <v-icon size="14" color="error">mdi-bell-alert</v-icon>
             </template>
             <v-list-item-title class="text-body-2 reminder-text">
-              <NuxtLink :to="`/note/${reminder.date}`" class="reminder-link" v-html="parseWikilinks(reminder.text)"></NuxtLink>
+              <NuxtLink :to="reminderLink(reminder.date)" class="reminder-link" v-html="parseWikilinks(reminder.text)"></NuxtLink>
             </v-list-item-title>
             <v-list-item-subtitle class="text-caption">
               <v-icon size="12" color="error" class="mr-1">mdi-clock-alert</v-icon>
               <span :class="{ 'text-error font-weight-bold': isOverdue(reminder.alertDate!) }">
                 {{ formatAlertDate(reminder.alertDate!) }}
               </span>
-              <span class="text-medium-emphasis ml-1">(in {{ formatDate(reminder.date) }})</span>
+              <span class="text-medium-emphasis ml-1">(in {{ formatDate(reminder.date) }})
+                <v-icon size="10" class="ml-1">{{ reminderIcon(reminder.date) }}</v-icon>
+              </span>
             </v-list-item-subtitle>
             <template #append>
               <v-btn icon="mdi-check" size="x-small" variant="text" color="success" title="Dismiss" @click.prevent="dismiss(reminder)" />
@@ -194,9 +196,11 @@
               <v-icon size="14" color="grey-lighten-2">mdi-checkbox-blank-outline</v-icon>
             </template>
             <v-list-item-title class="text-body-2 reminder-text">
-              <NuxtLink :to="`/note/${todo.date}`" class="reminder-link" v-html="parseWikilinks(todo.text)"></NuxtLink>
+              <NuxtLink :to="reminderLink(todo.date)" class="reminder-link" v-html="parseWikilinks(todo.text)"></NuxtLink>
             </v-list-item-title>
-            <v-list-item-subtitle class="text-caption">{{ formatDate(todo.date) }}</v-list-item-subtitle>
+            <v-list-item-subtitle class="text-caption">
+              <v-icon size="10" class="mr-1">{{ reminderIcon(todo.date) }}</v-icon>{{ formatDate(todo.date) }}
+            </v-list-item-subtitle>
             <template #append>
               <v-btn icon="mdi-check" size="x-small" variant="text" color="success" title="Mark done" @click.prevent="dismiss(todo)" />
             </template>
@@ -229,9 +233,11 @@
               <v-icon size="14" :color="iconColor(reminder.keyword)">{{ iconFor(reminder.keyword) }}</v-icon>
             </template>
             <v-list-item-title class="text-body-2 reminder-text">
-              <NuxtLink :to="`/note/${reminder.date}`" class="reminder-link" v-html="parseWikilinks(reminder.text)"></NuxtLink>
+              <NuxtLink :to="reminderLink(reminder.date)" class="reminder-link" v-html="parseWikilinks(reminder.text)"></NuxtLink>
             </v-list-item-title>
-            <v-list-item-subtitle class="text-caption">{{ formatDate(reminder.date) }}</v-list-item-subtitle>
+            <v-list-item-subtitle class="text-caption">
+              <v-icon size="10" class="mr-1">{{ reminderIcon(reminder.date) }}</v-icon>{{ formatDate(reminder.date) }}
+            </v-list-item-subtitle>
             <template #append>
               <v-btn icon="mdi-check" size="x-small" variant="text" color="success" title="Dismiss" @click.prevent="dismiss(reminder)" />
             </template>
@@ -329,8 +335,22 @@ function formatAlertDate(alertDate: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 function formatDate(dateStr: string): string {
+  if (dateStr.startsWith('page:')) return `Page: ${dateStr.slice(5)}`
+  if (dateStr.startsWith('person:')) return `Person: ${dateStr.slice(7)}`
   const d = new Date(dateStr + 'T00:00:00')
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+function reminderLink(dateStr: string): string {
+  if (dateStr.startsWith('page:')) return `/page/${encodeURIComponent(dateStr.slice(5))}`
+  if (dateStr.startsWith('person:')) return `/person/${encodeURIComponent(dateStr.slice(7))}`
+  return `/note/${dateStr}`
+}
+
+function reminderIcon(dateStr: string): string {
+  if (dateStr.startsWith('page:')) return 'mdi-file-document-outline'
+  if (dateStr.startsWith('person:')) return 'mdi-account'
+  return 'mdi-calendar'
 }
 
 // ── Search ─────────────────────────────────────────────────────────

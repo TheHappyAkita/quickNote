@@ -4,7 +4,7 @@
 import type { Reminder } from '#shared/types/notes'
 import { join } from 'path'
 import { readFile, writeFile } from 'fs/promises'
-import { getNotesDir, listNotes, readNote } from '../../utils/notes'
+import { getNotesDir, listNotes, readNote, listPages, readPage, listPersons, readPerson } from '../../utils/notes'
 import { cacheGet, cacheSet, CACHE_TTL } from '../../utils/cache'
 
 const REMINDER_PATTERN = /^(.*?)(remind|remindme|reminder)(?:\s*:\s*|\s+)(.+)$/i
@@ -88,69 +88,91 @@ function isAlertDue(alertDate: string): boolean {
   return alertDate <= getToday()
 }
 
+function extractReminders(sourceId: string, content: string, dismissed: Set<DismissedKey>): Reminder[] {
+  const results: Reminder[] = []
+  const lines = content.split('\n')
+  for (const line of lines) {
+    const trimmed = line.trim()
+
+    // Check for Alert pattern first (Alert YYYY-MM-DD: text)
+    const alertMatch = ALERT_PATTERN.exec(trimmed)
+    if (alertMatch) {
+      const rawDate = alertMatch[3]!
+      const alertDate = parseDateFormat(rawDate)
+      if (alertDate) {
+        const text = alertMatch[4]!.trim().slice(0, 200)
+        const key: DismissedKey = `${sourceId}:${text}`
+        if (!dismissed.has(key) && isAlertDue(alertDate)) {
+          results.push({ date: sourceId, text, keyword: 'alert', alertDate })
+        }
+      }
+      continue
+    }
+
+    // Check for regular reminder patterns
+    const match = REMINDER_PATTERN.exec(trimmed)
+    if (match) {
+      const keywordRaw = match[2]!.toLowerCase()
+      const keyword = keywordRaw === 'remindme' ? 'remindme' : keywordRaw as 'remind' | 'reminder'
+      const text = match[3]!.trim().slice(0, 200)
+      const key: DismissedKey = `${sourceId}:${text}`
+      if (!dismissed.has(key)) {
+        results.push({ date: sourceId, text, keyword })
+      }
+      continue
+    }
+
+    // Check for ToDo pattern
+    const todoMatch = TODO_PATTERN.exec(trimmed)
+    if (todoMatch) {
+      const text = todoMatch[3]!.trim().slice(0, 200)
+      const key: DismissedKey = `${sourceId}:${text}`
+      if (!dismissed.has(key)) {
+        results.push({ date: sourceId, text, keyword: 'todo' })
+      }
+    }
+  }
+  return results
+}
+
 export default defineEventHandler(async (): Promise<Reminder[]> => {
   const cached = cacheGet<Reminder[]>('reminders')
   if (cached) return cached
 
-  const [dismissed, dates] = await Promise.all([loadDismissed(), listNotes()])
-
-  // Read all note files in parallel batches
-  const BATCH = 50
-  const allContents: Array<string | null> = []
-  for (let i = 0; i < dates.length; i += BATCH) {
-    const batch = await Promise.all(dates.slice(i, i + BATCH).map(d => readNote(d)))
-    allContents.push(...batch)
-  }
+  const [dismissed, dates, pages, persons] = await Promise.all([
+    loadDismissed(),
+    listNotes(),
+    listPages(),
+    listPersons(),
+  ])
 
   const reminders: Reminder[] = []
 
-  for (let idx = 0; idx < dates.length; idx++) {
-    const noteDate = dates[idx]!
-    const content = allContents[idx]
-    if (!content) continue
+  // Read and process daily notes
+  const BATCH = 50
+  for (let i = 0; i < dates.length; i += BATCH) {
+    const batch = await Promise.all(dates.slice(i, i + BATCH).map(d => readNote(d)))
+    for (let j = 0; j < batch.length; j++) {
+      const content = batch[j]
+      if (content) reminders.push(...extractReminders(dates[i + j]!, content, dismissed))
+    }
+  }
 
-    const lines = content.split('\n')
-    for (const line of lines) {
-      const trimmed = line.trim()
+  // Read and process page files
+  for (let i = 0; i < pages.length; i += BATCH) {
+    const batch = await Promise.all(pages.slice(i, i + BATCH).map(p => readPage(p)))
+    for (let j = 0; j < batch.length; j++) {
+      const content = batch[j]
+      if (content) reminders.push(...extractReminders(`page:${pages[i + j]!}`, content, dismissed))
+    }
+  }
 
-      // Check for Alert pattern first (Alert YYYY-MM-DD: text)
-      const alertMatch = ALERT_PATTERN.exec(trimmed)
-      if (alertMatch) {
-        const rawDate = alertMatch[3]!
-        const alertDate = parseDateFormat(rawDate)
-        if (alertDate) {
-          const text = alertMatch[4]!.trim().slice(0, 200)
-          const key: DismissedKey = `${noteDate}:${text}`
-          // Only show alert if the alert date is today or in the past
-          if (!dismissed.has(key) && isAlertDue(alertDate)) {
-            reminders.push({ date: noteDate, text, keyword: 'alert', alertDate })
-          }
-        }
-        continue
-      }
-
-      // Check for regular reminder patterns
-      const match = REMINDER_PATTERN.exec(trimmed)
-      if (match) {
-        const keywordRaw = match[2]!.toLowerCase()
-        const keyword = keywordRaw === 'remindme' ? 'remindme' : keywordRaw as 'remind' | 'reminder'
-        const text = match[3]!.trim().slice(0, 200)
-        const key: DismissedKey = `${noteDate}:${text}`
-        if (!dismissed.has(key)) {
-          reminders.push({ date: noteDate, text, keyword })
-        }
-        continue
-      }
-
-      // Check for ToDo pattern
-      const todoMatch = TODO_PATTERN.exec(trimmed)
-      if (todoMatch) {
-        const text = todoMatch[3]!.trim().slice(0, 200)
-        const key: DismissedKey = `${noteDate}:${text}`
-        if (!dismissed.has(key)) {
-          reminders.push({ date: noteDate, text, keyword: 'todo' })
-        }
-      }
+  // Read and process people files
+  for (let i = 0; i < persons.length; i += BATCH) {
+    const batch = await Promise.all(persons.slice(i, i + BATCH).map(p => readPerson(p)))
+    for (let j = 0; j < batch.length; j++) {
+      const content = batch[j]
+      if (content) reminders.push(...extractReminders(`person:${persons[i + j]!}`, content, dismissed))
     }
   }
 
