@@ -177,7 +177,12 @@ const renderedContent = computed(() => {
   // Standard markdown hyperlinks: [text](url)
   html = html.replace(
     /\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" target="_blank" rel="noopener noreferrer" class="wiki-link">🔗 $1</a>',
+    (_match, text, url) => {
+      const isFileLink = url.startsWith('file:')
+      const target = isFileLink ? '' : ' target="_blank" rel="noopener noreferrer"'
+      const icon = isFileLink ? '📁' : '🔗'
+      return `<a href="${url}"${target} class="wiki-link">${icon} ${text}</a>`
+    },
   )
   // Datetime links: [[YYYY-MM-DD HH:MM]] or [[YYYY-MM-DD HH:MM:SS]]
   html = html.replace(
