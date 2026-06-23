@@ -71,12 +71,8 @@
               <td>📅 2025-10-14 ⏰ 14:30 — Datetime link</td>
             </tr>
             <tr>
-              <td><code>[label](https://…)</code></td>
-              <td>🔗 label — External link (opens in new tab)</td>
-            </tr>
-            <tr>
-              <td><code>[My File](file:/home/…)</code></td>
-              <td>📁 My File — Local file link (see Troubleshooting below)</td>
+              <td><code>[Google](https://google.com)</code></td>
+              <td>🔗 Google — External link (opens in new tab)</td>
             </tr>
             <tr>
               <td><code>user@example.com</code></td>
@@ -281,7 +277,7 @@
     </v-card>
 
     <!-- STANDARD MARKDOWN -->
-    <v-card class="mb-4" variant="outlined">
+    <v-card variant="outlined">
       <v-card-title class="text-subtitle-1 font-weight-bold pb-0">
         <v-icon size="18" class="mr-2">mdi-language-markdown</v-icon>Standard Markdown (quick ref)
       </v-card-title>
@@ -303,36 +299,6 @@
             <tr><td><code>---</code></td><td>Horizontal rule</td></tr>
           </tbody>
         </v-table>
-      </v-card-text>
-    </v-card>
-
-    <!-- TROUBLESHOOTING -->
-    <v-card variant="outlined" color="error">
-      <v-card-title class="text-subtitle-1 font-weight-bold pb-0">
-        <v-icon size="18" class="mr-2">mdi-alert-circle-outline</v-icon>Troubleshooting: Local File Links
-      </v-card-title>
-      <v-card-text class="text-body-2 pt-2">
-        <p class="mb-2">
-          Browsers block <code>file://</code> links by default for security. If clicking a file link does nothing or shows a "Not allowed to load local resource" error, you need to enable access:
-        </p>
-        
-        <div class="mb-3">
-          <strong>Firefox:</strong>
-          <ol class="ml-4">
-            <li>Go to <code>about:config</code></li>
-            <li>Search for <code>security.fileuri.strict_origin_policy</code></li>
-            <li>Set it to <code>false</code></li>
-          </ol>
-        </div>
-
-        <div>
-          <strong>Chrome / Edge:</strong>
-          <p>
-            You must install a browser extension like 
-            <a href="https://chromewebstore.google.com/detail/enable-local-file-links/nikfmfgobenbhmocjaaboihbeocackld" target="_blank" class="text-primary text-decoration-none">Enable local file links</a>. 
-            After installation, go to the extension settings and toggle <strong>"Allow access to file URLs"</strong>.
-          </p>
-        </div>
       </v-card-text>
     </v-card>
   </v-container>

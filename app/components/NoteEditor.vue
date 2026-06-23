@@ -181,7 +181,9 @@ const renderedContent = computed(() => {
       const isFileLink = url.startsWith('file:')
       const target = isFileLink ? '' : ' target="_blank" rel="noopener noreferrer"'
       const icon = isFileLink ? '📁' : '🔗'
-      return `<a href="${url}"${target} class="wiki-link">${icon} ${text}</a>`
+      const linkClass = isFileLink ? 'wiki-link file-link' : 'wiki-link'
+      const dataAttr = isFileLink ? ` data-file-path="${url.slice(5)}"` : ''
+      return `<a href="${isFileLink ? '#' : url}"${target} class="${linkClass}"${dataAttr}>${icon} ${text}</a>`
     },
   )
   // Datetime links: [[YYYY-MM-DD HH:MM]] or [[YYYY-MM-DD HH:MM:SS]]
@@ -243,6 +245,26 @@ const renderedContent = computed(() => {
   // Open external links in a new tab; internal wikilinks stay in the same tab
   html = html.replace(/<a href="(https?:\/\/[^"]+)"/g, '<a href="$1" target="_blank" rel="noopener noreferrer"')
   return html
+})
+
+onMounted(() => {
+  document.addEventListener('click', async (e) => {
+    const target = (e.target as HTMLElement).closest('a.file-link') as HTMLAnchorElement
+    if (target) {
+      e.preventDefault()
+      const path = target.getAttribute('data-file-path')
+      if (path) {
+        try {
+          await $fetch('/api/open-file', {
+            method: 'POST',
+            query: { path }
+          })
+        } catch (err) {
+          console.error('Failed to open file:', err)
+        }
+      }
+    }
+  })
 })
 
 function getCursorCoords(textarea: HTMLTextAreaElement, pos: number): { top: number; left: number } {

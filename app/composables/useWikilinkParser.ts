@@ -62,7 +62,9 @@ export function useWikilinkParser(options?: {
         const isFileLink = url.startsWith('file:')
         const target = isFileLink ? '' : ' target="_blank" rel="noopener noreferrer"'
         const icon = isFileLink ? '📁' : '🔗'
-        return `<a href="${url}"${target} class="wiki-link">${icon} ${text}</a>`
+        const linkClass = isFileLink ? 'wiki-link file-link' : 'wiki-link'
+        const dataAttr = isFileLink ? ` data-file-path="${url.slice(5)}"` : ''
+        return `<a href="${isFileLink ? '#' : url}"${target} class="${linkClass}"${dataAttr}>${icon} ${text}</a>`
       },
     )
 
