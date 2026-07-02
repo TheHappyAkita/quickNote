@@ -33,6 +33,18 @@
         </v-btn>
       </template>
 
+      <!-- Plugin navbar items -->
+      <v-btn
+        v-for="item in navbarItems"
+        :key="item.id"
+        :icon="item.icon"
+        variant="text"
+        size="small"
+        :title="item.title"
+        class="mx-1"
+        @click="item.action()"
+      />
+
       <!-- All pages dropdown -->
       <v-menu :close-on-content-click="false">
         <template #activator="{ props: menuProps }">
@@ -131,6 +143,8 @@
 </template>
 
 <script setup lang="ts">
+import { usePluginSystem } from '~/composables/usePluginSystem'
+
 const route = useRoute()
 const router = useRouter()
 const { user, clear } = useUserSession()
@@ -188,10 +202,17 @@ const favoriteItems = computed(() =>
 
 // ── Theme ────────────────────────────────────────────────────────────────────
 const { current: currentTheme, themes, apply: applyTheme } = useAppTheme()
-const currentThemeIcon = computed(() => themes.find(t => t.id === currentTheme.value)?.icon ?? 'mdi-weather-night')
+const currentThemeIcon = computed(() => {
+  const allThemes = themes.value
+  return allThemes.find((t: any) => t.id === currentTheme.value)?.icon ?? 'mdi-weather-night'
+})
 
 async function logout() {
   await clear()
   await router.push('/login')
 }
+
+// ── Plugin navbar items ──────────────────────────────────────────────────
+const { getNavbarItems } = usePluginSystem()
+const navbarItems = computed(() => getNavbarItems())
 </script>

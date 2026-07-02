@@ -3,6 +3,7 @@
 
 import { parseCoords } from '#shared/utils/coords'
 import { sanitizeLocationSlug } from '#shared/utils/location'
+import { usePluginSystem } from '~/composables/usePluginSystem'
 
 function parseLocationParts(inner: string): { name?: string; lat?: number; lng?: number } {
   const parts = inner.split('|').map(p => p.trim())
@@ -49,11 +50,15 @@ export const EMOJI_MAP: Record<string, string> = {
 export function useWikilinkParser(options?: {
   locationNicknames?: Map<string, string> | (() => Map<string, string>)
 }) {
+  const { applyMarkdownHooks } = usePluginSystem()
+
   function parseWikilinks(text: string): string {
     const locationNicknames = typeof options?.locationNicknames === 'function'
       ? options.locationNicknames()
       : options?.locationNicknames
-    let html = text
+    
+    // Apply plugin markdown hooks
+    let html = applyMarkdownHooks(text)
 
     // Standard markdown hyperlinks: [text](url)
     html = html.replace(

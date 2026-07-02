@@ -51,6 +51,7 @@
               <template #prepend>
                 <v-icon v-if="suggestionMode === 'person'" size="14" class="mr-1" color="pink">mdi-account</v-icon>
                 <v-icon v-else-if="suggestionMode === 'location'" size="14" class="mr-1" color="teal">mdi-map-marker</v-icon>
+                <v-icon v-else-if="activePluginProvider?.icon" size="14" class="mr-1" :color="activePluginProvider.color">{{ activePluginProvider.icon }}</v-icon>
                 <v-icon v-else-if="/^\d{4}-\d{2}-\d{2}$/.test(suggestion)" size="14" class="mr-1">mdi-calendar</v-icon>
                 <v-icon v-else size="14" class="mr-1">mdi-file-document-outline</v-icon>
               </template>
@@ -75,6 +76,7 @@ import { marked } from 'marked'
 import { parseCoords } from '#shared/utils/coords'
 import { sanitizeLocationSlug } from '#shared/utils/location'
 import { EMOJI_MAP } from '~/composables/useWikilinkParser'
+import { usePluginSystem } from '~/composables/usePluginSystem'
 
 const props = defineProps<{
   modelValue: string
@@ -124,7 +126,10 @@ const locationNicknameMap = computed(() => {
 })
 
 const dropdownStyle = ref({ top: '40px', left: '16px' })
-const suggestionMode = ref<'link' | 'person' | 'location'>('link')
+const suggestionMode = ref<string>('link')
+const activePluginProvider = ref<any>(null)
+
+const { applyMarkdownHooks, getSuggestionProviders } = usePluginSystem()
 
 const wordCount = computed(() => {
   const text = props.modelValue.trim()
@@ -168,8 +173,10 @@ function renderLocationMentions(raw: string): string {
 }
 
 const renderedContent = computed(() => {
+  // Apply plugin hooks first
+  const pluggable = applyMarkdownHooks(props.modelValue)
   // Pre-process location mentions before marked so | and & aren't mangled
-  const preprocessed = renderLocationMentions(props.modelValue)
+  const preprocessed = renderLocationMentions(pluggable)
   let html = marked.parse(preprocessed, {
     gfm: true,
     breaks: false,
@@ -268,6 +275,22 @@ function handleInput(event: Event) {
   const locationMatch = !personMatch && textBeforeCursor.match(/&\[\[([^\[\]]*)$/)
   const linkMatch = !personMatch && !locationMatch && textBeforeCursor.match(/\[\[([^\[\]]*)$/)
 
+  // Plugin triggers
+  const pluginProviders = getSuggestionProviders()
+  let pluginMatch = null
+  activePluginProvider.value = null
+
+  if (!personMatch && !locationMatch && !linkMatch) {
+    for (const provider of pluginProviders) {
+      const match = textBeforeCursor.match(provider.trigger)
+      if (match) {
+        pluginMatch = match
+        activePluginProvider.value = provider
+        break
+      }
+    }
+  }
+
   if (personMatch) {
     suggestionMode.value = 'person'
     const query = personMatch[1] ?? ''
@@ -307,6 +330,29 @@ function handleInput(event: Event) {
       const coords = getCursorCoords(target, cursorPos)
       dropdownStyle.value = { top: coords.top + 'px', left: Math.max(0, coords.left) + 'px' }
     }
+  } else if (pluginMatch) {
+    suggestionMode.value = activePluginProvider.value.mode
+    const query = pluginMatch[1] ?? ''
+    const result = activePluginProvider.value.getSuggestions(query)
+    if (result instanceof Promise) {
+      result.then(s => {
+        suggestions.value = s.slice(0, 10)
+        selectedSuggestion.value = 0
+        showSuggestions.value = suggestions.value.length > 0
+        if (showSuggestions.value) {
+          const coords = getCursorCoords(target, cursorPos)
+          dropdownStyle.value = { top: coords.top + 'px', left: Math.max(0, coords.left) + 'px' }
+        }
+      })
+    } else {
+      suggestions.value = result.slice(0, 10)
+      selectedSuggestion.value = 0
+      showSuggestions.value = suggestions.value.length > 0
+      if (showSuggestions.value) {
+        const coords = getCursorCoords(target, cursorPos)
+        dropdownStyle.value = { top: coords.top + 'px', left: Math.max(0, coords.left) + 'px' }
+      }
+    }
   } else {
     showSuggestions.value = false
   }
@@ -342,17 +388,32 @@ function insertSuggestion(date: string) {
   const textBeforeCursor = value.substring(0, cursorPos)
   const isPerson = suggestionMode.value === 'person'
   const isLocation = suggestionMode.value === 'location'
-  const openBracket = isPerson
-    ? textBeforeCursor.lastIndexOf('@[[')
-    : isLocation
-      ? textBeforeCursor.lastIndexOf('&[[')
-      : textBeforeCursor.lastIndexOf('[[')
+  const isPlugin = activePluginProvider.value !== null
+  
+  let openBracket: number
+  if (isPerson) {
+    openBracket = textBeforeCursor.lastIndexOf('@[[')
+  } else if (isLocation) {
+    openBracket = textBeforeCursor.lastIndexOf('&[[')
+  } else if (isPlugin) {
+    // We need to find where the trigger started. This is a bit simplified.
+    // Ideally providers would return the match range.
+    const match = textBeforeCursor.match(activePluginProvider.value.trigger)
+    openBracket = match ? textBeforeCursor.lastIndexOf(match[0]) : -1
+  } else {
+    openBracket = textBeforeCursor.lastIndexOf('[[')
+  }
+
+  if (openBracket === -1) return
+
   let insertion: string
   if (isPerson) {
     insertion = `@[[${date}]]`
   } else if (isLocation) {
     const nick = locationNicknameMap.value.get(date)
     insertion = nick ? `&[[${date}]](${nick})` : `&[[${date}]]`
+  } else if (isPlugin) {
+    insertion = activePluginProvider.value.formatInsertion(date)
   } else {
     insertion = `[[${date}]]`
   }
@@ -363,8 +424,7 @@ function insertSuggestion(date: string) {
 
   nextTick(() => {
     if (textareaRef.value) {
-      const prefix = isPerson ? '@[[' : isLocation ? '&[[' : '[['
-      const newPos = openBracket + prefix.length + date.length + 2
+      const newPos = openBracket + insertion.length
       textareaRef.value.setSelectionRange(newPos, newPos)
       textareaRef.value.focus()
     }

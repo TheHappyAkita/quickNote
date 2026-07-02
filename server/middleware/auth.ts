@@ -1,6 +1,8 @@
 // Copyright (C) 2026 TheHappyAkita
 // SPDX-License-Identifier: GPL-3.0-only
 
+import '../plugins';
+
 export default defineEventHandler(async (event) => {
   const path = getRequestURL(event).pathname
 
