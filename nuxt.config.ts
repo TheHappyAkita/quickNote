@@ -65,6 +65,42 @@ export default defineNuxtConfig({
           },
         },
       },
+      defaults: {
+        VList: {
+          density: 'compact',
+          VListItem: {
+            minHeight: '32px',
+            VListItemTitle: {
+              style: 'font-size: 0.875rem; line-height: 1.25rem;',
+            },
+          },
+        },
+        VMenu: {
+          VList: {
+            density: 'compact',
+          },
+        },
+        VTextField: {
+          density: 'compact',
+          variant: 'outlined',
+          style: 'font-size: 0.875rem;',
+        },
+        VTextarea: {
+          density: 'compact',
+          variant: 'outlined',
+          style: 'font-size: 0.875rem;',
+        },
+        VSelect: {
+          density: 'compact',
+          variant: 'outlined',
+          style: 'font-size: 0.875rem;',
+        },
+        VAutocomplete: {
+          density: 'compact',
+          variant: 'outlined',
+          style: 'font-size: 0.875rem;',
+        },
+      },
     },
   },
 

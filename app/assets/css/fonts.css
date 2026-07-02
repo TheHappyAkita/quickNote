@@ -26,3 +26,78 @@ html:not(.theme-hacker) .v-application * {
   font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', monospace !important;
   font-feature-settings: "calt" 1;
 }
+
+/* ── Vuetify 4 Typography Overrides (Restoring stable scale) ───────────── */
+.v-application .text-h4 {
+  font-size: 1.5rem !important;
+  line-height: 2rem !important;
+  font-weight: 600 !important;
+}
+
+.v-application .text-h5 {
+  font-size: 1.25rem !important;
+  line-height: 1.75rem !important;
+  font-weight: 600 !important;
+}
+
+.v-application .text-h6 {
+  font-size: 1.125rem !important;
+  line-height: 1.4rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.0125em !important;
+  text-transform: none !important;
+}
+
+.v-application .text-subtitle-1 {
+  font-size: 1rem !important;
+  line-height: 1.5rem !important;
+  font-weight: 600 !important;
+}
+
+.v-application .text-subtitle-2 {
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+  font-weight: 600 !important;
+}
+
+/* ── Vuetify 4 Input Field Alignment (Restoring compact height) ────────── */
+html .v-input.v-input--density-compact {
+  --v-input-control-height: 28px !important;
+}
+
+html .v-field.v-field--variant-outlined.v-field--density-compact {
+  --v-field-padding-top: 0px !important;
+  --v-field-padding-bottom: 0px !important;
+  --v-field-input-padding-top: 0px !important;
+  --v-field-input-padding-bottom: 0px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+}
+
+html .v-field--variant-outlined.v-field--density-compact .v-field__input {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  min-height: 28px !important;
+  height: 28px !important;
+  font-size: 0.8125rem !important;
+  line-height: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+html .v-field--variant-outlined.v-field--density-compact .v-field__outline {
+  --v-field-border-width: 1px !important;
+}
+
+html .v-field--variant-outlined.v-field--density-compact .v-label.v-field-label {
+  visibility: visible !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  font-size: 0.8125rem !important;
+  margin: 0 !important;
+}
+
+html .v-field--variant-outlined.v-field--density-compact .v-label.v-field-label--floating {
+  top: 0 !important;
+  transform: translateY(-50%) scale(0.75) !important;
+}

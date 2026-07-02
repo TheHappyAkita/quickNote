@@ -517,12 +517,29 @@ function insertSuggestion(date: string) {
   border-radius: 3px;
 }
 
+:deep(.preview-pane) {
+  line-height: 1.5;
+}
+
+:deep(.preview-pane p) {
+  margin: 0.3em 0;
+}
+
 :deep(.preview-pane h1),
 :deep(.preview-pane h2),
 :deep(.preview-pane h3) {
   color: #9c8fff;
-  margin-top: 1.2em;
-  margin-bottom: 0.4em;
+  margin-top: 0.8em;
+  margin-bottom: 0.2em;
+  font-weight: 600;
+}
+
+:deep(.preview-pane h1) { font-size: 1.25rem; }
+:deep(.preview-pane h2) { font-size: 1.1rem; }
+:deep(.preview-pane h3) { font-size: 1rem; }
+
+:deep(.preview-pane > *:first-child) {
+  margin-top: 0 !important;
 }
 
 :deep(.preview-pane code) {
@@ -554,8 +571,8 @@ function insertSuggestion(date: string) {
 
 :deep(.preview-pane ul),
 :deep(.preview-pane ol) {
-  padding-left: 1.6em;
-  margin: 0.4em 0;
+  padding-left: 1.4em;
+  margin: 0.2em 0;
 }
 
 :deep(.preview-pane ul) { list-style-type: disc; }
@@ -564,7 +581,7 @@ function insertSuggestion(date: string) {
 :deep(.preview-pane ol) { list-style-type: decimal; }
 
 :deep(.preview-pane li) {
-  margin: 0.15em 0;
+  margin: 0.1em 0;
 }
 
 :deep(.preview-pane li > ul),
