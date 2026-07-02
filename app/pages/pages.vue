@@ -187,7 +187,7 @@ async function createPage() {
   creating.value = true
   try {
     await $fetch(`/api/pages/${name}`, {
-      method: 'POST',
+      method: 'POST' as any,
       body: { content: '' },
     })
     newPageName.value = ''

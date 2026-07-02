@@ -263,8 +263,8 @@ const queryLat = computed(() => route.query.lat ? parseFloat(route.query.lat as 
 const queryLng = computed(() => route.query.lng ? parseFloat(route.query.lng as string) : null)
 
 const mapViewRef = ref<{ panTo?: (name: string) => void; panToCoords?: (lat: number, lng: number) => void } | null>(null)
-const searchQuery = ref<string | null>('')
-const selectedName = ref<string | null>(null)
+const searchQuery = ref<string>('')
+const selectedName = ref<string | undefined>(undefined)
 const mentionFilter = ref<string[]>([])
 
 function toggleMentionFilter(type: string) {

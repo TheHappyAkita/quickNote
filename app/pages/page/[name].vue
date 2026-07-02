@@ -195,7 +195,7 @@ async function saveNow() {
   saved.value = false
   try {
     await $fetch(`/api/pages/${pageName.value}`, {
-      method: 'POST',
+      method: 'POST' as any,
       body: { content: content.value },
     })
     saved.value = true
@@ -214,7 +214,7 @@ function confirmDelete() {
 async function deletePage() {
   try {
     await $fetch(`/api/pages/${pageName.value}`, {
-      method: 'DELETE',
+      method: 'DELETE' as any,
     })
     deleteDialog.value = false
     router.push('/pages')
