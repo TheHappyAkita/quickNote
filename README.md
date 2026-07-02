@@ -19,6 +19,15 @@ Auto-saves on blur; manual save via **Ctrl+S** or the save icon.
 ### 📄 Named Pages
 Create persistent reference pages (e.g. *Book List*, *Project Ideas*, *Harmonica*). Pages are separate Markdown files stored in `~/.quickNote/pages/`.
 
+### 👥 Persons
+Track people across your notes using the `@[[Lastname, Forename]]` syntax. Each person gets a dedicated page in `~/.quickNote/people/` where you can store contact info, meeting notes, or biography details.
+
+### 📍 Locations & Map
+Document places with the `&[[Name]]` or `&[[lat,lng]]` syntax. 
+- **Named Locations:** Stored in `~/.quickNote/locations/` with frontmatter for coordinates and nicknames.
+- **Interactive Map:** View all mentioned locations on a global map, including "anonymous" coordinate pins and named locations.
+- **Coordinates:** Supports DD, DMS, and other formats, auto-sanitized for filesystem safety.
+
 ### 🏷️ Tags
 Organize pages with tags — two ways to add them:
 - **YAML frontmatter** (explicit, structured):
@@ -31,14 +40,16 @@ Organize pages with tags — two ways to add them:
   ```markdown
   This page covers #music and #theory.
   ```
-Tags appear as filter chips in the Pages browser.
+Tags appear as filter chips in the respective browsers (Pages, Persons, Locations).
 
 ### 🔗 Wikilinks
-Link between notes and pages using `[[...]]` syntax:
+Link between notes, pages, persons, and locations using `[[...]]` syntax:
 - `[[2025-10-14]]` — links to a daily note
 - `[[Harmonica]]` — links to a named page
+- `@[[Doe, Jane]]` — links to a person
+- `&[[Central Park]]` — links to a location
 
-Type `[[` in the editor to trigger autocomplete suggestions for existing notes and pages.
+Type `[[`, `@[[`, or `&[[` in the editor to trigger autocomplete suggestions.
 
 ### ✨ Text Highlighting & Colour
 Highlight important text directly in notes:
@@ -52,25 +63,30 @@ Highlight important text directly in notes:
 Supported colours: `red`, `orange`, `yellow`, `green`, `blue`, `purple`, `pink`, `teal`, `gray`
 
 ### 🔍 Full-Text Search
-Search across all daily notes and named pages from the sidebar panel. Results show excerpts around matches with match counts. Searches page names, note dates, and content.
+Search across all daily notes, pages, persons, and locations from the sidebar panel. Results show excerpts around matches with match counts.
 
 ### 🧠 Knowledge Graph
-An interactive graph (powered by Cytoscape.js) showing all your notes, pages, and their connections as nodes and edges. 
-
-- **Filter** by name — shows matching nodes plus their direct neighbours (context)
-- **Click** any node to navigate directly to the note or page
+An interactive graph (powered by Cytoscape.js) showing all your entities and their connections. 
+- **Nodes:** Daily notes, Pages, Persons, Locations, and Keywords.
+- **Filter** by name — shows matching nodes plus their direct neighbours (context).
+- **Click** any node to navigate directly.
 
 ### 🗺️ Canvas
-A free-form visual board where you can pin note cards, page cards, images, and URL previews. Arrange them spatially to see relationships and create visual overviews. Multiple named canvases are supported.
+A free-form visual board where you can pin note cards, page cards, person cards, image cards, and URL previews. Arrange them spatially and connect them with edges. Multiple named canvases are supported.
 
 ### 🔔 Reminders & Alerts
 Add reminders and time-sensitive alerts directly in your notes using special keywords:
 
 | Syntax | Behaviour |
 |--------|-----------|
-| `Remind: call the dentist` | Appears in the Reminders sidebar panel |
-| `Reminder: review budget` | Same as above |
-| `Alert 2025-11-01: submit report` | Appears in the Alerts panel on or after the target date |
+| `Remind: text` | Appears in the Reminders sidebar panel |
+| `Alert 2025-11-01: text` | Appears in the Alerts panel on or after the target date |
+| `Todo: text` | Appears in the To-Do sidebar panel |
+
+### 🔌 Plugin System
+Extensible architecture allowing for:
+- **Client-side plugins:** Custom themes, markdown rendering hooks, editor suggestion providers, and UI slots (navbar/sidebar).
+- **Server-side plugins:** Lifecycle hooks for file save/delete operations.
 
 Reminders can be dismissed individually.
 
@@ -147,13 +163,15 @@ Or use `npm run preview` after building to test the production bundle locally.
 
 ```
 ~/.quickNote/
-├── 2025-10-14.md       # Daily notes (one per day)
-├── 2025-10-15.md
+├── 2025-10-14.md       # Daily notes
 ├── pages/
-│   ├── Harmonica.md    # Named pages
-│   └── Book List.md
+│   └── Harmonica.md    # Named pages
+├── people/
+│   └── Doe, Jane.md    # Person files
+├── locations/
+│   └── Park.md         # Location files
 └── canvas/
-    └── default.json    # Canvas board state
+    └── default.json    # Canvas boards
 ```
 
 All files are plain Markdown and can be edited with any text editor outside the app. The YAML frontmatter written by quickNote is standard and compatible with Obsidian, Typora, etc.
@@ -201,6 +219,7 @@ Related to [[2025-10-14]] when I first picked it up.
 | Framework | [Nuxt 4](https://nuxt.com) |
 | UI | [Vuetify 3](https://vuetifyjs.com) |
 | Graph | [Cytoscape.js](https://js.cytoscape.org) |
+| Maps | [Leaflet](https://leafletjs.com) |
 | Markdown | [marked](https://marked.js.org) |
 | Auth | [nuxt-auth-utils](https://github.com/atinux/nuxt-auth-utils) |
 | PWA | [@vite-pwa/nuxt](https://vite-pwa-org.netlify.app/frameworks/nuxt) |

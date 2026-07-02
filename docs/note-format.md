@@ -49,7 +49,41 @@ The harmonica is a free reed wind instrument...
 
 ---
 
-## YAML Frontmatter
+## Persons
+
+**Filename:** `<Lastname, Forename>.md`
+**Location:** `$NOTES_DIR/people/`
+
+Use the `@[[...]]` syntax to link to people.
+
+```markdown
+Met with @[[Doe, Jane]] today to discuss the project.
+```
+
+---
+
+## Locations
+
+**Filename:** `<Name>.md` (for named locations) or `<lat_lng_slug>.md` (for coord-based locations)
+**Location:** `$NOTES_DIR/locations/`
+
+Use the `&[[...]]` syntax to link to locations.
+
+```markdown
+Meeting at &[[Central Park]].
+Coords pin: &[[40.7829,-73.9654]]
+```
+
+### Location Frontmatter
+
+```yaml
+---
+lat: 40.7829
+lng: -73.9654
+nickname: My favorite spot
+tags: [outdoors]
+---
+```
 
 Frontmatter goes at the very top of the file, between `---` delimiters. Currently supported fields:
 
@@ -98,6 +132,9 @@ Use `[[...]]` to link to other notes or pages:
 |--------|-------------|
 | `[[2025-10-14]]` | Daily note `2025-10-14.md` |
 | `[[Harmonica]]` | Named page `pages/Harmonica.md` |
+| `@[[Doe, Jane]]` | Person file `people/Doe, Jane.md` |
+| `&[[Central Park]]` | Location file `locations/Central Park.md` |
+| `&[[lat,lng]]` | Location pin or coord-based file |
 
 Wikilinks appear in the Knowledge Graph as edges. The editor provides autocomplete when you type `[[`.
 
