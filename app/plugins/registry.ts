@@ -69,3 +69,5 @@ export const activePlugins: QuickNotePlugin[] = [
     }
   }
 ]
+
+export default defineNuxtPlugin(() => {})

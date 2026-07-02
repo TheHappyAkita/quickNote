@@ -3,21 +3,24 @@
 
 import type { QuickNotePlugin, QuickNoteAPI } from '#shared/types/plugins'
 
-export function usePluginSystem() {
-  const plugins = useState<QuickNotePlugin[]>('qn_plugins', () => [])
-  const isInitialized = useState('qn_plugins_init', () => false)
+// Use module-level state for plugins to avoid SSR serialization errors
+// "useState" in Nuxt 3/4 attempts to serialize data for the client,
+// but plugins contain functions (hooks, setup, etc.) which cannot be stringified.
+const pluginsState = ref<QuickNotePlugin[]>([])
+const isInitializedState = ref(false)
 
+export function usePluginSystem() {
   const registerPlugin = (plugin: QuickNotePlugin) => {
-    if (plugins.value.some(p => p.id === plugin.id)) {
+    if (pluginsState.value.some(p => p.id === plugin.id)) {
       console.warn(`Plugin with ID ${plugin.id} is already registered.`)
       return
     }
-    plugins.value.push(plugin)
+    pluginsState.value.push(plugin)
   }
 
   const applyMarkdownHooks = (text: string): string => {
     let result = text
-    for (const plugin of plugins.value) {
+    for (const plugin of pluginsState.value) {
       if (plugin.hooks?.['markdown:render']) {
         try {
           result = plugin.hooks['markdown:render'](result)
@@ -31,7 +34,7 @@ export function usePluginSystem() {
 
   const getSuggestionProviders = () => {
     const providers = []
-    for (const plugin of plugins.value) {
+    for (const plugin of pluginsState.value) {
       if (plugin.hooks?.['editor:suggestions']) {
         try {
           providers.push(...plugin.hooks['editor:suggestions']())
@@ -45,7 +48,7 @@ export function usePluginSystem() {
 
   const getSidebarWidgets = () => {
     const widgets = []
-    for (const plugin of plugins.value) {
+    for (const plugin of pluginsState.value) {
       if (plugin.hooks?.['ui:sidebar']) {
         try {
           widgets.push(...plugin.hooks['ui:sidebar']())
@@ -59,7 +62,7 @@ export function usePluginSystem() {
 
   const getNavbarItems = () => {
     const items = []
-    for (const plugin of plugins.value) {
+    for (const plugin of pluginsState.value) {
       if (plugin.hooks?.['ui:navbar']) {
         try {
           items.push(...plugin.hooks['ui:navbar']())
@@ -73,7 +76,7 @@ export function usePluginSystem() {
 
   const getPluginThemes = () => {
     const themes: Array<{ id: string; label: string; icon: string; dark: boolean; colors: Record<string, string>; cssClass?: string }> = []
-    for (const plugin of plugins.value) {
+    for (const plugin of pluginsState.value) {
       if (plugin.hooks?.['ui:themes']) {
         try {
           themes.push(...plugin.hooks['ui:themes']())
@@ -86,9 +89,9 @@ export function usePluginSystem() {
   }
 
   const initializePlugins = async (api: QuickNoteAPI) => {
-    if (isInitialized.value) return
+    if (isInitializedState.value) return
     
-    for (const plugin of plugins.value) {
+    for (const plugin of pluginsState.value) {
       if (plugin.setup) {
         try {
           await plugin.setup(api)
@@ -104,11 +107,11 @@ export function usePluginSystem() {
         }
       }
     }
-    isInitialized.value = true
+    isInitializedState.value = true
   }
 
   return {
-    plugins,
+    plugins: pluginsState,
     registerPlugin,
     applyMarkdownHooks,
     getSuggestionProviders,

@@ -15,3 +15,5 @@ registerServerPlugin({
     }
   }
 });
+
+export default defineNitroPlugin(() => {})
