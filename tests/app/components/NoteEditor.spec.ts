@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { ref, computed } from 'vue'
 import NoteEditor from '../../../app/components/NoteEditor.vue'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
@@ -11,11 +12,16 @@ const vuetify = createVuetify({
 })
 
 // Mock Nuxt globals
-global.useFetch = vi.fn().mockReturnValue({
-  data: { value: [] },
-  refresh: vi.fn(),
-  pending: { value: false },
+global.useState = vi.fn((key, init) => {
+  return ref(init ? init() : null)
 })
+global.useFetch = vi.fn().mockReturnValue({
+  data: ref([]),
+  refresh: vi.fn(),
+  pending: ref(false),
+})
+global.computed = computed
+global.ref = ref
 
 describe('NoteEditor.vue', () => {
   const mountEditor = (props = {}) => {

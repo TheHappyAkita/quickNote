@@ -31,7 +31,6 @@ export default defineConfig({
       '@': path.resolve(__dirname, './app'),
       '~': path.resolve(__dirname, './app'),
       '#shared': path.resolve(__dirname, './shared'),
-      '#imports': path.resolve(__dirname, './.nuxt/imports.d.ts'),
     },
   },
 })
