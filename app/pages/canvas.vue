@@ -180,7 +180,7 @@ async function submitCreate() {
 }
 
 async function submitDelete() {
-  await $fetch(`/api/canvas/${selectedId.value}`, { method: 'DELETE' as 'GET' })
+  await $fetch(`/api/canvas/${selectedId.value}`, { method: 'DELETE' as any })
   canvasList.value = canvasList.value.filter((c) => c.id !== selectedId.value)
   selectedId.value = canvasList.value[0]?.id ?? 'default'
   deleteDialog.value = false

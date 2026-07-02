@@ -196,7 +196,7 @@ const regularCount = computed(() => regularReminders.value.length)
 
 async function dismiss(reminder: Reminder) {
   await $fetch('/api/notes/reminders/dismiss', {
-    method: 'POST' as 'GET',
+    method: 'POST' as any,
     body: { date: reminder.date, text: reminder.text },
   })
   await refresh()
@@ -238,12 +238,12 @@ function iconColor(keyword: Reminder['keyword']): string {
 }
 
 function isOverdue(alertDate: string): boolean {
-  const today = new Date().toISOString().split('T')[0]
+  const today = new Date().toISOString().split('T')[0] as string
   return alertDate < today
 }
 
 function formatAlertDate(alertDate: string): string {
-  const today = new Date().toISOString().split('T')[0]
+  const today = new Date().toISOString().split('T')[0] as string
   if (alertDate === today) return 'TODAY'
   const d = new Date(alertDate + 'T00:00:00')
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
