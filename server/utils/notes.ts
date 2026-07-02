@@ -4,6 +4,7 @@
 import type { GraphData, NotePageMeta, LocationMeta } from '#shared/types/notes'
 import { parseCoords } from '#shared/utils/coords'
 import { toSlug, sanitizeLocationSlug, parseFrontmatterName, injectFrontmatterName } from '#shared/utils/location'
+import { runServerHook } from './plugins'
 import { readFile, writeFile, readdir, mkdir, unlink, rename } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join, resolve } from 'path'
@@ -64,12 +65,16 @@ export async function writeNote(date: string, content: string): Promise<void> {
   await ensureNotesDir()
   const filePath = join(getNotesDir(), `${date}.md`)
   await writeFile(filePath, content, 'utf-8')
+  await runServerHook('server:onSave', { type: 'note', name: date, content })
 }
 
 export async function deleteNote(date: string): Promise<void> {
   if (!DATE_PATTERN.test(date)) throw new Error('Invalid date format')
   const filePath = join(getNotesDir(), `${date}.md`)
-  try { await unlink(filePath) } catch { /* already gone */ }
+  try { 
+    await unlink(filePath)
+    await runServerHook('server:onDelete', { type: 'note', name: date })
+  } catch { /* already gone */ }
 }
 
 // Named notes (pages) functions
@@ -127,6 +132,7 @@ export async function writePage(name: string, content: string): Promise<void> {
   await ensurePagesDir()
   const filePath = join(getPagesDir(), `${name}.md`)
   await writeFile(filePath, content, 'utf-8')
+  await runServerHook('server:onSave', { type: 'page', name, content })
 }
 
 export async function deletePage(name: string): Promise<void> {
@@ -136,6 +142,7 @@ export async function deletePage(name: string): Promise<void> {
   const { unlink } = await import('fs/promises')
   const filePath = join(getPagesDir(), `${name}.md`)
   await unlink(filePath)
+  await runServerHook('server:onDelete', { type: 'page', name })
 }
 
 // ─── People (person pages) ───────────────────────────────────────────────────
@@ -212,11 +219,15 @@ export async function writePerson(name: string, content: string): Promise<void> 
   if (!isValidPersonName(name)) throw new Error('Invalid person name')
   await ensurePeopleDir()
   await writeFile(join(getPeopleDir(), `${name}.md`), content, 'utf-8')
+  await runServerHook('server:onSave', { type: 'person', name, content })
 }
 
 export async function deletePerson(name: string): Promise<void> {
   if (!isValidPersonName(name)) throw new Error('Invalid person name')
-  try { await unlink(join(getPeopleDir(), `${name}.md`)) } catch { /* already gone */ }
+  try { 
+    await unlink(join(getPeopleDir(), `${name}.md`))
+    await runServerHook('server:onDelete', { type: 'person', name })
+  } catch { /* already gone */ }
 }
 
 export async function listPersonsWithMeta(): Promise<{ name: string; slug: string; tags: string[] }[]> {
@@ -283,11 +294,15 @@ export async function writeLocation(name: string, content: string): Promise<void
   if (!isValidLocationName(name)) throw new Error('Invalid location name')
   await ensureLocationsDir()
   await writeFile(join(getLocationsDir(), `${name}.md`), content, 'utf-8')
+  await runServerHook('server:onSave', { type: 'location', name, content })
 }
 
 export async function deleteLocation(name: string): Promise<void> {
   if (!isValidLocationName(name)) throw new Error('Invalid location name')
-  try { await unlink(join(getLocationsDir(), `${name}.md`)) } catch { /* already gone */ }
+  try { 
+    await unlink(join(getLocationsDir(), `${name}.md`))
+    await runServerHook('server:onDelete', { type: 'location', name })
+  } catch { /* already gone */ }
 }
 
 function parseLocationCoords(content: string): { lat?: number; lng?: number; nickname?: string } {

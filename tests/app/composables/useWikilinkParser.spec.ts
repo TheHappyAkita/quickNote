@@ -1,8 +1,17 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
+import { ref } from 'vue'
 import { useWikilinkParser } from '../../../app/composables/useWikilinkParser'
 
+// Mock Nuxt globals
+global.useState = vi.fn((key, init) => {
+  return ref(init ? init() : null)
+})
+global.ref = ref
+
 describe('useWikilinkParser', () => {
-  const { parseWikilinks } = useWikilinkParser()
+  const { parseWikilinks } = useWikilinkParser({
+    locationNicknames: new Map([['41_37@2_18', 'The Beach']])
+  })
 
   it('parses standard date links', () => {
     const text = 'Check [[2026-07-02]]'
@@ -31,7 +40,7 @@ describe('useWikilinkParser', () => {
   it('parses coordinate-only location links', () => {
     const text = 'Visit &[[41.37,2.18]]'
     const html = parseWikilinks(text)
-    expect(html).toContain('<a href="/location/41_37%402_18" class="wiki-link location-link">📍 41.37000, 2.18000</a>')
+    expect(html).toContain('<a href="/location/41_37%402_18" class="wiki-link location-link">📍 The Beach</a>')
   })
 
   it('parses location with nickname override', () => {

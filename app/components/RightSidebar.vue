@@ -64,6 +64,21 @@
         <v-icon>mdi-magnify</v-icon>
       </v-btn>
 
+      <!-- Plugin widgets -->
+      <v-btn
+        v-for="widget in pluginWidgets"
+        :key="widget.id"
+        icon
+        size="small"
+        variant="text"
+        class="strip-btn"
+        :color="activePanel === widget.id ? 'primary' : undefined"
+        :title="widget.title"
+        @click="toggle(widget.id)"
+      >
+        <v-icon>{{ widget.icon }}</v-icon>
+      </v-btn>
+
       <!-- Spacer pushes close button to bottom -->
       <div class="strip-spacer" />
 
@@ -245,6 +260,19 @@
         </v-list>
       </template>
 
+      <!-- Plugin widgets panel -->
+      <template v-else v-for="widget in pluginWidgets" :key="widget.id">
+        <template v-if="activePanel === widget.id">
+          <div class="panel-header">
+            <v-icon size="18" color="primary" class="mr-2">{{ widget.icon }}</v-icon>
+            <span class="font-weight-bold">{{ widget.title }}</span>
+          </div>
+          <div class="flex-grow-1 overflow-y-auto pa-2">
+            <component :is="widget.component" />
+          </div>
+        </template>
+      </template>
+
     </div>
   </div>
 </template>
@@ -253,8 +281,9 @@
 import type { Reminder } from '#shared/types/notes'
 import { useWikilinkParser } from '~/composables/useWikilinkParser'
 import { sanitizeLocationSlug } from '#shared/utils/location'
+import { usePluginSystem } from '~/composables/usePluginSystem'
 
-type PanelName = 'search' | 'alerts' | 'reminders' | 'todos' | null
+type PanelName = string | null
 const activePanel = ref<PanelName>(null)
 
 // ── Wikilink parser ─────────────────────────────────────────────────────
@@ -273,6 +302,10 @@ const locationNicknameMap = computed(() => {
 const { parseWikilinks } = useWikilinkParser({
   locationNicknames: () => locationNicknameMap.value,
 })
+
+// ── Plugin sidebar widgets ──────────────────────────────────────────────
+const { getSidebarWidgets } = usePluginSystem()
+const pluginWidgets = computed(() => getSidebarWidgets())
 
 // ── Reminders ──────────────────────────────────────────────────────
 const { data: reminders, pending: remindersPending, refresh: refreshReminders } = await useFetch<Reminder[]>('/api/notes/reminders', {

@@ -33,6 +33,18 @@
         </v-btn>
       </template>
 
+      <!-- Plugin navbar items -->
+      <v-btn
+        v-for="item in navbarItems"
+        :key="item.id"
+        :icon="item.icon"
+        variant="text"
+        size="small"
+        :title="item.title"
+        class="mx-1"
+        @click="item.action()"
+      />
+
       <!-- All pages dropdown -->
       <v-menu :close-on-content-click="false">
         <template #activator="{ props: menuProps }">
@@ -120,7 +132,11 @@
             {{ username }}
           </v-btn>
         </template>
-        <v-list>
+        <v-list density="compact">
+          <v-list-item prepend-icon="mdi-puzzle-outline" @click="showPlugins = true">
+            <v-list-item-title>Plugins</v-list-item-title>
+          </v-list-item>
+          <v-divider />
           <v-list-item prepend-icon="mdi-logout" @click="logout">
             <v-list-item-title>Sign out</v-list-item-title>
           </v-list-item>
@@ -128,9 +144,59 @@
       </v-menu>
     </template>
   </v-app-bar>
+
+  <!-- Plugins Dialog -->
+  <v-dialog v-model="showPlugins" width="500">
+    <v-card rounded="xl">
+      <v-card-title class="d-flex align-center pa-4">
+        <v-icon icon="mdi-puzzle-outline" class="mr-2" color="primary" />
+        <span>Installed Plugins</span>
+        <v-spacer />
+        <v-btn icon="mdi-close" variant="text" size="small" @click="showPlugins = false" />
+      </v-card-title>
+      <v-divider />
+      <v-card-text class="pa-0" style="max-height: 400px; overflow-y: auto">
+        <v-list lines="two">
+          <v-list-item v-if="plugins.length === 0">
+            <v-list-item-title class="text-grey italic">No plugins installed</v-list-item-title>
+          </v-list-item>
+          <v-list-item
+            v-for="plugin in plugins"
+            :key="plugin.id"
+            :prepend-icon="plugin.icon || 'mdi-puzzle'"
+          >
+            <v-list-item-title class="font-weight-bold">
+              {{ plugin.name }}
+              <span class="text-caption text-grey ml-1">v{{ plugin.version }}</span>
+            </v-list-item-title>
+            <v-list-item-subtitle v-if="plugin.description">
+              {{ plugin.description }}
+            </v-list-item-subtitle>
+            <template #append v-if="plugin.author">
+              <span class="text-caption text-grey">by {{ plugin.author }}</span>
+            </template>
+          </v-list-item>
+        </v-list>
+      </v-card-text>
+      <v-divider />
+      <v-card-actions class="pa-3">
+        <v-spacer />
+        <v-btn
+          color="primary"
+          variant="tonal"
+          rounded="lg"
+          @click="showPlugins = false"
+        >
+          Close
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
+import { usePluginSystem } from '~/composables/usePluginSystem'
+
 const route = useRoute()
 const router = useRouter()
 const { user, clear } = useUserSession()
@@ -188,10 +254,18 @@ const favoriteItems = computed(() =>
 
 // ── Theme ────────────────────────────────────────────────────────────────────
 const { current: currentTheme, themes, apply: applyTheme } = useAppTheme()
-const currentThemeIcon = computed(() => themes.find(t => t.id === currentTheme.value)?.icon ?? 'mdi-weather-night')
+const currentThemeIcon = computed(() => {
+  const allThemes = themes.value
+  return allThemes.find((t: any) => t.id === currentTheme.value)?.icon ?? 'mdi-weather-night'
+})
 
 async function logout() {
   await clear()
   await router.push('/login')
 }
+
+// ── Plugin navbar items ──────────────────────────────────────────────────
+const { getNavbarItems, plugins } = usePluginSystem()
+const navbarItems = computed(() => getNavbarItems())
+const showPlugins = ref(false)
 </script>

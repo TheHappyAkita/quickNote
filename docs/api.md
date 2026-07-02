@@ -117,13 +117,14 @@ Build and return the knowledge graph data (nodes + edges).
 
 ### `GET /api/notes/reminders`
 
-Get all active reminders and alerts from all notes.
+Get all active reminders, alerts, and todos from all entities (notes, pages, persons, locations).
 
 **Response:**
 ```json
 [
   { "date": "2025-10-14", "text": "call the dentist", "keyword": "remind" },
-  { "date": "2025-10-14", "text": "submit report", "keyword": "alert", "alertDate": "2025-11-01" }
+  { "date": "2025-10-14", "text": "submit report", "keyword": "alert", "alertDate": "2025-11-01" },
+  { "date": "2025-10-15", "text": "finish proposal", "keyword": "todo" }
 ]
 ```
 
@@ -208,11 +209,102 @@ Get short preview excerpts for all named pages.
 
 ---
 
-## Search
+## Persons
+
+### `GET /api/persons`
+
+List all persons with their tags.
+
+**Response:**
+```json
+[
+  { "name": "Doe, Jane", "slug": "Doe, Jane", "tags": ["family"] }
+]
+```
+
+---
+
+### `GET /api/persons/[name]`
+
+Get a person's content and metadata.
+
+**Response:**
+```json
+{
+  "name": "Doe, Jane",
+  "slug": "Doe, Jane",
+  "tags": ["family"],
+  "content": "# Jane Doe\n\nNotes..."
+}
+```
+
+---
+
+### `POST /api/persons/[name]`
+
+Create or update a person file.
+
+**Request body:**
+```json
+{ "content": "# Jane Doe\n\n..." }
+```
+
+---
+
+### `DELETE /api/persons/[name]`
+
+Delete a person file.
+
+---
+
+## Locations
+
+### `GET /api/locations`
+
+List all stored locations.
+
+---
+
+### `GET /api/locations/[name]`
+
+Get a location's content and metadata.
+
+---
+
+### `PUT /api/locations/[name]`
+
+Create or update a location.
+
+---
+
+### `DELETE /api/locations/[name]`
+
+Delete a location.
+
+---
+
+### `GET /api/locations/map`
+
+Get all locations for the map, including mentions and inline coordinates.
+
+**Response:**
+```json
+[
+  {
+    "name": "Central Park",
+    "slug": "Central Park",
+    "lat": 40.7829,
+    "lng": -73.9654,
+    "mentionedInDates": ["2025-10-14"],
+    "mentionedInPages": ["Travel Wishlist"],
+    "mentionedInPeople": ["Doe, Jane"]
+  }
+]
+```
 
 ### `GET /api/search?q=<query>`
 
-Full-text search across all daily notes and named pages.
+Full-text search across all daily notes, pages, persons, and locations.
 
 **Query param:** `q` — search string (minimum 2 characters)
 
@@ -263,7 +355,8 @@ Get the state of a canvas board.
 ```json
 {
   "cards": [
-    { "id": "abc", "type": "note", "date": "2025-10-14", "x": 100, "y": 200 }
+    { "id": "abc", "type": "note", "date": "2025-10-14", "x": 100, "y": 200 },
+    { "id": "def", "type": "person", "pageName": "Doe, Jane", "x": 300, "y": 200 }
   ],
   "edges": []
 }
@@ -315,3 +408,9 @@ Rename a canvas.
 Delete a canvas board.
 
 **Response:** `200 OK`
+
+---
+
+## Plugins (Internal)
+
+The plugin system is primarily architectural and doesn't expose public REST endpoints beyond standard entity operations. Plugins are registered in `app/plugins/` (client) and `server/plugins/` (server).

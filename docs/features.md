@@ -84,7 +84,24 @@ Links become edges in the Knowledge Graph. If you link from a page to a daily no
 
 ---
 
-## Full-Text Search
+## Persons
+
+Track people using the `@[[Lastname, Forename]]` syntax.
+
+- **Dedicated Pages:** Each person gets a Markdown file in `people/`.
+- **Relationship Tracking:** Easily find all notes where a person is mentioned.
+- **Biographical Data:** Store contact info, social handles, or meeting notes.
+
+---
+
+## Locations & Map
+
+Document places and visualize them on an interactive map.
+
+- **Named Locations:** Create files in `locations/` for persistent places.
+- **Inline Coordinates:** Mention `&[[lat,lng]]` for one-off map pins.
+- **Global Map:** View all mentioned locations and pins in a unified map view.
+- **Coord Support:** Supports DD, DMS, and DDM formats.
 
 Access search via the **🔍 icon** in the right sidebar strip.
 
@@ -102,26 +119,12 @@ Access search via the **🔍 icon** in the right sidebar strip.
 
 The graph visualizes connections between your notes and pages.
 
-### Node types
+### interactions
 
-| Color | Shape | Meaning |
-|-------|-------|---------|
-| Purple (solid) | Circle | Daily note |
-| Dark blue (dashed border) | Circle | Named page |
-| Teal | Rounded rectangle | Keyword |
-
-### Edges
-
-- **Solid arrow** — wikilink (`[[...]]` reference)
-- **Dashed line** — shared keyword (appears on ≥2 notes or 3+ times)
-
-### Interactions
-
-- **Click** a date node → navigate to that daily note
-- **Click** a page node → navigate to that named page
-- **Hover** → shows a tooltip label
-- **Filter** → type in the header search field to filter nodes by name; the graph will show matching nodes plus their direct neighbours (relationship context), with neighbours dimmed
-- **Fit** / **Zoom** → controls in the top-right corner of the graph
+- **Nodes:** Daily notes (circle), Pages (dashed circle), Persons (person icon), Locations (marker icon), and Keywords (rectangle).
+- **Edges:** Solid arrows for Wikilinks, dashed lines for shared keywords.
+- **Click** a node to navigate.
+- **Filter** by name — shows matching nodes plus their direct neighbours (context).
 
 ### Graph Filtering with Context
 
@@ -143,6 +146,7 @@ A free-form spatial board for pinning and arranging content visually. Access it 
 |------|--------|
 | Note card | Daily note (shows excerpt) |
 | Page card | Named page (shows excerpt) |
+| Person card | Person file (shows excerpt) |
 | URL card | Web page (fetches title + description + image) |
 | Image card | Uploaded or linked image |
 
@@ -224,7 +228,22 @@ Any 3- or 6-digit hex code (e.g. `#f00`, `#ff5252`) is also accepted.
 
 ---
 
-## PWA (Offline Support)
+## Plugin System
+
+Extensible architecture for personalizing the application.
+
+### Autodiscovery
+Plugins are automatically discovered from the `plugins/` subdirectory within your `NOTES_DIR` (default `~/.quickNote/plugins`). 
+To add a plugin:
+1. Create a `.json` file in the `plugins/` directory.
+2. Define the plugin structure (ID, name, hooks, etc.).
+3. Restart the application or refresh the page to load the new plugin.
+
+### Capabilities
+- **Themes:** Custom Vuetify themes (e.g. Nord, Sepia).
+- **Editor:** Custom suggestion providers (triggers like `#`, `:`, etc.).
+- **Rendering:** Pre- and post-processing of Markdown (e.g. custom shortcodes).
+- **UI Slots:** Add custom buttons to the navbar or panels to the sidebar.
 
 quickNote is installable as a Progressive Web App on any device.
 
