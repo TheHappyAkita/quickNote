@@ -8,5 +8,6 @@ export default defineNuxtPlugin(() => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     document.documentElement.classList.toggle('theme-hacker', stored === 'hackerGreen')
+    document.documentElement.classList.toggle('theme-sepia', stored === 'sepia')
   } catch {}
 })

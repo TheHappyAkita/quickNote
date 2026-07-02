@@ -1,0 +1,207 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   SEPIA THEME
+   All styles for the sepia theme. Applied when <html> has class
+   "theme-sepia".
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+html.theme-sepia,
+html.theme-sepia body,
+html.theme-sepia .v-application {
+  font-family: 'Georgia', serif !important;
+  background-color: #F5ECDF !important;
+  color: #433422 !important;
+}
+
+/* ── Overrides for NoteEditor dark areas ────────────────────────────────── */
+html.theme-sepia .note-textarea,
+html.theme-sepia .preview-pane,
+html.theme-sepia .suggestions-dropdown,
+html.theme-sepia .v-field__input,
+html.theme-sepia .v-field__field {
+  background-color: #FCF8F2 !important;
+  color: #433422 !important;
+  border-color: #D2C4B1 !important;
+}
+
+html.theme-sepia .v-field {
+  background-color: #FCF8F2 !important;
+  color: #433422 !important;
+}
+
+html.theme-sepia .note-textarea::placeholder {
+  color: #8D7A65 !important;
+  opacity: 0.7;
+}
+
+html.theme-sepia .note-textarea:focus {
+  border-color: #704214 !important;
+}
+
+html.theme-sepia .wiki-link {
+  color: #704214 !important;
+  border-bottom-color: #966919 !important;
+}
+
+html.theme-sepia .preview-pane h1,
+html.theme-sepia .preview-pane h2,
+html.theme-sepia .preview-pane h3 {
+  color: #704214 !important;
+}
+
+html.theme-sepia .preview-pane code {
+  background-color: #E8DCC8 !important;
+  color: #433422 !important;
+}
+
+html.theme-sepia .preview-pane pre {
+  background-color: #FCF8F2 !important;
+  border-color: #D2C4B1 !important;
+}
+
+html.theme-sepia .preview-pane blockquote {
+  border-left-color: #704214 !important;
+  color: #5D4D3B !important;
+}
+
+html.theme-sepia .preview-pane th {
+  background-color: #E8DCC8 !important;
+  color: #433422 !important;
+  border-color: #D2C4B1 !important;
+}
+
+html.theme-sepia .preview-pane td {
+  border-color: #D2C4B1 !important;
+}
+
+html.theme-sepia .preview-pane tr:nth-child(even) td {
+  background-color: rgba(112, 66, 20, 0.05) !important;
+}
+
+/* ── Button Readability ─────────────────────────────────────────────────── */
+html.theme-sepia .v-btn {
+  color: #704214 !important;
+}
+
+/* Primary buttons should have white text when using theme primary color */
+html.theme-sepia .v-btn.bg-primary,
+html.theme-sepia .v-btn.bg-success,
+html.theme-sepia .v-btn.bg-secondary,
+html.theme-sepia .v-btn.bg-error,
+html.theme-sepia .v-btn.bg-info,
+html.theme-sepia .v-btn.bg-warning,
+html.theme-sepia .v-btn.bg-pink,
+html.theme-sepia .v-btn.bg-teal,
+html.theme-sepia .v-btn.v-btn--variant-elevated.bg-primary,
+html.theme-sepia .v-btn.v-btn--variant-flat.bg-primary,
+html.theme-sepia .v-btn.v-btn--variant-elevated.bg-success,
+html.theme-sepia .v-btn.v-btn--variant-flat.bg-success,
+html.theme-sepia .v-btn.v-btn--variant-elevated.bg-secondary,
+html.theme-sepia .v-btn.v-btn--variant-flat.bg-secondary,
+html.theme-sepia .v-btn.v-btn--variant-elevated.bg-pink,
+html.theme-sepia .v-btn.v-btn--variant-flat.bg-pink,
+html.theme-sepia .v-btn.v-btn--variant-elevated.bg-teal,
+html.theme-sepia .v-btn.v-btn--variant-flat.bg-teal {
+  color: #FCF8F2 !important;
+}
+
+
+html.theme-sepia .v-btn--variant-tonal {
+  background-color: rgba(112, 66, 20, 0.1) !important;
+}
+
+html.theme-sepia .v-btn--active,
+html.theme-sepia .v-btn:focus {
+  background-color: #704214 !important;
+  color: #FCF8F2 !important;
+}
+
+html.theme-sepia .v-btn-toggle .v-btn--active {
+  background-color: #704214 !important;
+  color: #FCF8F2 !important;
+}
+
+/* ── Vuetify layout surfaces ────────────────────────────────────────────────── */
+html.theme-sepia .v-application__wrap,
+html.theme-sepia .v-main,
+html.theme-sepia .v-container {
+  background-color: #F5ECDF !important;
+}
+
+html.theme-sepia .v-card,
+html.theme-sepia .v-sheet,
+html.theme-sepia .v-list {
+  background-color: #FCF8F2 !important;
+  color: #433422 !important;
+  border-color: #D2C4B1 !important;
+}
+
+html.theme-sepia .v-list-item-title,
+html.theme-sepia .v-list-item-subtitle {
+  color: #433422 !important;
+}
+
+html.theme-sepia .v-divider {
+  border-color: #704214 !important;
+  opacity: 0.2;
+}
+
+html.theme-sepia .v-app-bar {
+  background-color: #E8DCC8 !important;
+  border-bottom: 1px solid #D2C4B1 !important;
+  color: #704214 !important;
+}
+
+/* ── Sidebar ────────────────────────────────────────────────────────────── */
+html.theme-sepia .sidebar-strip,
+html.theme-sepia .sidebar-panel {
+  background-color: #E8DCC8 !important;
+  border-left: 1px solid #D2C4B1 !important;
+  color: #704214 !important;
+}
+
+html.theme-sepia .panel-header {
+  border-bottom: 1px solid #D2C4B1 !important;
+  color: #704214 !important;
+}
+
+html.theme-sepia .reminder-item {
+  border-bottom-color: rgba(112, 66, 20, 0.1) !important;
+}
+
+html.theme-sepia .reminder-link {
+  color: #704214 !important;
+}
+
+/* ── Graph & Canvas ─────────────────────────────────────────────────────── */
+html.theme-sepia .graph-container,
+html.theme-sepia .canvas-container {
+  background-color: #FCF8F2 !important;
+  border-color: #D2C4B1 !important;
+}
+
+html.theme-sepia .canvas-toolbar {
+  background-color: #E8DCC8 !important;
+  border-color: #D2C4B1 !important;
+}
+
+html.theme-sepia .graph-tooltip,
+html.theme-sepia .note-popup {
+  background-color: #FCF8F2 !important;
+  border-color: #704214 !important;
+  color: #704214 !important;
+}
+
+html.theme-sepia .popup-date {
+  color: #704214 !important;
+}
+
+html.theme-sepia .popup-preview {
+  color: #5D4D3B !important;
+}
+
+
+html.theme-sepia a {
+  color: #966919;
+}
+
+

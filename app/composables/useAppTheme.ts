@@ -5,11 +5,12 @@ import { useTheme } from 'vuetify'
 
 const STORAGE_KEY = 'quicknote:theme'
 
-export type AppThemeName = 'dark' | 'hackerGreen'
+export type AppThemeName = 'dark' | 'hackerGreen' | 'sepia'
 
 export const THEMES: { id: AppThemeName; label: string; icon: string }[] = [
   { id: 'dark',        label: 'Dark',          icon: 'mdi-weather-night' },
   { id: 'hackerGreen', label: 'Hacker',        icon: 'mdi-matrix' },
+  { id: 'sepia',       label: 'Sepia',         icon: 'mdi-book-open-variant' },
 ]
 
 export function useAppTheme() {

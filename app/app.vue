@@ -26,6 +26,7 @@ onMounted(() => { init() })
 // Keep CSS class in sync when theme is changed manually
 watch(current, (name) => {
   document.documentElement.classList.toggle('theme-hacker', name === 'hackerGreen')
+  document.documentElement.classList.toggle('theme-sepia', name === 'sepia')
 })
 </script>
 

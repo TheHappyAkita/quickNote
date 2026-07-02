@@ -7,7 +7,7 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
 
-  css: ['~/assets/css/fonts.css', '~/assets/css/theme-hacker.css'],
+  css: ['~/assets/css/fonts.css', '~/assets/css/theme-hacker.css', '~/assets/css/theme-sepia.css'],
 
   modules: [
     'vuetify-nuxt-module',
@@ -48,6 +48,19 @@ export default defineNuxtConfig({
               info: '#00FF41',
               success: '#00FF41',
               warning: '#FFFF00',
+            },
+          },
+          sepia: {
+            dark: false,
+            colors: {
+              primary: '#704214',
+              secondary: '#966919',
+              background: '#F5ECDF',
+              surface: '#FCF8F2',
+              error: '#B00020',
+              info: '#2196F3',
+              success: '#4CAF50',
+              warning: '#FB8C00',
             },
           },
         },
