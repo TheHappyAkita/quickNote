@@ -225,7 +225,7 @@ const renderedContent = computed(() => {
   })
   // Auto-color special note keywords (only at start of block elements, i.e. right after >)
   // Alert YYYY-MM-DD: text → red
-  html = html.replace(/(>)(Alert(?:Me|er|a)?\s+\S+\s*:)([^<]*)/gi,
+  html = html.replace(/(>)(Alert(?:Me|er|a)?\s+(?:\[\[\S+\]\]|\S+|[^<:]+)\s*:)([^<]*)/gi,
     '$1<span style="color:#ff5252">$2$3</span>')
   // Remind: / RemindMe: / Reminder: text → orange
   html = html.replace(/(>)(Remind(?:Me|er)?\s*:)([^<]*)/gi,

@@ -204,9 +204,9 @@
               <td></td>
             </tr>
             <tr>
-              <td><code>Alert 2026-12-31: year-end close</code></td>
+              <td><code>Alert 2026-12-31: year-end close</code><br><code>Alert [[2026-12-31]]: task</code></td>
               <td><v-icon size="14" color="error">mdi-bell-alert</v-icon> Alerts</td>
-              <td>Only appears on/after that date</td>
+              <td>Only appears on/after that date; supports wikilink dates</td>
             </tr>
             <tr>
               <td><code>Todo: review PR #42</code></td>

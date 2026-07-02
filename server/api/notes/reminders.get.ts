@@ -8,13 +8,13 @@ import { getNotesDir, listNotes, readNote, listPages, readPage, listPersons, rea
 import { cacheGet, cacheSet, CACHE_TTL } from '../../utils/cache'
 
 const REMINDER_PATTERN = /^(.*?)(remind|remindme|reminder)(?:\s*:\s*|\s+)(.+)$/i
-const ALERT_PATTERN = /^(.*?)(alert|alertme|alerter|alerta)\s+(\S+)\s*:\s*(.+)$/i
+const ALERT_PATTERN = /^(.*?)(alert|alertme|alerter|alerta)\s+(\[\[\S+\]\]|\S+|[^:]+)\s*:\s*(.+)$/i
 const TODO_PATTERN = /^(.*?)(todo|to-do|to do)(?:\s*:\s*|\s+)(.+)$/i
 const DISMISSED_FILE = '.dismissed_reminders.json'
 
 // Parse various date formats and return YYYY-MM-DD or null
 function parseDateFormat(dateStr: string): string | null {
-  const trimmed = dateStr.trim()
+  const trimmed = dateStr.trim().replace(/^\[\[/, '').replace(/\]\]$/, '')
 
   // ISO: 2026-12-31 or 2026.12.31
   const isoMatch = trimmed.match(/^(\d{4})[-\.](\d{1,2})[-\.](\d{1,2})$/)
