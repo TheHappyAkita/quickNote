@@ -18,6 +18,8 @@ export function toSlug(raw: string): string {
     .replace(/'+/g, '')           // strip apostrophes entirely
     .replace(/_+/g, '_')          // collapse multiple underscores
     .replace(/\s+/g, ' ')         // collapse whitespace
+    .replace(/ _/g, '_')          // collapse space before underscore
+    .replace(/_ /g, '_')          // collapse space after underscore
     .replace(/[ _]+$/g, '')       // trim trailing
     .replace(/^[ _]+/g, '')       // trim leading
     .trim()
