@@ -232,9 +232,17 @@ Any 3- or 6-digit hex code (e.g. `#f00`, `#ff5252`) is also accepted.
 
 Extensible architecture for personalizing the application.
 
-- **Themes:** Custom Vuetify themes (e.g. Sepia, High Contrast).
+### Autodiscovery
+Plugins are automatically discovered from the `plugins/` subdirectory within your `NOTES_DIR` (default `~/.quickNote/plugins`). 
+To add a plugin:
+1. Create a `.json` file in the `plugins/` directory.
+2. Define the plugin structure (ID, name, hooks, etc.).
+3. Restart the application or refresh the page to load the new plugin.
+
+### Capabilities
+- **Themes:** Custom Vuetify themes (e.g. Nord, Sepia).
 - **Editor:** Custom suggestion providers (triggers like `#`, `:`, etc.).
-- **Rendering:** Pre- and post-processing of Markdown.
+- **Rendering:** Pre- and post-processing of Markdown (e.g. custom shortcodes).
 - **UI Slots:** Add custom buttons to the navbar or panels to the sidebar.
 
 quickNote is installable as a Progressive Web App on any device.

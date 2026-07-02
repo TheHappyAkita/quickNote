@@ -7,6 +7,7 @@ export interface QuickNotePlugin {
   version: string;
   description?: string;
   author?: string;
+  icon?: string;
 
   // Hooks
   hooks?: {
