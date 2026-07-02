@@ -70,24 +70,30 @@
           <v-card
             :to="`/location/${encodeURIComponent(loc.name)}`"
             variant="outlined"
+            hover
+            density="compact"
             class="location-card"
             :class="{ 'has-coords': loc.lat != null }"
           >
-            <v-card-text class="pa-3">
-              <div class="d-flex align-center mb-1">
+            <v-card-item class="py-2 px-3">
+              <template #prepend>
                 <v-icon
                   :color="loc.lat != null ? 'teal' : 'grey'"
-                  size="16"
-                  class="mr-1"
+                  size="20"
                 >
                   {{ loc.lat != null ? 'mdi-map-marker' : 'mdi-map-marker-question' }}
                 </v-icon>
-                <span class="font-weight-medium text-body-2">{{ loc.name }}</span>
-              </div>
+              </template>
+              <v-card-title class="text-subtitle-2 font-weight-bold text-truncate">
+                {{ loc.name }}
+              </v-card-title>
+            </v-card-item>
+
+            <v-card-text v-if="loc.lat != null || loc.tags.length" class="pt-0 pb-2 px-3">
               <div v-if="loc.lat != null" class="text-caption text-medium-emphasis mb-1">
                 {{ loc.lat.toFixed(4) }}, {{ loc.lng!.toFixed(4) }}
               </div>
-              <div v-if="loc.tags.length" class="d-flex flex-wrap gap-1 mt-1">
+              <div v-if="loc.tags.length" class="d-flex flex-wrap gap-1">
                 <v-chip
                   v-for="tag in loc.tags"
                   :key="tag"

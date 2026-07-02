@@ -15,12 +15,42 @@ html.theme-sepia .v-application {
 /* ── Overrides for NoteEditor dark areas ────────────────────────────────── */
 html.theme-sepia .note-textarea,
 html.theme-sepia .preview-pane,
-html.theme-sepia .suggestions-dropdown,
 html.theme-sepia .v-field__input,
 html.theme-sepia .v-field__field {
   background-color: #FCF8F2 !important;
   color: #433422 !important;
   border-color: #D2C4B1 !important;
+}
+
+/* Specific fix for wikilink proposal list (dropdown) selection visibility */
+html.theme-sepia .suggestions-dropdown {
+  background-color: #FCF8F2 !important;
+  color: #433422 !important;
+  border: 1px solid #704214 !important;
+}
+
+html.theme-sepia .suggestions-dropdown .v-list {
+  background-color: #FCF8F2 !important;
+}
+
+html.theme-sepia .suggestions-dropdown .bg-primary,
+html.theme-sepia .suggestions-dropdown .v-list-item--active,
+html.theme-sepia .suggestions-dropdown .v-list-item:hover {
+  background-color: #704214 !important;
+  color: #FCF8F2 !important;
+}
+
+html.theme-sepia .suggestions-dropdown .bg-primary .v-list-item-title,
+html.theme-sepia .suggestions-dropdown .bg-primary .v-icon,
+html.theme-sepia .suggestions-dropdown .v-list-item--active .v-list-item-title,
+html.theme-sepia .suggestions-dropdown .v-list-item--active .v-icon,
+html.theme-sepia .suggestions-dropdown .v-list-item:hover .v-list-item-title,
+html.theme-sepia .suggestions-dropdown .v-list-item:hover .v-icon {
+  color: #FCF8F2 !important;
+}
+
+html.theme-sepia .suggestions-dropdown .v-list-subheader {
+  color: #8D7A65 !important;
 }
 
 html.theme-sepia .v-field {

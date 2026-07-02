@@ -106,13 +106,14 @@
             variant="outlined"
             class="person-card"
             hover
+            density="compact"
             :to="`/person/${encodeURIComponent(person.name)}`"
           >
-            <v-card-item>
+            <v-card-item class="py-2 px-3">
               <template #prepend>
-                <v-icon color="pink">mdi-account</v-icon>
+                <v-icon color="pink" size="20">mdi-account</v-icon>
               </template>
-              <v-card-title class="text-body-1 text-truncate">
+              <v-card-title class="text-subtitle-2 font-weight-bold text-truncate">
                 {{ person.name }}
               </v-card-title>
             </v-card-item>
