@@ -1,7 +1,8 @@
 // Copyright (C) 2026 TheHappyAkita
 // SPDX-License-Identifier: GPL-3.0-only
 
-import { writeLibrary, isValidPageName, renameLibraryFile } from '../../utils/library'
+import { writeLibrary, renameLibraryFile } from '../../utils/library'
+import { isValidPageName } from '../../utils/notes'
 import { toSlug, parseFrontmatterName, injectFrontmatterName } from '#shared/utils/location'
 import { cacheInvalidate } from '../../utils/cache'
 
