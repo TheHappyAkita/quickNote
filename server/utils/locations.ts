@@ -4,8 +4,14 @@
 import type { LocationMeta } from '#shared/types/notes'
 import { createContentNamespace, type ContentNamespace } from './content-namespace'
 import { MAX_LOCATION_NAME_LENGTH } from './constants'
-import { parseTags } from './notes'
+import { parseTags, parseLocationParts, LOCATION_FULL_PATTERN } from './notes'
 import { parseFrontmatterName } from '#shared/utils/location'
+
+export interface LocationMention {
+  name: string
+  lat?: number
+  lng?: number
+}
 
 const LOCATION_NAME_PATTERN = /^[a-zA-Z0-9,\. _\-@äöüÄÖÜáéíóúàèìòùâêîôûãõ]+$/
 
@@ -52,4 +58,27 @@ export async function listLocationsWithMeta(): Promise<LocationMeta[]> {
     const name = (content ? parseFrontmatterName(content) : null) ?? slug
     return { name, slug, tags, ...coords }
   }))
+}
+
+/**
+ * Extracts location mentions with coordinates from content
+ */
+export function extractLocationMentionsWithCoords(content: string): LocationMention[] {
+  const seen = new Map<string, LocationMention>()
+  let match: RegExpExecArray | null
+  const re = new RegExp(LOCATION_FULL_PATTERN.source, 'g')
+  while ((match = re.exec(content)) !== null) {
+    const parsed = parseLocationParts(match[1]!)
+    if (!parsed.name) {
+      if (parsed.lat != null && parsed.lng != null) {
+        const key = `${parsed.lat},${parsed.lng}`
+        if (!seen.has(key)) seen.set(key, { name: key, lat: parsed.lat, lng: parsed.lng })
+      }
+    } else {
+      if (!seen.has(parsed.name)) {
+        seen.set(parsed.name, { name: parsed.name, lat: parsed.lat, lng: parsed.lng })
+      }
+    }
+  }
+  return [...seen.values()]
 }
