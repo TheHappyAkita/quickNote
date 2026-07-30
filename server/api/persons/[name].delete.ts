@@ -1,7 +1,7 @@
 // Copyright (C) 2026 TheHappyAkita
 // SPDX-License-Identifier: GPL-3.0-only
 
-import { deletePerson, renamePersonFile, listPersonsWithMeta } from '../../utils/notes'
+import { deletePerson, renamePersonFile, listPersonsWithMeta } from '../../utils/persons'
 import { toSlug } from '#shared/utils/location'
 import { cacheInvalidate } from '../../utils/cache'
 

@@ -18,92 +18,59 @@ export function usePluginSystem() {
     pluginsState.value.push(plugin)
   }
 
+  /**
+   * Generic hook executor that safely executes a hook across all plugins
+   */
+  function executeHook<T>(hookName: string): T[] {
+    const results: T[] = []
+    for (const plugin of pluginsState.value) {
+      if (plugin.hooks?.[hookName]) {
+        try {
+          const hookFn = plugin.hooks[hookName] as () => T[]
+          results.push(...hookFn())
+        } catch (error: unknown) {
+          console.error(`Error in plugin ${plugin.id} ${hookName}:`, error)
+        }
+      }
+    }
+    return results
+  }
+
   const applyMarkdownHooks = (text: string): string => {
     let result = text
     for (const plugin of pluginsState.value) {
       if (plugin.hooks?.['markdown:render']) {
         try {
           result = plugin.hooks['markdown:render'](result)
-        } catch (e) {
-          console.error(`Error in plugin ${plugin.id} markdown:render:`, e)
+        } catch (error: unknown) {
+          console.error(`Error in plugin ${plugin.id} markdown:render:`, error)
         }
       }
     }
     return result
   }
 
-  const getSuggestionProviders = () => {
-    const providers = []
-    for (const plugin of pluginsState.value) {
-      if (plugin.hooks?.['editor:suggestions']) {
-        try {
-          providers.push(...plugin.hooks['editor:suggestions']())
-        } catch (e) {
-          console.error(`Error in plugin ${plugin.id} editor:suggestions:`, e)
-        }
-      }
-    }
-    return providers
-  }
+  const getSuggestionProviders = () => executeHook('editor:suggestions')
+  const getSidebarWidgets = () => executeHook('ui:sidebar')
+  const getNavbarItems = () => executeHook('ui:navbar')
+  const getPluginThemes = () => executeHook<{ id: string; label: string; icon: string; dark: boolean; colors: Record<string, string>; cssClass?: string }>('ui:themes')
 
-  const getSidebarWidgets = () => {
-    const widgets = []
-    for (const plugin of pluginsState.value) {
-      if (plugin.hooks?.['ui:sidebar']) {
-        try {
-          widgets.push(...plugin.hooks['ui:sidebar']())
-        } catch (e) {
-          console.error(`Error in plugin ${plugin.id} ui:sidebar:`, e)
-        }
-      }
-    }
-    return widgets
-  }
-
-  const getNavbarItems = () => {
-    const items = []
-    for (const plugin of pluginsState.value) {
-      if (plugin.hooks?.['ui:navbar']) {
-        try {
-          items.push(...plugin.hooks['ui:navbar']())
-        } catch (e) {
-          console.error(`Error in plugin ${plugin.id} ui:navbar:`, e)
-        }
-      }
-    }
-    return items
-  }
-
-  const getPluginThemes = () => {
-    const themes: Array<{ id: string; label: string; icon: string; dark: boolean; colors: Record<string, string>; cssClass?: string }> = []
-    for (const plugin of pluginsState.value) {
-      if (plugin.hooks?.['ui:themes']) {
-        try {
-          themes.push(...plugin.hooks['ui:themes']())
-        } catch (e) {
-          console.error(`Error in plugin ${plugin.id} ui:themes:`, e)
-        }
-      }
-    }
-    return themes
-  }
-
-  const initializePlugins = async (api: QuickNoteAPI) => {
+  const initializePlugins = async (api: QuickNoteAPI): Promise<void> => {
     if (isInitializedState.value) return
     
     for (const plugin of pluginsState.value) {
       if (plugin.setup) {
         try {
           await plugin.setup(api)
-        } catch (e) {
-          console.error(`Error setting up plugin ${plugin.id}:`, e)
+        } catch (error: unknown) {
+          console.error(`Error setting up plugin ${plugin.id}:`, error)
         }
       }
       if (plugin.onEnable) {
         try {
           plugin.onEnable()
-        } catch (e) {
-          console.error(`Error enabling plugin ${plugin.id}:`, e)
+        } catch (error: unknown) {
+          console.error(`Error enabling plugin ${plugin.id}:`, error)
         }
       }
     }

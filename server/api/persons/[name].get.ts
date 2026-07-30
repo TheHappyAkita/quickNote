@@ -1,7 +1,7 @@
 // Copyright (C) 2026 TheHappyAkita
 // SPDX-License-Identifier: GPL-3.0-only
 
-import { readPerson, listPersonsWithMeta } from '../../utils/notes'
+import { readPerson, listPersonsWithMeta } from '../../utils/persons'
 import { toSlug } from '#shared/utils/location'
 
 export default defineEventHandler(async (event) => {

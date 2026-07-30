@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 import type { LocationMeta } from '#shared/types/notes'
-import {
-  listNotes, readNote, listPagesWithMeta, readPage,
-  listPersonsWithMeta, readPerson,
-  listLocationsWithMeta, extractLocationMentionsWithCoords,
-} from '../../utils/notes'
+import { listNotes, readNote } from '../../utils/notes'
+import { listPagesWithMeta, readPage } from '../../utils/pages'
+import { listPersonsWithMeta, readPerson } from '../../utils/persons'
+import { listLocationsWithMeta, extractLocationMentionsWithCoords } from '../../utils/locations'
 
 export default defineEventHandler(async (): Promise<LocationMeta[]> => {
   const [dates, pagesMeta, personsMeta, storedLocations] = await Promise.all([

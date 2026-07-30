@@ -4,17 +4,27 @@
 import { deleteNote } from '../../utils/notes'
 import { removeNoteCardFromAllCanvases } from '../../utils/canvas'
 import { cacheInvalidate } from '../../utils/cache'
+import { getValidatedRouterParam, validateDateFormat, validateContentLength } from '../../utils/validation'
 
 export default defineEventHandler(async (event) => {
-  const date = getRouterParam(event, 'date')
-  if (!date) {
-    throw createError({ statusCode: 400, message: 'Date parameter required' })
+  const date = getValidatedRouterParam(event, 'date')
+  
+  if (!validateDateFormat(date)) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid date format. Expected YYYY-MM-DD format.'
+    })
   }
 
   const body = await readBody<{ content: string }>(event)
   if (typeof body?.content !== 'string') {
-    throw createError({ statusCode: 400, message: 'Content field required' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Content field is required and must be a string.'
+    })
   }
+
+  validateContentLength(body.content)
 
   if (!body.content.trim()) {
     await deleteNote(date)
