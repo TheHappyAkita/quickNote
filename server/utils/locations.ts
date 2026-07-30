@@ -4,13 +4,33 @@
 import type { LocationMeta } from '#shared/types/notes'
 import { createContentNamespace, type ContentNamespace } from './content-namespace'
 import { MAX_LOCATION_NAME_LENGTH } from './constants'
-import { parseTags, parseLocationParts, LOCATION_FULL_PATTERN } from './notes'
+import { parseTags } from './notes'
 import { parseFrontmatterName } from '#shared/utils/location'
+import { parseCoords } from '#shared/utils/coords'
 
 export interface LocationMention {
   name: string
   lat?: number
   lng?: number
+}
+
+// Matches &[[inner]] with optional (Nickname) suffix
+const LOCATION_FULL_PATTERN = /&\[\[([^\]]+)\]\](?:\([^)]+\))?/g
+
+/**
+ * Parses location parts from wikilink syntax
+ */
+function parseLocationParts(inner: string): { name?: string; lat?: number; lng?: number } {
+  const parts = inner.split('|').map(p => p.trim())
+  if (parts.length === 1) {
+    const coordOnly = parseCoords(parts[0]!)
+    if (coordOnly) return { lat: coordOnly.lat, lng: coordOnly.lng }
+    return { name: parts[0] }
+  }
+  // parts[0] is name, parts[1] might be coords
+  const maybeCoords = parseCoords(parts[1]!)
+  if (maybeCoords) return { name: parts[0], lat: maybeCoords.lat, lng: maybeCoords.lng }
+  return { name: parts[0] }
 }
 
 const LOCATION_NAME_PATTERN = /^[a-zA-Z0-9,\. _\-@äöüÄÖÜáéíóúàèìòùâêîôûãõ]+$/
