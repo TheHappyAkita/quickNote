@@ -7,6 +7,12 @@ export interface NotePageMeta {
   tags: string[]
 }
 
+export interface LibraryMeta {
+  name: string   // display name (from frontmatter name: or slug)
+  slug: string   // filesystem-safe filename without extension
+  tags: string[]
+}
+
 export interface PersonMeta {
   name: string   // display name (from frontmatter name: or slug)
   slug: string   // filesystem-safe filename without extension
@@ -26,7 +32,7 @@ export interface LocationMeta {
 }
 
 export interface GraphNode {
-  data: { id: string; label: string; type: 'date' | 'page' | 'keyword' | 'person' | 'location'; weight?: number }
+  data: { id: string; label: string; type: 'date' | 'page' | 'keyword' | 'person' | 'location' | 'library'; weight?: number; color?: string }
 }
 
 export interface GraphEdge {
@@ -67,4 +73,28 @@ export interface Reminder {
   text: string
   keyword: 'remind' | 'remindme' | 'reminder' | 'alert' | 'todo'
   alertDate?: string // For alert-type reminders: the target date
+}
+
+export interface OllamaSettings {
+  url: string
+  model: string
+}
+
+export interface AppSettings {
+  ollama: OllamaSettings
+}
+
+export type LibrarySource =
+  | { type: 'notes'; dates?: string[]; from?: string; to?: string; tags?: string[] }
+  | { type: 'pages'; names: string[] }
+  | { type: 'persons'; names: string[] }
+  | { type: 'locations'; names: string[] }
+  | { type: 'library'; names: string[] }
+  | { type: 'urls'; urls: { url: string; note?: string }[] }
+  | { type: 'additional'; text: string }
+
+export interface LibraryGenerationRequest {
+  title: string
+  sources: LibrarySource[]
+  prompt: string
 }

@@ -56,17 +56,19 @@
       </div>
 
       <v-list v-else density="compact" class="result-list">
-        <v-list-item
-          v-for="result in results"
-          :key="`${result.type}-${result.id}`"
-          :to="result.type === 'note' ? `/note/${result.id}` : `/page/${encodeURIComponent(result.id)}`"
-          class="result-item"
-          @click="isCollapsed = true"
-        >
-          <template #prepend>
-            <v-icon v-if="result.type === 'note'" size="16" color="primary" class="mr-2">mdi-calendar</v-icon>
-            <v-icon v-else size="16" color="secondary" class="mr-2">mdi-file-document-outline</v-icon>
-          </template>
+          <v-list-item
+            v-for="result in results"
+            :key="`${result.type}-${result.id}`"
+            :to="getResultPath(result)"
+            class="result-item"
+            @click="isCollapsed = true"
+          >
+            <template #prepend>
+              <v-icon v-if="result.type === 'note'" size="16" color="primary" class="mr-2">mdi-calendar</v-icon>
+              <v-icon v-else-if="result.type === 'library'" size="16" color="primary" class="mr-2">mdi-book-open-variant</v-icon>
+              <v-icon v-else-if="result.type === 'location'" size="16" color="orange" class="mr-2">mdi-map-marker</v-icon>
+              <v-icon v-else size="16" color="secondary" class="mr-2">mdi-file-document-outline</v-icon>
+            </template>
 
           <v-list-item-title class="text-body-2">
             {{ result.title }}
@@ -86,7 +88,7 @@
 
 <script setup lang="ts">
 interface SearchResult {
-  type: 'note' | 'page'
+  type: 'note' | 'page' | 'library' | 'location'
   id: string
   title: string
   excerpt: string
@@ -101,6 +103,21 @@ let debounceTimer: ReturnType<typeof setTimeout> | null = null
 const emit = defineEmits<{
   'panelOpen': [panel: string]
 }>()
+
+function getResultPath(result: SearchResult): string {
+  switch (result.type) {
+    case 'note':
+      return `/note/${result.id}`
+    case 'library':
+      return `/library/${encodeURIComponent(result.id)}`
+    case 'location':
+      return `/location/${encodeURIComponent(result.id)}`
+    case 'page':
+      return `/page/${encodeURIComponent(result.id)}`
+    default:
+      return '/'
+  }
+}
 
 function toggle() {
   isCollapsed.value = !isCollapsed.value
