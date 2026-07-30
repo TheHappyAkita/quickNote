@@ -1,7 +1,7 @@
 // Copyright (C) 2026 TheHappyAkita
 // SPDX-License-Identifier: GPL-3.0-only
 
-import { deleteLocation, renameLocationFile, listLocationsWithMeta } from '../../utils/notes'
+import { deleteLocation, renameLocationFile, listLocationsWithMeta } from '../../utils/locations'
 import { sanitizeLocationSlug } from '#shared/utils/location'
 import { cacheInvalidate } from '../../utils/cache'
 

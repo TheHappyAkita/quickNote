@@ -1,7 +1,7 @@
 // Copyright (C) 2026 TheHappyAkita
 // SPDX-License-Identifier: GPL-3.0-only
 
-import { readLocation, listLocationsWithMeta } from '../../utils/notes'
+import { readLocation, listLocationsWithMeta } from '../../utils/locations'
 import { sanitizeLocationSlug } from '#shared/utils/location'
 
 export default defineEventHandler(async (event) => {

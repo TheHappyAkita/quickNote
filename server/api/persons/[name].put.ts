@@ -1,7 +1,7 @@
 // Copyright (C) 2026 TheHappyAkita
 // SPDX-License-Identifier: GPL-3.0-only
 
-import { writePerson, deletePerson, isValidPersonName, renamePersonFile } from '../../utils/notes'
+import { writePerson, deletePerson, isValidPersonName, renamePersonFile } from '../../utils/persons'
 import { toSlug, parseFrontmatterName, injectFrontmatterName } from '#shared/utils/location'
 import { cacheInvalidate } from '../../utils/cache'
 

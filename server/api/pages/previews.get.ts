@@ -1,7 +1,7 @@
 // Copyright (C) 2026 TheHappyAkita
 // SPDX-License-Identifier: GPL-3.0-only
 
-import { listPages, readPage } from '../../utils/notes'
+import { listPages, readPage } from '../../utils/pages'
 import { generatePreview } from '../../utils/content-processor'
 
 export default defineEventHandler(async () => {
