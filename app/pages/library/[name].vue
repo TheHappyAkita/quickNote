@@ -1,95 +1,120 @@
 <!-- Copyright (C) 2026 TheHappyAkita - SPDX-License-Identifier: GPL-3.0-only -->
 <template>
-  <div v-if="pending" class="d-flex justify-center align-center h-100">
+  <v-container v-if="pending" fluid class="d-flex justify-center align-center h-100">
     <v-progress-circular indeterminate color="primary" />
-  </div>
+  </v-container>
 
-  <div v-else-if="error" class="pa-6">
+  <v-container v-else-if="error" fluid class="pa-4 pa-sm-6">
     <v-alert type="error" variant="tonal" title="Library Entry Not Found">
       The library entry "{{ $route.params.name }}" could not be loaded.
       <template #append>
         <v-btn to="/library" variant="text">Back to Library</v-btn>
       </template>
     </v-alert>
-  </div>
+  </v-container>
 
-  <div v-else-if="data" class="h-100 d-flex flex-column overflow-hidden">
-    <v-toolbar density="compact" color="surface" elevation="0" border="b">
-      <v-btn icon="mdi-arrow-left" variant="text" to="/library" />
-      <v-toolbar-title class="text-subtitle-1 font-weight-bold">
-        {{ data.name }}
-      </v-toolbar-title>
-      <v-spacer />
-      
-      <v-chip
-        v-if="saveStatus === 'saving'"
-        size="x-small"
-        color="info"
-        variant="tonal"
-        class="mr-2"
-        prepend-icon="mdi-sync"
-      >
-        Saving...
-      </v-chip>
-      <v-chip
-        v-else-if="saveStatus === 'saved'"
-        size="x-small"
-        color="success"
-        variant="tonal"
-        class="mr-2"
-        prepend-icon="mdi-check"
-      >
-        Saved
-      </v-chip>
+  <v-container v-else-if="entryData" fluid class="pa-4 pa-sm-6">
+    <div class="editor-page">
+      <div class="d-flex align-center mb-4">
+        <v-btn icon variant="text" size="small" class="mr-2" to="/library">
+          <v-icon>mdi-arrow-left</v-icon>
+        </v-btn>
+        <v-icon color="primary" class="mr-2">mdi-book-open-variant</v-icon>
+        <h1 class="text-h6 font-weight-bold">{{ entryData.name }}</h1>
+        <v-spacer />
+        <v-btn
+          icon="mdi-content-save"
+          variant="text"
+          size="small"
+          :color="saveStatus === 'saved' ? 'success' : 'primary'"
+          :loading="saveStatus === 'saving'"
+          title="Save"
+          @click="saveEntry"
+        />
+        <v-btn
+          icon="mdi-delete"
+          variant="text"
+          size="small"
+          color="error"
+          class="ml-2"
+          title="Delete entry"
+          @click="showDelete = true"
+        />
+      </div>
 
-      <v-btn
-        icon="mdi-delete-outline"
-        variant="text"
-        size="small"
-        color="error"
-        title="Delete entry"
-        @click="showDelete = true"
-      />
-    </v-toolbar>
-
-    <div class="flex-grow-1 overflow-hidden">
       <NoteEditor
-        v-model="data.content"
-        :page-name="data.name"
+        v-model="content"
+        :page-name="entryData.name"
         @update:modelValue="debouncedSave"
       />
     </div>
 
     <!-- Delete Confirmation -->
-    <v-dialog v-model="showDelete" width="auto">
-      <v-card rounded="xl" class="pa-2">
+    <v-dialog v-model="showDelete" max-width="400">
+      <v-card>
         <v-card-title class="text-h6">Delete Entry?</v-card-title>
         <v-card-text>
-          Are you sure you want to delete "<strong>{{ data.name }}</strong>"? This cannot be undone.
+          Are you sure you want to delete "<strong>{{ entryData.name }}</strong>"? This cannot be undone.
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" rounded="lg" @click="showDelete = false">Cancel</v-btn>
-          <v-btn color="error" variant="flat" rounded="lg" :loading="deleting" @click="confirmDelete">
+          <v-btn variant="text" @click="showDelete = false">Cancel</v-btn>
+          <v-btn color="error" variant="flat" :loading="deleting" @click="confirmDelete">
             Delete
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </div>
+  </v-container>
 </template>
+
+<style scoped>
+.editor-page {
+  height: calc(100vh - var(--v-layout-top, 64px) - 48px);
+  display: flex;
+  flex-direction: column;
+}
+</style>
 
 <script setup lang="ts">
 const route = useRoute()
-const name = computed(() => route.params.name as string)
+const router = useRouter()
+const name = computed(() => decodeURIComponent(route.params.name as string))
 
-const { data, pending, error } = await useFetch<{ name: string; content: string; slug: string }>(
+useHead({
+  title: computed(() => name.value || 'Library Entry'),
+})
+
+const { data: entryData, pending, error } = await useFetch<{ name: string; content: string; slug: string }>(
   () => `/api/library/${encodeURIComponent(name.value)}`,
+  {
+    watch: [name],
+    server: false,
+    default: () => ({ name: name.value, content: '', slug: '' }),
+  },
 )
 
+const content = ref('')
 const showDelete = ref(false)
 const deleting = ref(false)
 const saveStatus = ref<'idle' | 'saving' | 'saved'>('idle')
+
+// Load content when data changes
+watch(() => entryData.value?.content, (newContent) => {
+  if (newContent !== undefined) {
+    content.value = newContent
+  }
+}, { immediate: true })
+
+const debugState = computed(() => JSON.stringify({
+  routeName: route.params.name,
+  decodedName: name.value,
+  pending: pending.value,
+  error: error.value ? String(error.value) : null,
+  data: entryData.value,
+  contentLength: content.value.length,
+  contentPreview: content.value.slice(0, 120),
+}, null, 2))
 
 let saveTimeout: any = null
 function debouncedSave() {
@@ -99,16 +124,12 @@ function debouncedSave() {
 }
 
 async function saveEntry() {
-  if (!data.value) return
+  if (!entryData.value?.slug) return
   saveStatus.value = 'saving'
   try {
-    // We reuse the library creation/update logic by posting to index or a dedicated save route if we had one.
-    // For now, let's assume we can use the library POST if it handles overwrite, 
-    // but looking at our POST implementation it always adds a timestamp if it exists.
-    // We need a PUT route or a proper save route. Let's create a PUT route.
-    await $fetch(`/api/library/${encodeURIComponent(data.value.slug)}`, {
-      method: 'PUT' as 'GET', // Nuxt 4 $fetch workaround for some environments or explicit cast
-      body: { content: data.value.content }
+    await $fetch(`/api/library/${encodeURIComponent(entryData.value.slug)}`, {
+      method: 'PUT' as 'GET',
+      body: { content: content.value },
     })
     saveStatus.value = 'saved'
     setTimeout(() => { if (saveStatus.value === 'saved') saveStatus.value = 'idle' }, 2000)
@@ -119,13 +140,13 @@ async function saveEntry() {
 }
 
 async function confirmDelete() {
-  if (!data.value) return
+  if (!entryData.value?.slug) return
   deleting.value = true
   try {
-    await $fetch(`/api/library/${encodeURIComponent(data.value.slug)}`, {
-      method: 'DELETE'
+    await $fetch(`/api/library/${encodeURIComponent(entryData.value.slug)}`, {
+      method: 'DELETE',
     })
-    navigateTo('/library')
+    await router.push('/library')
   } catch (err) {
     console.error('Failed to delete entry:', err)
   } finally {

@@ -181,6 +181,17 @@ html.theme-sepia .v-app-bar {
   color: #704214 !important;
 }
 
+/* ── Toolbar close button ───────────────────────────────────────────────── */
+html.theme-sepia .v-toolbar .toolbar-close-btn {
+  color: #FCF8F2 !important;
+  opacity: 1 !important;
+}
+
+html.theme-sepia .v-toolbar .toolbar-close-btn .v-icon {
+  color: #FCF8F2 !important;
+  opacity: 1 !important;
+}
+
 /* ── Sidebar ────────────────────────────────────────────────────────────── */
 html.theme-sepia .sidebar-strip,
 html.theme-sepia .sidebar-panel {

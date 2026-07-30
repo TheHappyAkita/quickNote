@@ -78,6 +78,34 @@ html.theme-hacker .v-app-bar .text-white {
   color: #00FF41 !important;
 }
 
+/* ── Toolbar (for dialogs with primary background) ──────────────────────── */
+html.theme-hacker .v-toolbar.bg-primary,
+html.theme-hacker .v-toolbar[color="primary"] {
+  background: #000000 !important;
+  border-bottom: 1px solid #00FF41 !important;
+}
+
+html.theme-hacker .v-toolbar.bg-primary .v-toolbar-title,
+html.theme-hacker .v-toolbar[color="primary"] .v-toolbar-title {
+  color: #00FF41 !important;
+}
+
+html.theme-hacker .v-toolbar.bg-primary .v-chip,
+html.theme-hacker .v-toolbar[color="primary"] .v-chip {
+  color: #00FF41 !important;
+}
+
+/* ── Toolbar close button ───────────────────────────────────────────────── */
+html.theme-hacker .v-toolbar .toolbar-close-btn {
+  color: #00FF41 !important;
+  opacity: 1 !important;
+}
+
+html.theme-hacker .v-toolbar .toolbar-close-btn .v-icon {
+  color: #00FF41 !important;
+  opacity: 1 !important;
+}
+
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
 html.theme-hacker .v-btn {
   color: #00FF41 !important;

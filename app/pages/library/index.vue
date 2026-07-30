@@ -78,7 +78,12 @@
     </v-row>
 
     <!-- Creator Wizard Dialog -->
-    <v-dialog v-model="showCreator" fullscreen transition="dialog-bottom-transition">
+    <v-dialog 
+      v-model="showCreator" 
+      max-width="900" 
+      persistent
+      scrollable
+    >
       <LibraryCreator @close="showCreator = false" @created="onCreated" />
     </v-dialog>
   </v-container>

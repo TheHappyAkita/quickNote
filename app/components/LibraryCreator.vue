@@ -1,44 +1,24 @@
 <!-- Copyright (C) 2026 TheHappyAkita - SPDX-License-Identifier: GPL-3.0-only -->
 <template>
-  <v-card class="h-100 d-flex flex-column" rounded="0">
+  <v-card class="d-flex flex-column library-creator-card">
     <v-toolbar color="primary" density="compact">
-      <v-btn icon="mdi-close" @click="emit('close')" />
       <v-toolbar-title>Library Entry Creator</v-toolbar-title>
       <v-spacer />
-      <v-btn
-        v-if="step > 1"
-        variant="text"
-        prepend-icon="mdi-chevron-left"
-        @click="step--"
-      >
-        Back
-      </v-btn>
-      <v-btn
-        v-if="step < 4"
-        color="white"
-        variant="tonal"
-        append-icon="mdi-chevron-right"
-        :disabled="!canGoNext"
-        @click="step++"
-      >
-        Next
-      </v-btn>
-      <v-btn
-        v-if="step === 4"
-        color="success"
-        variant="flat"
-        prepend-icon="mdi-content-save"
-        :loading="saving"
-        @click="finish"
-      >
-        Finish
-      </v-btn>
+      <v-chip variant="text" color="white">
+        Step {{ step }} of 3
+      </v-chip>
+      <v-btn 
+        icon="mdi-close" 
+        variant="text" 
+        class="toolbar-close-btn"
+        @click="emit('close')" 
+      />
     </v-toolbar>
 
-    <v-window v-model="step" class="flex-grow-1 overflow-auto">
+    <v-window v-model="step" class="flex-grow-1 library-creator-window">
       <!-- Step 1: Title -->
       <v-window-item :value="1" class="h-100">
-        <v-container class="max-w-md mx-auto pt-12">
+        <v-container class="max-w-md mx-auto pt-4">
           <h2 class="text-h5 font-weight-bold mb-2">Start with a title</h2>
           <p class="text-body-2 text-medium-emphasis mb-6">
             What is the main topic of this library entry?
@@ -56,7 +36,7 @@
 
       <!-- Step 2: Sources -->
       <v-window-item :value="2" class="h-100">
-        <v-container class="max-w-lg mx-auto pt-8">
+        <v-container class="max-w-lg mx-auto pt-4">
           <h2 class="text-h5 font-weight-bold mb-2">Select your sources</h2>
           <p class="text-body-2 text-medium-emphasis mb-6">
             Pick information from your notes to include in the summary.
@@ -68,17 +48,36 @@
               <template #activator="{ props }">
                 <v-list-item v-bind="props" prepend-icon="mdi-calendar" title="Daily Notes" />
               </template>
-              <v-list-item>
-                <v-select
+              <v-list-item class="autocomplete-container">
+                <v-autocomplete
                   v-model="selectedNotes"
+                  v-model:menu="notesMenuOpen"
                   :items="allNotes"
                   label="Select Dates"
+                  placeholder="Search or select dates..."
                   multiple
                   chips
                   closable-chips
                   variant="outlined"
                   density="compact"
-                />
+                  clearable
+                >
+                  <template #prepend-item>
+                    <v-list-item
+                      v-if="allNotes.length > 0"
+                      title="Select All"
+                      @click="selectAllNotes"
+                    >
+                      <template #prepend>
+                        <v-checkbox-btn
+                          :model-value="selectedNotes.length === allNotes.length"
+                          :indeterminate="selectedNotes.length > 0 && selectedNotes.length < allNotes.length"
+                        />
+                      </template>
+                    </v-list-item>
+                    <v-divider />
+                  </template>
+                </v-autocomplete>
               </v-list-item>
             </v-list-group>
 
@@ -87,19 +86,38 @@
               <template #activator="{ props }">
                 <v-list-item v-bind="props" prepend-icon="mdi-file-document-multiple" title="Pages" />
               </template>
-              <v-list-item>
-                <v-select
+              <v-list-item class="autocomplete-container">
+                <v-autocomplete
                   v-model="selectedPages"
+                  v-model:menu="pagesMenuOpen"
                   :items="allPages"
                   item-title="name"
                   item-value="name"
                   label="Select Pages"
+                  placeholder="Search or select pages..."
                   multiple
                   chips
                   closable-chips
                   variant="outlined"
                   density="compact"
-                />
+                  clearable
+                >
+                  <template #prepend-item>
+                    <v-list-item
+                      v-if="allPages.length > 0"
+                      title="Select All"
+                      @click="selectAllPages"
+                    >
+                      <template #prepend>
+                        <v-checkbox-btn
+                          :model-value="selectedPages.length === allPages.length"
+                          :indeterminate="selectedPages.length > 0 && selectedPages.length < allPages.length"
+                        />
+                      </template>
+                    </v-list-item>
+                    <v-divider />
+                  </template>
+                </v-autocomplete>
               </v-list-item>
             </v-list-group>
 
@@ -108,19 +126,38 @@
               <template #activator="{ props }">
                 <v-list-item v-bind="props" prepend-icon="mdi-account-group" title="People" />
               </template>
-              <v-list-item>
-                <v-select
+              <v-list-item class="autocomplete-container">
+                <v-autocomplete
                   v-model="selectedPersons"
+                  v-model:menu="personsMenuOpen"
                   :items="allPersons"
                   item-title="name"
                   item-value="name"
                   label="Select People"
+                  placeholder="Search or select people..."
                   multiple
                   chips
                   closable-chips
                   variant="outlined"
                   density="compact"
-                />
+                  clearable
+                >
+                  <template #prepend-item>
+                    <v-list-item
+                      v-if="allPersons.length > 0"
+                      title="Select All"
+                      @click="selectAllPersons"
+                    >
+                      <template #prepend>
+                        <v-checkbox-btn
+                          :model-value="selectedPersons.length === allPersons.length"
+                          :indeterminate="selectedPersons.length > 0 && selectedPersons.length < allPersons.length"
+                        />
+                      </template>
+                    </v-list-item>
+                    <v-divider />
+                  </template>
+                </v-autocomplete>
               </v-list-item>
             </v-list-group>
 
@@ -129,19 +166,38 @@
               <template #activator="{ props }">
                 <v-list-item v-bind="props" prepend-icon="mdi-library-shelves" title="Existing Library Entries" />
               </template>
-              <v-list-item>
-                <v-select
+              <v-list-item class="autocomplete-container">
+                <v-autocomplete
                   v-model="selectedLibrary"
+                  v-model:menu="libraryMenuOpen"
                   :items="allLibrary"
                   item-title="name"
                   item-value="name"
                   label="Select Entries"
+                  placeholder="Search or select library entries..."
                   multiple
                   chips
                   closable-chips
                   variant="outlined"
                   density="compact"
-                />
+                  clearable
+                >
+                  <template #prepend-item>
+                    <v-list-item
+                      v-if="allLibrary.length > 0"
+                      title="Select All"
+                      @click="selectAllLibrary"
+                    >
+                      <template #prepend>
+                        <v-checkbox-btn
+                          :model-value="selectedLibrary.length === allLibrary.length"
+                          :indeterminate="selectedLibrary.length > 0 && selectedLibrary.length < allLibrary.length"
+                        />
+                      </template>
+                    </v-list-item>
+                    <v-divider />
+                  </template>
+                </v-autocomplete>
               </v-list-item>
             </v-list-group>
 
@@ -191,7 +247,7 @@
 
       <!-- Step 3: Prompt -->
       <v-window-item :value="3" class="h-100">
-        <v-container class="max-w-md mx-auto pt-12">
+        <v-container class="max-w-md mx-auto pt-4">
           <h2 class="text-h5 font-weight-bold mb-2">Write your prompt</h2>
           <p class="text-body-2 text-medium-emphasis mb-6">
             Tell the AI exactly what you're interested in and how to structure the result.
@@ -204,45 +260,51 @@
             rows="6"
             auto-grow
           />
-          <v-btn
-            color="primary"
-            block
-            size="large"
-            :loading="generating"
-            @click="generate"
-          >
-            Generate with AI
-          </v-btn>
         </v-container>
       </v-window-item>
 
-      <!-- Step 4: Preview -->
-      <v-window-item :value="4" class="h-100 d-flex flex-column">
-        <v-container fluid class="pa-0 h-100 d-flex flex-column">
-          <div class="pa-4 border-b d-flex align-center">
-            <h2 class="text-h6 font-weight-bold">Preview</h2>
-            <v-spacer />
-            <v-btn
-              variant="tonal"
-              color="primary"
-              size="small"
-              prepend-icon="mdi-refresh"
-              :loading="generating"
-              @click="generate"
-            >
-              Regenerate
-            </v-btn>
-          </div>
-          <div class="flex-grow-1 overflow-auto pa-4 markdown-preview" v-html="previewHtml" />
-        </v-container>
-      </v-window-item>
     </v-window>
+
+    <v-divider />
+
+    <v-card-actions class="pa-4">
+      <v-btn
+        v-if="step > 1"
+        variant="outlined"
+        prepend-icon="mdi-chevron-left"
+        @click="step--"
+      >
+        Back
+      </v-btn>
+      <v-spacer />
+      <v-btn
+        v-if="step < 3"
+        color="primary"
+        variant="flat"
+        append-icon="mdi-chevron-right"
+        :disabled="!canGoNext"
+        @click="step++"
+      >
+        Next
+      </v-btn>
+      <v-btn
+        v-if="step === 3"
+        color="success"
+        variant="flat"
+        prepend-icon="mdi-auto-fix"
+        :loading="generating"
+        :disabled="!canGoNext"
+        @click="generateAndSave"
+      >
+        Generate & Save
+      </v-btn>
+    </v-card-actions>
 
     <v-overlay v-model="generating" persistent class="align-center justify-center">
       <v-card class="pa-8 text-center" rounded="xl" elevation="12">
         <v-progress-circular indeterminate size="64" color="primary" class="mb-4" />
         <div class="text-h6">AI is thinking...</div>
-        <div class="text-caption text-medium-emphasis">This may take up to a minute</div>
+        <div class="text-caption text-medium-emphasis">This may take some time</div>
       </v-card>
     </v-overlay>
 
@@ -253,7 +315,6 @@
 </template>
 
 <script setup lang="ts">
-import { marked } from 'marked'
 import type { NotePageMeta, LibraryMeta, LibrarySource, LibraryGenerationRequest } from '#shared/types/notes'
 
 const emit = defineEmits<{
@@ -271,11 +332,15 @@ const urls = ref<{ url: string }[]>([])
 const additionalInfo = ref('')
 const prompt = ref('Create a well-structured reference article about this topic. Use the provided sources and include a References section at the end. Cite each fact with a wikilink or URL.')
 
-const generatedContent = ref('')
 const generating = ref(false)
-const saving = ref(false)
 const errorShow = ref(false)
 const errorMessage = ref('')
+
+// Menu state for autocomplete dropdowns
+const notesMenuOpen = ref(false)
+const pagesMenuOpen = ref(false)
+const personsMenuOpen = ref(false)
+const libraryMenuOpen = ref(false)
 
 // Load candidate data
 const { data: allNotes } = await useFetch<string[]>('/api/notes', { server: false, default: () => [] })
@@ -297,11 +362,28 @@ const canGoNext = computed(() => {
   return true
 })
 
-const previewHtml = computed(() => {
-  return marked.parse(generatedContent.value || '_No content generated yet_')
-})
+// Handler functions for "Select All" with auto-close
+function selectAllNotes() {
+  selectedNotes.value = [...allNotes.value]
+  notesMenuOpen.value = false
+}
 
-async function generate() {
+function selectAllPages() {
+  selectedPages.value = allPages.value.map(p => p.name)
+  pagesMenuOpen.value = false
+}
+
+function selectAllPersons() {
+  selectedPersons.value = allPersons.value.map(p => p.name)
+  personsMenuOpen.value = false
+}
+
+function selectAllLibrary() {
+  selectedLibrary.value = allLibrary.value.map(l => l.name)
+  libraryMenuOpen.value = false
+}
+
+async function generateAndSave() {
   generating.value = true
   const sources: LibrarySource[] = []
   
@@ -315,61 +397,25 @@ async function generate() {
   
   if (additionalInfo.value.trim().length > 0) sources.push({ type: 'additional', text: additionalInfo.value })
 
-    try {
-      const res = await $fetch<{ success: boolean; slug: string; title: string }>('/api/library', {
-        method: 'POST',
-        body: {
-          title: title.value,
-          sources,
-          prompt: prompt.value
-        } as LibraryGenerationRequest
-      })
-      
-      lastGeneratedSlug.value = res.slug
-      const entry = await $fetch<{ content: string }>(`/api/library/${encodeURIComponent(res.slug)}`)
-      generatedContent.value = entry.content
-      step.value = 4
-    } catch (err: any) {
+  try {
+    const res = await $fetch<{ success: boolean; slug: string; title: string }>('/api/library', {
+      method: 'POST',
+      body: {
+        title: title.value,
+        sources,
+        prompt: prompt.value
+      } as LibraryGenerationRequest
+    })
+    
+    // Emit the created event with the slug to navigate to the entry
+    emit('created', res.slug)
+  } catch (err: any) {
     errorMessage.value = err.data?.statusMessage || 'Failed to generate content'
     errorShow.value = true
   } finally {
     generating.value = false
   }
 }
-
-async function saveEntry() {
-  // Since POST already saved the initial version, we might just want to exit here,
-  // or if the user edited the preview (we'd need an editor in step 4), save that.
-  // For now, let's just finish the wizard.
-  // We'll find the slug by searching for the title in the library or from the generation result.
-  // I'll store the slug from generate().
-  let slug = toSlug(title.value)
-  // But wait, the server might have added a timestamp.
-  // Let's re-run generate logic if needed or just navigate.
-  // I will refactor generate to return the slug.
-  
-  // Re-finding the slug from the last generation result:
-  // (In a real app, I'd store it in a ref)
-  // For this implementation, I'll just close and the parent will refresh.
-  // I need to emit the slug.
-  
-  // Let's refine generate to store the resulting slug.
-}
-
-const lastGeneratedSlug = ref('')
-// I'll update generate() to set lastGeneratedSlug.value = res.slug
-
-// Now update saveEntry:
-function finish() {
-  if (lastGeneratedSlug.value) {
-    emit('created', lastGeneratedSlug.value)
-  } else {
-    emit('close')
-  }
-}
-
-// Updating generate function in place above...
-// (Self-correction: I'll just update the template to use the slug from the generation)
 </script>
 
 <script lang="ts">
@@ -394,12 +440,70 @@ function toSlug(text: string): string {
 </script>
 
 <style scoped>
-.max-w-md { max-width: 500px; }
-.max-w-lg { max-width: 800px; }
-.gap-2 { gap: 8px; }
-.markdown-preview :deep(h1) { font-size: 1.5rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem; }
-.markdown-preview :deep(h2) { font-size: 1.25rem; margin-top: 1.5rem; margin-bottom: 0.75rem; }
-.markdown-preview :deep(p) { margin-bottom: 1rem; line-height: 1.6; }
+/* ── Library Creator Card Layout ──────────────────────────────────────── */
+.library-creator-card {
+  max-height: 85vh;
+}
+
+.library-creator-window {
+  overflow-y: auto;
+}
+
+/* ── Autocomplete Container ───────────────────────────────────────────── */
+.autocomplete-container {
+  padding: 24px 16px 8px 16px !important;
+}
+
+.autocomplete-container :deep(.v-input) {
+  margin-top: 4px;
+}
+
+.autocomplete-container :deep(.v-field) {
+  margin-top: 0;
+}
+
+/* ── Toolbar Close Button (Default Theme) ─────────────────────────────── */
+.v-toolbar .toolbar-close-btn {
+  color: white;
+  opacity: 1;
+}
+
+.v-toolbar .toolbar-close-btn :deep(.v-icon) {
+  color: white;
+  opacity: 1;
+}
+
+/* ── Utility Classes ──────────────────────────────────────────────────── */
+.max-w-md { 
+  max-width: 500px; 
+}
+
+.max-w-lg { 
+  max-width: 800px; 
+}
+
+.gap-2 { 
+  gap: 8px; 
+}
+
+/* ── Markdown Preview Styling ─────────────────────────────────────────── */
+.markdown-preview :deep(h1) { 
+  font-size: 1.5rem; 
+  margin-bottom: 1rem; 
+  border-bottom: 1px solid rgba(255,255,255,0.1); 
+  padding-bottom: 0.5rem; 
+}
+
+.markdown-preview :deep(h2) { 
+  font-size: 1.25rem; 
+  margin-top: 1.5rem; 
+  margin-bottom: 0.75rem; 
+}
+
+.markdown-preview :deep(p) { 
+  margin-bottom: 1rem; 
+  line-height: 1.6; 
+}
 .markdown-preview :deep(ul), .markdown-preview :deep(ol) { margin-bottom: 1rem; padding-left: 1.5rem; }
 .markdown-preview :deep(li) { margin-bottom: 0.25rem; }
 </style>

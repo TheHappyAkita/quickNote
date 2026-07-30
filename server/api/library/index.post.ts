@@ -5,6 +5,7 @@ import { writeLibrary, listLibrary, readLibrary } from '../../utils/library'
 import { readNote, readPage, readPerson, readLocation, isValidPageName } from '../../utils/notes'
 import { getOllamaSettings } from '../../utils/settings'
 import { toSlug, injectFrontmatterName } from '#shared/utils/location'
+import { parseCoords } from '#shared/utils/coords'
 import { cacheInvalidate } from '../../utils/cache'
 import type { LibraryGenerationRequest, LibrarySource } from '#shared/types/notes'
 
@@ -39,7 +40,8 @@ export default defineEventHandler(async (event) => {
 
   const systemPrompt = `You are a research assistant. Create a well-structured Markdown reference article about "${title}". 
 Use the provided sources. Include a "References" section at the end. 
-Cite facts using wikilinks or URLs from the source headers.
+Cite facts using the same wikilink syntax as the source headers, including the & prefix for location links.
+At the end of the article, add 2-5 relevant inline tags like #tag1 #tag2.
 Default to being concise but thorough.`
 
   const userPrompt = `${prompt}\n\nSOURCES:\n${sourceContents.join('\n\n')}`
@@ -67,7 +69,16 @@ Default to being concise but thorough.`
   // 3. Cleanup and Save
   // Remove markdown code fences if present
   generatedContent = generatedContent.replace(/^```markdown\n/, '').replace(/\n```$/, '').trim()
-  
+
+  // Re-prefix location wikilinks that the model may have dropped the & from
+  generatedContent = generatedContent
+    .replace(/(?<!&)\[\[([^\]]+)\|([^\]]+)\]\]/g, (match, name, coords) => {
+      return parseCoords(coords) ? `&[[${name.trim()}|${coords.trim()}]]` : match
+    })
+    .replace(/(?<!&)\[\[([^\]]+)\]\]/g, (match, inner) => {
+      return parseCoords(inner) ? `&[[${inner.trim()}]]` : match
+    })
+
   // Ensure title is present as H1 if not already
   if (!generatedContent.startsWith('# ')) {
     generatedContent = `# ${title}\n\n${generatedContent}`
