@@ -23,18 +23,30 @@ export function useAppTheme() {
 
   const current = computed<AppThemeName>(() => vuetifyTheme.global.name.value as AppThemeName)
 
-  function apply(name: AppThemeName) {
+  interface PluginTheme {
+    id: string
+    label: string
+    icon: string
+    dark: boolean
+    colors: Record<string, string>
+  }
+
+  function apply(name: AppThemeName): void {
     // If it's a plugin theme, make sure it's registered in Vuetify
-    const pluginTheme = pluginThemes.value.find((t: any) => t.id === name)
+    const pluginTheme = pluginThemes.value.find((t: PluginTheme) => t.id === name)
     if (pluginTheme && !vuetifyTheme.themes.value[name]) {
       vuetifyTheme.themes.value[name] = {
         dark: pluginTheme.dark,
         colors: pluginTheme.colors
-      } as any
+      }
     }
 
     vuetifyTheme.global.name.value = name
-    try { localStorage.setItem(STORAGE_KEY, name) } catch {}
+    try {
+      localStorage.setItem(STORAGE_KEY, name)
+    } catch (error: unknown) {
+      console.warn('Failed to save theme to localStorage:', error)
+    }
   }
 
   function toggle() {
@@ -44,9 +56,9 @@ export function useAppTheme() {
     apply(next.id)
   }
 
-  function init() {
+  function init(): void {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY) as AppThemeName | null
+      const stored = localStorage.getItem(STORAGE_KEY)
       if (stored) {
         // If stored theme is a plugin theme, we need to wait for plugins or register it now
         // For now, let's just check if it's in allThemes
@@ -57,7 +69,9 @@ export function useAppTheme() {
           apply('dark')
         }
       }
-    } catch {}
+    } catch (error: unknown) {
+      console.warn('Failed to load theme from localStorage:', error)
+    }
   }
 
   return { current, themes: allThemes, apply, toggle, init }

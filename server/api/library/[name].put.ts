@@ -3,11 +3,13 @@
 
 import { writeLibrary, renameLibraryFile } from '../../utils/library'
 import { isValidPageName } from '../../utils/notes'
-import { toSlug, parseFrontmatterName, injectFrontmatterName } from '#shared/utils/location'
+import { toSlug, parseFrontmatterName } from '#shared/utils/location'
+import { injectFrontmatterIfNeeded } from '../../utils/content-processor'
+import { getValidatedRouterParam, validateContentLength } from '../../utils/validation'
 import { cacheInvalidate } from '../../utils/cache'
 
 export default defineEventHandler(async (event) => {
-  const raw = decodeURIComponent(getRouterParam(event, 'name') ?? '')
+  const raw = decodeURIComponent(getValidatedRouterParam(event, 'name'))
   const slug = toSlug(raw)
   if (!slug || !isValidPageName(slug)) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid library name' })
@@ -20,12 +22,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Content is required' })
   }
 
+  validateContentLength(body.content)
+
   // Inject name: frontmatter if the display name differs from slug
-  let content = body.content
-  const existingName = parseFrontmatterName(content)
-  if (!existingName && raw !== slug) {
-    content = injectFrontmatterName(content, raw)
-  }
+  const existingName = parseFrontmatterName(body.content)
+  const content = existingName ? body.content : injectFrontmatterIfNeeded(body.content, raw, slug)
 
   await writeLibrary(slug, content)
   cacheInvalidate('graph')

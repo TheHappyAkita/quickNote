@@ -2,21 +2,21 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 import { readLibrary, listLibraryWithMeta } from '../../utils/library'
-import { toSlug } from '#shared/utils/location'
+import { resolveEntitySlug } from '../../utils/entity-resolver'
+import { getValidatedRouterParam } from '../../utils/validation'
 
 export default defineEventHandler(async (event) => {
-  const raw = decodeURIComponent(getRouterParam(event, 'name') ?? '')
-  if (!raw) throw createError({ statusCode: 400, statusMessage: 'Invalid library name' })
-  const slug = toSlug(raw)
-  let content = await readLibrary(slug)
-  let resolvedSlug = slug
-  if (content === null && raw !== slug) {
-    const all = await listLibraryWithMeta()
-    const match = all.find(p => p.name === raw || p.slug === raw)
-    if (match) { resolvedSlug = match.slug; content = await readLibrary(match.slug) }
-  }
-  if (content === null) {
+  const raw = decodeURIComponent(getValidatedRouterParam(event, 'name'))
+  
+  const slug = await resolveEntitySlug(raw, listLibraryWithMeta, readLibrary)
+  if (!slug) {
     throw createError({ statusCode: 404, statusMessage: 'Library entry not found' })
   }
-  return { name: raw, slug: resolvedSlug, content }
+  
+  const content = await readLibrary(slug)
+  if (!content) {
+    throw createError({ statusCode: 404, statusMessage: 'Library entry not found' })
+  }
+  
+  return { name: raw, slug, content }
 })

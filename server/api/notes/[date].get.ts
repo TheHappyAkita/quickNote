@@ -1,10 +1,16 @@
 // Copyright (C) 2026 TheHappyAkita
 // SPDX-License-Identifier: GPL-3.0-only
 
+import { getValidatedRouterParam, validateDateFormat } from '../../utils/validation'
+
 export default defineEventHandler(async (event) => {
-  const date = getRouterParam(event, 'date')
-  if (!date) {
-    throw createError({ statusCode: 400, message: 'Date parameter required' })
+  const date = getValidatedRouterParam(event, 'date')
+  
+  if (!validateDateFormat(date)) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid date format. Expected YYYY-MM-DD format.'
+    })
   }
 
   const content = await readNote(date)

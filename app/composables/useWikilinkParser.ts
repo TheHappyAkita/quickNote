@@ -98,7 +98,11 @@ export function useWikilinkParser(options?: {
     html = html.replace(/&\[\[([^\]]+)\]\](?:\(([^)]+)\))?/g, (_m, inner: string, nickname: string | undefined) => {
       const parsed = parseLocationParts(inner)
       if (!parsed.name) {
-        const lat = parsed.lat!, lng = parsed.lng!
+        if (parsed.lat === undefined || parsed.lng === undefined) {
+          return _m // Return original if coordinates are invalid
+        }
+        const lat = parsed.lat
+        const lng = parsed.lng
         const coordSlug = sanitizeLocationSlug(`${lat},${lng}`)
         const display = nickname ?? locationNicknames?.get(coordSlug) ?? `${lat.toFixed(5)}, ${lng.toFixed(5)}`
         return `<a href="/location/${encodeURIComponent(coordSlug)}" class="wiki-link location-link">📍 ${display}</a>`
