@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 import { listNotes, readNote, listPages, readPage, listLocations, readLocation } from '../utils/notes'
+import { listLibrary, readLibrary } from '../utils/library'
 
 export interface SearchResult {
-  type: 'note' | 'page' | 'location'
+  type: 'note' | 'page' | 'location' | 'library'
   id: string // date for notes, name for pages
   title: string
   excerpt: string
@@ -83,6 +84,28 @@ export default defineEventHandler(async (event): Promise<SearchResult[]> => {
         type: 'location',
         id: loc,
         title: loc,
+        excerpt: excerpt.slice(0, 200),
+        matches: countMatches(contentLower, searchTerm),
+      })
+    }
+  }))
+
+  // Search library
+  const libraryEntries = await listLibrary()
+  await Promise.all(libraryEntries.map(async (lib) => {
+    const content = await readLibrary(lib)
+    const nameMatch = lib.toLowerCase().includes(searchTerm)
+    const contentMatch = content?.toLowerCase().includes(searchTerm)
+
+    if (nameMatch || contentMatch) {
+      const contentLower = content?.toLowerCase() ?? ''
+      const excerpts = content ? extractExcerpts(content, searchTerm, 3) : []
+      const excerpt = excerpts.join(' … ') || (content?.slice(0, 160) ?? '')
+
+      results.push({
+        type: 'library',
+        id: lib,
+        title: lib,
         excerpt: excerpt.slice(0, 200),
         matches: countMatches(contentLower, searchTerm),
       })

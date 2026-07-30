@@ -98,6 +98,19 @@ onMounted(() => {
         },
       },
       {
+        selector: 'node[type="library"]',
+        style: {
+          'background-color': '#1a1a2e',
+          'border-color': '#6c63ff',
+          'border-width': 2,
+          'font-size': 10,
+          'shape': 'round-rectangle',
+          'width': 54,
+          'height': 54,
+          'color': '#9c8fff',
+        },
+      },
+      {
         selector: 'node[type="person"]',
         style: {
           'background-color': '#4a2c40',
@@ -211,6 +224,12 @@ onMounted(() => {
     router.push(`/page/${encodeURIComponent(pageName)}`)
   })
 
+  cy.on('tap', 'node[type="library"]', (event) => {
+    const id = event.target.data('id') as string
+    const libraryName = id.replace(/^library:/, '')
+    router.push(`/library/${encodeURIComponent(libraryName)}`)
+  })
+
   cy.on('mouseover', 'node', (event) => {
     const node = event.target
     const type = node.data('type') as string
@@ -220,6 +239,8 @@ onMounted(() => {
       hoveredNode.value = id
     } else if (type === 'page') {
       hoveredNode.value = `📄 ${label}`
+    } else if (type === 'library') {
+      hoveredNode.value = `📚 ${label}`
     } else if (type === 'person') {
       hoveredNode.value = `👤 ${label}`
     } else if (type === 'location') {

@@ -150,5 +150,6 @@ export default defineNuxtConfig({
     sessionPassword: process.env.NUXT_SESSION_PASSWORD || '',
     notesDir: process.env.NOTES_DIR || '~/.quickNote',
     authUsers: process.env.AUTH_USERS || '[]',
+    ollamaBaseUrl: process.env.NUXT_OLLAMA_BASE_URL || 'http://localhost:11434',
   },
 })

@@ -136,6 +136,9 @@
           <v-list-item prepend-icon="mdi-puzzle-outline" @click="showPlugins = true">
             <v-list-item-title>Plugins</v-list-item-title>
           </v-list-item>
+          <v-list-item prepend-icon="mdi-cog-outline" to="/settings">
+            <v-list-item-title>Settings</v-list-item-title>
+          </v-list-item>
           <v-divider />
           <v-list-item prepend-icon="mdi-logout" @click="logout">
             <v-list-item-title>Sign out</v-list-item-title>
@@ -216,6 +219,7 @@ const allNavItems: NavItem[] = [
   { id: 'pages',     label: 'Pages',     icon: 'mdi-file-document-multiple',  to: '/pages',     activeTest: () => route.path === '/pages' || route.path.startsWith('/page/') },
   { id: 'persons',   label: 'People',    icon: 'mdi-account-group',            to: '/persons',   activeTest: () => route.path === '/persons' || route.path.startsWith('/person/') },
   { id: 'locations', label: 'Locations', icon: 'mdi-map-marker-multiple',      to: '/locations', activeTest: () => route.path === '/locations' || route.path.startsWith('/location/') },
+  { id: 'library',   label: 'Library',   icon: 'mdi-library-shelves',          to: '/library',   activeTest: () => route.path === '/library' || route.path.startsWith('/library/') },
   { id: 'map',       label: 'Map',       icon: 'mdi-map',                      to: '/map',       activeTest: () => route.path === '/map' },
   { id: 'graph',     label: 'Graph',     icon: 'mdi-graph',                    to: '/graph',     activeTest: () => route.path === '/graph' },
   { id: 'canvas',    label: 'Canvas',    icon: 'mdi-view-dashboard-outline',   to: '/canvas',    activeTest: () => route.path === '/canvas' },

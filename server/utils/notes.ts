@@ -501,6 +501,8 @@ function extractKeywords(content: string): string[] {
     .filter((w) => w.length >= 4 && !STOPWORDS.has(w) && !/^\d+$/.test(w))
 }
 
+import { listLibrary, readLibrary } from './library'
+
 const DATE_PATTERN_GRAPH = /^\d{4}-\d{2}-\d{2}$/
 
 /** Read items in parallel batches to avoid overwhelming the filesystem. */
@@ -520,14 +522,17 @@ async function readInBatches<T>(
 export async function buildGraph(): Promise<GraphData> {
   const dates = await listNotes()
   const pages = await listPages()
+  const library = await listLibrary()
   const locations = await listLocations()
   const dateSet = new Set(dates)
   const pageSet = new Set(pages)
+  const librarySet = new Set(library)
 
   // ── Phase 1: read ALL files in parallel batches ──────────────────────────
-  const [dateContents, pageContents] = await Promise.all([
+  const [dateContents, pageContents, libraryContents] = await Promise.all([
     readInBatches(dates, readNote),
     readInBatches(pages, readPage),
+    readInBatches(library, readLibrary),
   ])
 
   // ── Phase 2: pure CPU processing (no I/O) ────────────────────────────────
@@ -537,6 +542,10 @@ export async function buildGraph(): Promise<GraphData> {
       const label = (pageContents[i] ? parseFrontmatterName(pageContents[i]!) : null) ?? page
       return { data: { id: `page:${page}`, label, type: 'page' as const } }
     }),
+    ...library.map((lib, i) => {
+      const label = (libraryContents[i] ? parseFrontmatterName(libraryContents[i]!) : null) ?? lib
+      return { data: { id: `library:${lib}`, label, type: 'library' as const, color: '#6C63FF' } }
+    }),
   ]
   const edges: GraphData['edges'] = []
   const seenEdges = new Set<string>()
@@ -544,29 +553,29 @@ export async function buildGraph(): Promise<GraphData> {
   const personMentions = new Map<string, Set<string>>()
   const locationMentions = new Map<string, Set<string>>()
 
-  for (let i = 0; i < dates.length; i++) {
-    const date = dates[i]!
-    const content = dateContents[i] ?? null
-    if (!content) continue
-
+  const processContent = (content: string, sourceId: string) => {
     for (const name of extractPersonMentions(content)) {
       if (!personMentions.has(name)) personMentions.set(name, new Set())
-      personMentions.get(name)!.add(date)
+      personMentions.get(name)!.add(sourceId)
     }
 
     for (const name of extractLocationMentions(content)) {
       if (!locationMentions.has(name)) locationMentions.set(name, new Set())
-      locationMentions.get(name)!.add(date)
+      locationMentions.get(name)!.add(sourceId)
     }
 
     for (const target of extractLinks(content)) {
       if (dateSet.has(target)) {
-        const edgeKey = `${date}->${target}`
-        if (!seenEdges.has(edgeKey)) { seenEdges.add(edgeKey); edges.push({ data: { id: edgeKey, source: date, target, type: 'wikilink' as const } }) }
+        const edgeKey = `${sourceId}->${target}`
+        if (!seenEdges.has(edgeKey)) { seenEdges.add(edgeKey); edges.push({ data: { id: edgeKey, source: sourceId, target, type: 'wikilink' as const } }) }
       } else if (pageSet.has(target)) {
         const pageId = `page:${target}`
-        const edgeKey = `${date}->${pageId}`
-        if (!seenEdges.has(edgeKey)) { seenEdges.add(edgeKey); edges.push({ data: { id: edgeKey, source: date, target: pageId, type: 'wikilink' as const } }) }
+        const edgeKey = `${sourceId}->${pageId}`
+        if (!seenEdges.has(edgeKey)) { seenEdges.add(edgeKey); edges.push({ data: { id: edgeKey, source: sourceId, target: pageId, type: 'wikilink' as const } }) }
+      } else if (librarySet.has(target)) {
+        const libId = `library:${target}`
+        const edgeKey = `${sourceId}->${libId}`
+        if (!seenEdges.has(edgeKey)) { seenEdges.add(edgeKey); edges.push({ data: { id: edgeKey, source: sourceId, target: libId, type: 'wikilink' as const } }) }
       }
     }
 
@@ -575,41 +584,25 @@ export async function buildGraph(): Promise<GraphData> {
       if (!kwFreq.has(w)) kwFreq.set(w, { total: 0, dates: new Set() })
       const entry = kwFreq.get(w)!
       entry.total++
-      if (!seen.has(w)) { entry.dates.add(date); seen.add(w) }
+      if (!seen.has(w)) { entry.dates.add(sourceId); seen.add(w) }
     }
+  }
+
+  for (let i = 0; i < dates.length; i++) {
+    const content = dateContents[i] ?? null
+    if (content) processContent(content, dates[i]!)
   }
 
   for (let i = 0; i < pages.length; i++) {
-    const page = pages[i]!
     const content = pageContents[i] ?? null
-    if (!content) continue
-
-    for (const name of extractPersonMentions(content)) {
-      if (!personMentions.has(name)) personMentions.set(name, new Set())
-      personMentions.get(name)!.add(`page:${page}`)
-    }
-
-    for (const name of extractLocationMentions(content)) {
-      if (!locationMentions.has(name)) locationMentions.set(name, new Set())
-      locationMentions.get(name)!.add(`page:${page}`)
-    }
-
-    for (const target of extractLinks(content)) {
-      if (dateSet.has(target)) {
-        const pageId = `page:${page}`
-        const edgeKey = `${pageId}->${target}`
-        if (!seenEdges.has(edgeKey)) { seenEdges.add(edgeKey); edges.push({ data: { id: edgeKey, source: pageId, target, type: 'wikilink' as const } }) }
-      }
-    }
-
-    const seen = new Set<string>()
-    for (const w of extractKeywords(content)) {
-      if (!kwFreq.has(w)) kwFreq.set(w, { total: 0, dates: new Set() })
-      const entry = kwFreq.get(w)!
-      entry.total++
-      if (!seen.has(w)) { entry.dates.add(`page:${page}`); seen.add(w) }
-    }
+    if (content) processContent(content, `page:${pages[i]!}`)
   }
+
+  for (let i = 0; i < library.length; i++) {
+    const content = libraryContents[i] ?? null
+    if (content) processContent(content, `library:${library[i]!}`)
+  }
+
 
   for (const [name, sources] of locationMentions) {
     const locationId = `location:${name}`

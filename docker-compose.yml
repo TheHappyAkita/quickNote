@@ -9,6 +9,11 @@ services:
       NUXT_HOST: "0.0.0.0"
       NUXT_PORT: "3000"
       NOTES_DIR: "/data/notes"
+      # Use host.docker.internal to reach Ollama on the host when running in Docker Desktop.
+      # On native Linux Docker you may need network_mode: host or the host IP.
+      NUXT_OLLAMA_BASE_URL: "http://host.docker.internal:11434"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     user: "1000:1000"
     volumes:
       # Notes and canvas state are persisted here.
