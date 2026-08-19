@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 import { useTheme } from 'vuetify'
+import type { ThemeDefinition } from 'vuetify'
 import { usePluginSystem } from './usePluginSystem'
 
 const STORAGE_KEY = 'quicknote:theme'
@@ -35,10 +36,11 @@ export function useAppTheme() {
     // If it's a plugin theme, make sure it's registered in Vuetify
     const pluginTheme = pluginThemes.value.find((t: PluginTheme) => t.id === name)
     if (pluginTheme && !vuetifyTheme.themes.value[name]) {
-      vuetifyTheme.themes.value[name] = {
+      const themeDefinition = {
         dark: pluginTheme.dark,
-        colors: pluginTheme.colors
-      }
+        colors: pluginTheme.colors,
+      } as unknown as typeof vuetifyTheme.themes.value[string]
+      vuetifyTheme.themes.value[name] = themeDefinition
     }
 
     vuetifyTheme.global.name.value = name

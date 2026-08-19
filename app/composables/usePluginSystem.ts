@@ -3,6 +3,19 @@
 
 import type { QuickNotePlugin, QuickNoteAPI } from '#shared/types/plugins'
 
+export type SuggestionProvider = {
+  trigger: string | RegExp
+  mode: string
+  icon?: string
+  color?: string
+  getSuggestions: (query: string) => string[] | Promise<string[]>
+  formatInsertion: (suggestion: string) => string
+}
+
+export type SidebarWidget = { id: string; icon: string; title: string; component: unknown }
+export type NavbarItem = { id: string; icon: string; title: string; action: () => void }
+export type PluginTheme = { id: string; label: string; icon: string; dark: boolean; colors: Record<string, string>; cssClass?: string }
+
 // Use module-level state for plugins to avoid SSR serialization errors
 // "useState" in Nuxt 3/4 attempts to serialize data for the client,
 // but plugins contain functions (hooks, setup, etc.) which cannot be stringified.
@@ -24,9 +37,10 @@ export function usePluginSystem() {
   function executeHook<T>(hookName: string): T[] {
     const results: T[] = []
     for (const plugin of pluginsState.value) {
-      if (plugin.hooks?.[hookName]) {
+      const hooks: Record<string, unknown> = plugin.hooks ?? {}
+      if (hooks[hookName]) {
         try {
-          const hookFn = plugin.hooks[hookName] as () => T[]
+          const hookFn = hooks[hookName] as () => T[]
           results.push(...hookFn())
         } catch (error: unknown) {
           console.error(`Error in plugin ${plugin.id} ${hookName}:`, error)
@@ -50,10 +64,10 @@ export function usePluginSystem() {
     return result
   }
 
-  const getSuggestionProviders = () => executeHook('editor:suggestions')
-  const getSidebarWidgets = () => executeHook('ui:sidebar')
-  const getNavbarItems = () => executeHook('ui:navbar')
-  const getPluginThemes = () => executeHook<{ id: string; label: string; icon: string; dark: boolean; colors: Record<string, string>; cssClass?: string }>('ui:themes')
+  const getSuggestionProviders = (): SuggestionProvider[] => executeHook<SuggestionProvider[]>('editor:suggestions').flat()
+  const getSidebarWidgets = (): SidebarWidget[] => executeHook<SidebarWidget[]>('ui:sidebar').flat()
+  const getNavbarItems = (): NavbarItem[] => executeHook<NavbarItem[]>('ui:navbar').flat()
+  const getPluginThemes = (): PluginTheme[] => executeHook<PluginTheme[]>('ui:themes').flat()
 
   const initializePlugins = async (api: QuickNoteAPI): Promise<void> => {
     if (isInitializedState.value) return

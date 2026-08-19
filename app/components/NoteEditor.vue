@@ -127,9 +127,10 @@ const locationNicknameMap = computed(() => {
 
 const dropdownStyle = ref({ top: '40px', left: '16px' })
 const suggestionMode = ref<string>('link')
-const activePluginProvider = ref<any>(null)
+const activePluginProvider = ref<PluginSuggestionProvider | null>(null)
 
 const { applyMarkdownHooks, getSuggestionProviders } = usePluginSystem()
+type PluginSuggestionProvider = ReturnType<typeof getSuggestionProviders>[number]
 
 const wordCount = computed(() => {
   const text = props.modelValue.trim()
@@ -330,10 +331,11 @@ function handleInput(event: Event) {
       const coords = getCursorCoords(target, cursorPos)
       dropdownStyle.value = { top: coords.top + 'px', left: Math.max(0, coords.left) + 'px' }
     }
-  } else if (pluginMatch) {
-    suggestionMode.value = activePluginProvider.value.mode
+  } else if (pluginMatch && activePluginProvider.value) {
+    const provider = activePluginProvider.value
+    suggestionMode.value = provider.mode
     const query = pluginMatch[1] ?? ''
-    const result = activePluginProvider.value.getSuggestions(query)
+    const result = provider.getSuggestions(query)
     if (result instanceof Promise) {
       result.then(s => {
         suggestions.value = s.slice(0, 10)
@@ -395,7 +397,7 @@ function insertSuggestion(date: string) {
     openBracket = textBeforeCursor.lastIndexOf('@[[')
   } else if (isLocation) {
     openBracket = textBeforeCursor.lastIndexOf('&[[')
-  } else if (isPlugin) {
+  } else if (isPlugin && activePluginProvider.value) {
     // We need to find where the trigger started. This is a bit simplified.
     // Ideally providers would return the match range.
     const match = textBeforeCursor.match(activePluginProvider.value.trigger)
@@ -412,7 +414,7 @@ function insertSuggestion(date: string) {
   } else if (isLocation) {
     const nick = locationNicknameMap.value.get(date)
     insertion = nick ? `&[[${date}]](${nick})` : `&[[${date}]]`
-  } else if (isPlugin) {
+  } else if (isPlugin && activePluginProvider.value) {
     insertion = activePluginProvider.value.formatInsertion(date)
   } else {
     insertion = `[[${date}]]`

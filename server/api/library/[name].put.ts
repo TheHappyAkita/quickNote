@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 import { writeLibrary, renameLibraryFile } from '../../utils/library'
-import { isValidPageName } from '../../utils/notes'
+import { isValidPageName } from '../../utils/pages'
 import { toSlug, parseFrontmatterName } from '#shared/utils/location'
 import { injectFrontmatterIfNeeded } from '../../utils/content-processor'
 import { getValidatedRouterParam, validateContentLength } from '../../utils/validation'

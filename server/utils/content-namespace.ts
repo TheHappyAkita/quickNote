@@ -24,7 +24,7 @@ export interface ContentNamespace<TMeta extends { name: string; slug: string; ta
 
 interface NamespaceConfig {
   dirName: string
-  type: string
+  type: 'note' | 'page' | 'person' | 'location' | 'library'
   maxNameLength: number
   namePattern?: RegExp
 }

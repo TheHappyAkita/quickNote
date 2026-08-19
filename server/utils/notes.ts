@@ -89,18 +89,18 @@ async function ensurePagesDir(): Promise<void> {
   }
 }
 
-export function isValidPageName(name: string): boolean {
+function isValidPageName(name: string): boolean {
   return PAGE_NAME_PATTERN.test(name) && name.length > 0 && name.length <= 100
 }
 
-export async function renamePageFile(oldName: string, newName: string): Promise<void> {
+async function renamePageFile(oldName: string, newName: string): Promise<void> {
   if (oldName === newName) return
   const oldPath = join(getPagesDir(), `${oldName}.md`)
   const newPath = join(getPagesDir(), `${newName}.md`)
   if (existsSync(oldPath) && !existsSync(newPath)) await rename(oldPath, newPath)
 }
 
-export async function listPages(): Promise<string[]> {
+async function listPages(): Promise<string[]> {
   await ensurePagesDir()
   const dir = getPagesDir()
   try {
@@ -114,7 +114,7 @@ export async function listPages(): Promise<string[]> {
   }
 }
 
-export async function readPage(name: string): Promise<string | null> {
+async function readPage(name: string): Promise<string | null> {
   if (!isValidPageName(name)) return null
   await ensurePagesDir()
   const filePath = join(getPagesDir(), `${name}.md`)
@@ -125,7 +125,7 @@ export async function readPage(name: string): Promise<string | null> {
   }
 }
 
-export async function writePage(name: string, content: string): Promise<void> {
+async function writePage(name: string, content: string): Promise<void> {
   if (!isValidPageName(name)) {
     throw new Error('Invalid page name')
   }
@@ -135,7 +135,7 @@ export async function writePage(name: string, content: string): Promise<void> {
   await runServerHook('server:onSave', { type: 'page', name, content })
 }
 
-export async function deletePage(name: string): Promise<void> {
+async function deletePage(name: string): Promise<void> {
   if (!isValidPageName(name)) {
     throw new Error('Invalid page name')
   }
@@ -161,18 +161,18 @@ async function ensurePeopleDir(): Promise<void> {
   }
 }
 
-export function isValidPersonName(name: string): boolean {
+function isValidPersonName(name: string): boolean {
   return PERSON_NAME_PATTERN.test(name) && name.length > 0 && name.length <= 120
 }
 
-export async function renamePersonFile(oldName: string, newName: string): Promise<void> {
+async function renamePersonFile(oldName: string, newName: string): Promise<void> {
   if (oldName === newName) return
   const oldPath = join(getPeopleDir(), `${oldName}.md`)
   const newPath = join(getPeopleDir(), `${newName}.md`)
   if (existsSync(oldPath) && !existsSync(newPath)) await rename(oldPath, newPath)
 }
 
-export async function listPersons(): Promise<string[]> {
+async function listPersons(): Promise<string[]> {
   await ensurePeopleDir()
   try {
     const files = await readdir(getPeopleDir())
@@ -205,7 +205,7 @@ export async function getPageDisplayName(slug: string): Promise<string> {
   return slug
 }
 
-export async function readPerson(name: string): Promise<string | null> {
+async function readPerson(name: string): Promise<string | null> {
   if (!isValidPersonName(name)) return null
   await ensurePeopleDir()
   try {
@@ -215,14 +215,14 @@ export async function readPerson(name: string): Promise<string | null> {
   }
 }
 
-export async function writePerson(name: string, content: string): Promise<void> {
+async function writePerson(name: string, content: string): Promise<void> {
   if (!isValidPersonName(name)) throw new Error('Invalid person name')
   await ensurePeopleDir()
   await writeFile(join(getPeopleDir(), `${name}.md`), content, 'utf-8')
   await runServerHook('server:onSave', { type: 'person', name, content })
 }
 
-export async function deletePerson(name: string): Promise<void> {
+async function deletePerson(name: string): Promise<void> {
   if (!isValidPersonName(name)) throw new Error('Invalid person name')
   try { 
     await unlink(join(getPeopleDir(), `${name}.md`))
@@ -230,7 +230,7 @@ export async function deletePerson(name: string): Promise<void> {
   } catch { /* already gone */ }
 }
 
-export async function listPersonsWithMeta(): Promise<{ name: string; slug: string; tags: string[] }[]> {
+async function listPersonsWithMeta(): Promise<{ name: string; slug: string; tags: string[] }[]> {
   const slugs = await listPersons()
   return Promise.all(slugs.map(async (slug) => {
     const content = await readPerson(slug)
@@ -256,18 +256,18 @@ async function ensureLocationsDir(): Promise<void> {
   }
 }
 
-export function isValidLocationName(name: string): boolean {
+function isValidLocationName(name: string): boolean {
   return LOCATION_NAME_PATTERN.test(name) && name.length > 0 && name.length <= 120
 }
 
-export async function renameLocationFile(oldName: string, newName: string): Promise<void> {
+async function renameLocationFile(oldName: string, newName: string): Promise<void> {
   if (oldName === newName) return
   const oldPath = join(getLocationsDir(), `${oldName}.md`)
   const newPath = join(getLocationsDir(), `${newName}.md`)
   if (existsSync(oldPath) && !existsSync(newPath)) await rename(oldPath, newPath)
 }
 
-export async function listLocations(): Promise<string[]> {
+async function listLocations(): Promise<string[]> {
   await ensureLocationsDir()
   try {
     const files = await readdir(getLocationsDir())
@@ -280,7 +280,7 @@ export async function listLocations(): Promise<string[]> {
   }
 }
 
-export async function readLocation(name: string): Promise<string | null> {
+async function readLocation(name: string): Promise<string | null> {
   if (!isValidLocationName(name)) return null
   await ensureLocationsDir()
   try {
@@ -290,14 +290,14 @@ export async function readLocation(name: string): Promise<string | null> {
   }
 }
 
-export async function writeLocation(name: string, content: string): Promise<void> {
+async function writeLocation(name: string, content: string): Promise<void> {
   if (!isValidLocationName(name)) throw new Error('Invalid location name')
   await ensureLocationsDir()
   await writeFile(join(getLocationsDir(), `${name}.md`), content, 'utf-8')
   await runServerHook('server:onSave', { type: 'location', name, content })
 }
 
-export async function deleteLocation(name: string): Promise<void> {
+async function deleteLocation(name: string): Promise<void> {
   if (!isValidLocationName(name)) throw new Error('Invalid location name')
   try { 
     await unlink(join(getLocationsDir(), `${name}.md`))
@@ -320,7 +320,7 @@ function parseLocationCoords(content: string): { lat?: number; lng?: number; nic
   }
 }
 
-export async function listLocationsWithMeta(): Promise<LocationMeta[]> {
+async function listLocationsWithMeta(): Promise<LocationMeta[]> {
   const slugs = await listLocations()
   return Promise.all(slugs.map(async (slug) => {
     const content = await readLocation(slug)
@@ -358,13 +358,13 @@ export function extractLocationMentions(content: string): string[] {
   return [...seen]
 }
 
-export interface LocationMention {
+interface LocationMention {
   name: string
   lat?: number
   lng?: number
 }
 
-export function extractLocationMentionsWithCoords(content: string): LocationMention[] {
+function extractLocationMentionsWithCoords(content: string): LocationMention[] {
   const seen = new Map<string, LocationMention>()
   let match: RegExpExecArray | null
   const re = new RegExp(LOCATION_FULL_PATTERN.source, 'g')
@@ -447,7 +447,7 @@ export function setFrontmatterTags(content: string, tags: string[]): string {
   return content
 }
 
-export async function listPagesWithMeta(): Promise<NotePageMeta[]> {
+async function listPagesWithMeta(): Promise<NotePageMeta[]> {
   const slugs = await listPages()
   return Promise.all(slugs.map(async (slug) => {
     const content = await readPage(slug)
@@ -549,11 +549,11 @@ export async function buildGraph(): Promise<GraphData> {
   ]
   const edges: GraphData['edges'] = []
   const seenEdges = new Set<string>()
-  const kwFreq = new Map<string, { total: number; dates: Set<string> }>()
+  const kwFreq = new Map<string, { total: number; dates: Set<string>; tagged: boolean }>()
   const personMentions = new Map<string, Set<string>>()
   const locationMentions = new Map<string, Set<string>>()
 
-  const processContent = (content: string, sourceId: string) => {
+  const processContent = (content: string, sourceId: string, includeTags = false) => {
     for (const name of extractPersonMentions(content)) {
       if (!personMentions.has(name)) personMentions.set(name, new Set())
       personMentions.get(name)!.add(sourceId)
@@ -581,16 +581,27 @@ export async function buildGraph(): Promise<GraphData> {
 
     const seen = new Set<string>()
     for (const w of extractKeywords(content)) {
-      if (!kwFreq.has(w)) kwFreq.set(w, { total: 0, dates: new Set() })
+      if (!kwFreq.has(w)) kwFreq.set(w, { total: 0, dates: new Set(), tagged: false })
       const entry = kwFreq.get(w)!
+      entry.tagged = entry.tagged || includeTags
       entry.total++
       if (!seen.has(w)) { entry.dates.add(sourceId); seen.add(w) }
+    }
+
+    if (includeTags) {
+      for (const tag of parseTags(content)) {
+        if (!kwFreq.has(tag)) kwFreq.set(tag, { total: 0, dates: new Set(), tagged: true })
+        const entry = kwFreq.get(tag)!
+        entry.tagged = true
+        entry.total++
+        entry.dates.add(sourceId)
+      }
     }
   }
 
   for (let i = 0; i < dates.length; i++) {
     const content = dateContents[i] ?? null
-    if (content) processContent(content, dates[i]!)
+    if (content) processContent(content, dates[i]!, true)
   }
 
   for (let i = 0; i < pages.length; i++) {
@@ -629,7 +640,7 @@ export async function buildGraph(): Promise<GraphData> {
   }
 
   const topKeywords = [...kwFreq.entries()]
-    .filter(([, v]) => v.dates.size >= 2 || v.total >= 3)
+    .filter(([, v]) => v.tagged || v.dates.size >= 2 || v.total >= 3)
     .sort((a, b) => b[1].dates.size - a[1].dates.size || b[1].total - a[1].total)
     .slice(0, 40)
 

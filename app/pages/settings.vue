@@ -112,7 +112,7 @@ async function fetchModels() {
     const models = await $fetch<string[]>('/api/ollama/models')
     availableModels.value = models
     if (models.length > 0 && !config.value.model) {
-      config.value.model = models[0]
+      config.value.model = models[0] ?? ''
     }
   } catch (err) {
     errorMessage.value = 'Failed to connect to Ollama'
