@@ -4,7 +4,9 @@
 import type { Reminder } from '#shared/types/notes'
 import { join } from 'path'
 import { readFile, writeFile } from 'fs/promises'
-import { getNotesDir, listNotes, readNote, listPages, readPage, listPersons, readPerson } from '../../utils/notes'
+import { getNotesDir, listNotes, readNote } from '../../utils/notes'
+import { listPages, readPage } from '../../utils/pages'
+import { listPersons, readPerson } from '../../utils/persons'
 import { cacheGet, cacheSet, CACHE_TTL } from '../../utils/cache'
 
 const REMINDER_PATTERN = /^(.*?)(remind|remindme|reminder)(?:\s*:\s*|\s+)(.+)$/i

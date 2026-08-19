@@ -8,15 +8,13 @@ import {
   readNote, 
   listNotes, 
   deleteNote,
-  writePage,
-  readPage,
-  listPages,
-  isValidPageName,
   extractLinks,
   extractPersonMentions,
   extractLocationMentions,
-  parseTags
+  parseTags,
+  buildGraph
 } from '../../../server/utils/notes'
+import { writePage, readPage, listPages, isValidPageName } from '../../../server/utils/pages'
 
 const TEST_NOTES_DIR = join(process.cwd(), '__test_notes_dir')
 
@@ -93,6 +91,24 @@ describe('server notes utils', () => {
       expect(isValidPageName('Valid-Page_123')).toBe(true)
       expect(isValidPageName('Invalid/Page')).toBe(false)
       expect(isValidPageName('')).toBe(false)
+    })
+  })
+
+  describe('knowledge graph', () => {
+    it('includes tags from daily notes as graph nodes and edges', async () => {
+      await writeNote('2026-07-02', `---\ntags: [project-x]\n---\nDaily note about country`)
+
+      const graph = await buildGraph()
+
+      expect(graph.nodes).toContainEqual({
+        data: { id: 'kw:project-x', label: 'project-x', type: 'keyword', weight: 1 },
+      })
+      expect(graph.edges).toContainEqual({
+        data: { id: '2026-07-02->kw:project-x', source: '2026-07-02', target: 'kw:project-x', type: 'keyword' },
+      })
+      expect(graph.edges).toContainEqual({
+        data: { id: '2026-07-02->kw:country', source: '2026-07-02', target: 'kw:country', type: 'keyword' },
+      })
     })
   })
 

@@ -129,7 +129,7 @@
           <v-list-item
             v-for="result in searchResults"
             :key="`${result.type}-${result.id}`"
-            :to="result.type === 'note' ? `/note/${result.id}` : result.type === 'location' ? `/location/${encodeURIComponent(result.id)}` : `/page/${encodeURIComponent(result.id)}`"
+            :to="searchResultLink(result)"
             class="result-item"
             @click="activePanel = null"
           >
@@ -387,7 +387,14 @@ function reminderIcon(dateStr: string): string {
 }
 
 // ── Search ─────────────────────────────────────────────────────────
-interface SearchResult { type: 'note' | 'page' | 'location'; id: string; title: string; excerpt: string; matches: number }
+interface SearchResult { type: 'note' | 'page' | 'location' | 'library'; id: string; title: string; excerpt: string; matches: number }
+
+function searchResultLink(result: SearchResult): string {
+  if (result.type === 'note') return `/note/${result.id}`
+  if (result.type === 'location') return `/location/${encodeURIComponent(result.id)}`
+  if (result.type === 'library') return `/library/${encodeURIComponent(result.id)}`
+  return `/page/${encodeURIComponent(result.id)}`
+}
 const searchQuery = ref('')
 const searchResults = ref<SearchResult[]>([])
 const searchLoading = ref(false)
