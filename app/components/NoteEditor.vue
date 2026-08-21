@@ -25,7 +25,7 @@
           ref="textareaRef"
           :value="modelValue"
           class="note-textarea"
-          placeholder="Start writing… use [[YYYY-MM-DD]] for dates or [[Page Name]] for pages"
+          placeholder="Start writing… use [[YYYY-MM-DD]] for dates, [[Page Name]] for pages, or [[Meeting Name]] for meetings"
           spellcheck="true"
           @input="handleInput"
           @keydown="handleKeydown"
@@ -53,6 +53,7 @@
                 <v-icon v-else-if="suggestionMode === 'location'" size="14" class="mr-1" color="teal">mdi-map-marker</v-icon>
                 <v-icon v-else-if="activePluginProvider?.icon" size="14" class="mr-1" :color="activePluginProvider.color">{{ activePluginProvider.icon }}</v-icon>
                 <v-icon v-else-if="/^\d{4}-\d{2}-\d{2}$/.test(suggestion)" size="14" class="mr-1">mdi-calendar</v-icon>
+                <v-icon v-else-if="allMeetings.includes(suggestion)" size="14" class="mr-1">mdi-account-group</v-icon>
                 <v-icon v-else size="14" class="mr-1">mdi-file-document-outline</v-icon>
               </template>
               <v-list-item-title class="text-body-2">{{ suggestion }}</v-list-item-title>
@@ -98,6 +99,8 @@ const selectedSuggestion = ref(0)
 const { data: allDates } = await useFetch<string[]>('/api/notes', { server: false, default: () => [] })
 const { data: allPagesRaw } = await useFetch<{ name: string; tags: string[] }[]>('/api/pages', { server: false, default: () => [] })
 const allPages = computed(() => allPagesRaw.value?.map(p => p.name) ?? [])
+const { data: allMeetingsRaw } = await useFetch<{ name: string; tags: string[] }[]>('/api/meetings', { server: false, default: () => [] })
+const allMeetings = computed(() => allMeetingsRaw.value?.map(m => m.name) ?? [])
 const { data: allPersonsRaw } = await useFetch<{ name: string; tags: string[] }[]>('/api/persons', { server: false, default: () => [] })
 const allPersons = computed(() => allPersonsRaw.value?.map(p => p.name) ?? [])
 const { data: allLocationsRaw } = await useFetch<{ name: string; tags: string[]; nickname?: string; lat?: number; lng?: number }[]>('/api/locations', { server: false, default: () => [], getCachedData: () => undefined })
@@ -177,10 +180,21 @@ const renderedContent = computed(() => {
   // Apply plugin hooks first
   const pluggable = applyMarkdownHooks(props.modelValue)
   // Pre-process location mentions before marked so | and & aren't mangled
-  const preprocessed = renderLocationMentions(pluggable)
+  let preprocessed = renderLocationMentions(pluggable)
+  
+  // Format frontmatter metadata with line breaks for better readability
+  preprocessed = preprocessed.replace(
+    /^(date:\s*.+?)\s+(timezone:\s*.+?)\s+(topic:\s*.+?)(\s+attendees:\s*.+?)?$/m,
+    '$1  \n$2  \n$3$4'
+  )
+  preprocessed = preprocessed.replace(
+    /(\s+attendees:\s*.+?)$/m,
+    '  \n$1'
+  )
+  
   let html = marked.parse(preprocessed, {
     gfm: true,
-    breaks: false,
+    breaks: true,
   }) as string
   // Standard markdown hyperlinks: [text](url)
   html = html.replace(
@@ -212,10 +226,12 @@ const renderedContent = computed(() => {
     `<a href="/person/${encodeURIComponent(name.trim())}" class="wiki-link person-link">👤 ${name}</a>`,
   )
   // Location mentions already handled in pre-processing step above
-  // Page links: [[Page Name]] (non-date format)
+  // Meeting links: [[Meeting Name]] (non-date format)
   html = html.replace(
     /\[\[([a-zA-Z0-9_\- ][a-zA-Z0-9_\- ]+)\]\]/g,
-    '<a href="/page/$1" class="wiki-link page-link">📄 $1</a>',
+    (_match, name: string) => allMeetings.value.includes(name)
+      ? `<a href="/meeting/${encodeURIComponent(name)}" class="wiki-link meeting-link">\u{1F465} ${name}</a>`
+      : `<a href="/page/${name}" class="wiki-link page-link">📄 ${name}</a>`,
   )
   // Email addresses — decorate existing mailto links from marked, or create new ones
   html = html.replace(
@@ -322,9 +338,12 @@ function handleInput(event: Event) {
     suggestionMode.value = 'link'
     const query = linkMatch[1] ?? ''
     const queryLower = query.toLowerCase()
-    const dateMatches = (allDates.value ?? []).filter(d => d.startsWith(query) && d !== props.date)
+    const dateMatches = (allDates.value ?? [])
+      .filter(d => d.startsWith(query) && d !== props.date)
+      .sort((a, b) => b.localeCompare(a))
     const pageMatches = (allPages.value ?? []).filter(p => p.toLowerCase().includes(queryLower) && p !== props.pageName)
-    suggestions.value = [...dateMatches, ...pageMatches].slice(0, 10)
+    const meetingMatches = (allMeetings.value ?? []).filter(m => m.toLowerCase().includes(queryLower))
+    suggestions.value = [...dateMatches, ...pageMatches, ...meetingMatches].slice(0, 10)
     selectedSuggestion.value = 0
     showSuggestions.value = suggestions.value.length > 0
     if (showSuggestions.value) {
@@ -525,6 +544,12 @@ function insertSuggestion(date: string) {
 
 :deep(.preview-pane p) {
   margin: 0.3em 0;
+}
+
+/* Format frontmatter metadata with line breaks */
+:deep(.preview-pane p:first-child) {
+  white-space: pre-line;
+  word-break: break-word;
 }
 
 :deep(.preview-pane h1),

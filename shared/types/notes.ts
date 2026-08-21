@@ -7,6 +7,12 @@ export interface NotePageMeta {
   tags: string[]
 }
 
+export interface MeetingMeta {
+  name: string
+  slug: string
+  tags: string[]
+}
+
 export interface LibraryMeta {
   name: string   // display name (from frontmatter name: or slug)
   slug: string   // filesystem-safe filename without extension

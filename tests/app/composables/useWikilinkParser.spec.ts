@@ -10,7 +10,8 @@ global.ref = ref
 
 describe('useWikilinkParser', () => {
   const { parseWikilinks } = useWikilinkParser({
-    locationNicknames: new Map([['41_37@2_18', 'The Beach']])
+    locationNicknames: new Map([['41_37@2_18', 'The Beach']]),
+    meetingNames: ['Q3 Planning']
   })
 
   it('parses standard date links', () => {
@@ -53,6 +54,12 @@ describe('useWikilinkParser', () => {
     const text = 'Read [[Project Alpha]]'
     const html = parseWikilinks(text)
     expect(html).toContain('<a href="/page/Project Alpha" class="wiki-link page-link">📄 Project Alpha</a>')
+  })
+
+  it('parses meeting links', () => {
+    const text = 'Review [[Q3 Planning]]'
+    const html = parseWikilinks(text)
+    expect(html).toContain('<a href="/meeting/Q3%20Planning" class="wiki-link meeting-link">👥 Q3 Planning</a>')
   })
 
   it('parses email addresses', () => {
