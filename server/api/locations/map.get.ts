@@ -5,19 +5,23 @@ import type { LocationMeta } from '#shared/types/notes'
 import { listNotes, readNote } from '../../utils/notes'
 import { listPagesWithMeta, readPage } from '../../utils/pages'
 import { listPersonsWithMeta, readPerson } from '../../utils/persons'
+import { listMeetingsWithMeta, readMeeting } from '../../utils/meetings'
+import { listLibraryWithMeta, readLibrary } from '../../utils/library'
 import { listLocationsWithMeta, extractLocationMentionsWithCoords } from '../../utils/locations'
 
 export default defineEventHandler(async (): Promise<LocationMeta[]> => {
-  const [dates, pagesMeta, personsMeta, storedLocations] = await Promise.all([
+  const [dates, pagesMeta, personsMeta, meetingsMeta, libraryMeta, storedLocations] = await Promise.all([
     listNotes(),
     listPagesWithMeta(),
     listPersonsWithMeta(),
+    listMeetingsWithMeta(),
+    listLibraryWithMeta(),
     listLocationsWithMeta(),
   ])
 
   // Map location name → stored meta
   const locationMap = new Map<string, LocationMeta>(
-    storedLocations.map(l => [l.name, { ...l, mentionedInDates: [], mentionedInPages: [], mentionedInPeople: [] }]),
+    storedLocations.map(l => [l.name, { ...l, mentionedInDates: [], mentionedInPages: [], mentionedInPeople: [], mentionedInMeetings: [], mentionedInLibrary: [] }]),
   )
 
   // Inline coord fallback: first inline coord found for a location with no stored coords
@@ -25,12 +29,12 @@ export default defineEventHandler(async (): Promise<LocationMeta[]> => {
 
   function ensureEntry(name: string) {
     if (!locationMap.has(name)) {
-      locationMap.set(name, { name, slug: name, tags: [], mentionedInDates: [], mentionedInPages: [], mentionedInPeople: [] })
+      locationMap.set(name, { name, slug: name, tags: [], mentionedInDates: [], mentionedInPages: [], mentionedInPeople: [], mentionedInMeetings: [], mentionedInLibrary: [] })
     }
     return locationMap.get(name)!
   }
 
-  const processContent = (content: string, date?: string, page?: string, person?: string) => {
+  const processContent = (content: string, date?: string, page?: string, person?: string, meeting?: string, library?: string) => {
     const mentions = extractLocationMentionsWithCoords(content)
     for (const { name, lat, lng } of mentions) {
       const entry = ensureEntry(name)
@@ -45,6 +49,14 @@ export default defineEventHandler(async (): Promise<LocationMeta[]> => {
       if (person) {
         entry.mentionedInPeople = entry.mentionedInPeople ?? []
         if (!entry.mentionedInPeople.includes(person)) entry.mentionedInPeople.push(person)
+      }
+      if (meeting) {
+        entry.mentionedInMeetings = entry.mentionedInMeetings ?? []
+        if (!entry.mentionedInMeetings.includes(meeting)) entry.mentionedInMeetings.push(meeting)
+      }
+      if (library) {
+        entry.mentionedInLibrary = entry.mentionedInLibrary ?? []
+        if (!entry.mentionedInLibrary.includes(library)) entry.mentionedInLibrary.push(library)
       }
       if (lat != null && lng != null && entry.lat == null && !inlineCoordFallback.has(name)) {
         inlineCoordFallback.set(name, { lat, lng })
@@ -68,6 +80,18 @@ export default defineEventHandler(async (): Promise<LocationMeta[]> => {
   await Promise.all(personsMeta.map(async (p) => {
     const content = await readPerson(p.slug)
     if (content) processContent(content, undefined, undefined, p.name)
+  }))
+
+  // Read all meetings — use display name (not slug) for mentionedInMeetings
+  await Promise.all(meetingsMeta.map(async (m) => {
+    const content = await readMeeting(m.slug)
+    if (content) processContent(content, undefined, undefined, undefined, m.name)
+  }))
+
+  // Read all library items — use display name (not slug) for mentionedInLibrary
+  await Promise.all(libraryMeta.map(async (l) => {
+    const content = await readLibrary(l.slug)
+    if (content) processContent(content, undefined, undefined, undefined, undefined, l.name)
   }))
 
   // Apply inline coord fallback where no stored coords exist

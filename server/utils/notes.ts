@@ -502,6 +502,7 @@ function extractKeywords(content: string): string[] {
 }
 
 import { listLibrary, readLibrary } from './library'
+import { listMeetings, readMeeting } from './meetings'
 
 const DATE_PATTERN_GRAPH = /^\d{4}-\d{2}-\d{2}$/
 
@@ -524,15 +525,18 @@ export async function buildGraph(): Promise<GraphData> {
   const pages = await listPages()
   const library = await listLibrary()
   const locations = await listLocations()
+  const meetings = await listMeetings()
   const dateSet = new Set(dates)
   const pageSet = new Set(pages)
   const librarySet = new Set(library)
+  const meetingSet = new Set(meetings)
 
   // ── Phase 1: read ALL files in parallel batches ──────────────────────────
-  const [dateContents, pageContents, libraryContents] = await Promise.all([
+  const [dateContents, pageContents, libraryContents, meetingContents] = await Promise.all([
     readInBatches(dates, readNote),
     readInBatches(pages, readPage),
     readInBatches(library, readLibrary),
+    readInBatches(meetings, readMeeting),
   ])
 
   // ── Phase 2: pure CPU processing (no I/O) ────────────────────────────────
@@ -545,6 +549,10 @@ export async function buildGraph(): Promise<GraphData> {
     ...library.map((lib, i) => {
       const label = (libraryContents[i] ? parseFrontmatterName(libraryContents[i]!) : null) ?? lib
       return { data: { id: `library:${lib}`, label, type: 'library' as const, color: '#6C63FF' } }
+    }),
+    ...meetings.map((meeting, i) => {
+      const label = (meetingContents[i] ? parseFrontmatterName(meetingContents[i]!) : null) ?? meeting
+      return { data: { id: `meeting:${meeting}`, label, type: 'meeting' as const, color: '#26A69A' } }
     }),
   ]
   const edges: GraphData['edges'] = []
@@ -576,6 +584,10 @@ export async function buildGraph(): Promise<GraphData> {
         const libId = `library:${target}`
         const edgeKey = `${sourceId}->${libId}`
         if (!seenEdges.has(edgeKey)) { seenEdges.add(edgeKey); edges.push({ data: { id: edgeKey, source: sourceId, target: libId, type: 'wikilink' as const } }) }
+      } else if (meetingSet.has(target)) {
+        const meetingId = `meeting:${target}`
+        const edgeKey = `${sourceId}->${meetingId}`
+        if (!seenEdges.has(edgeKey)) { seenEdges.add(edgeKey); edges.push({ data: { id: edgeKey, source: sourceId, target: meetingId, type: 'wikilink' as const } }) }
       }
     }
 
@@ -612,6 +624,11 @@ export async function buildGraph(): Promise<GraphData> {
   for (let i = 0; i < library.length; i++) {
     const content = libraryContents[i] ?? null
     if (content) processContent(content, `library:${library[i]!}`)
+  }
+
+  for (let i = 0; i < meetings.length; i++) {
+    const content = meetingContents[i] ?? null
+    if (content) processContent(content, `meeting:${meetings[i]!}`)
   }
 
 

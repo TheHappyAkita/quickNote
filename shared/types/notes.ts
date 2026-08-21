@@ -32,13 +32,15 @@ export interface LocationMeta {
   lat?: number
   lng?: number
   nickname?: string
-  mentionedInDates?: string[]   // YYYY-MM-DD dates where this location is mentioned
-  mentionedInPages?: string[]   // page names where this location is mentioned
-  mentionedInPeople?: string[]  // person names where this location is mentioned
+  mentionedInDates?: string[]    // YYYY-MM-DD dates where this location is mentioned
+  mentionedInPages?: string[]    // page names where this location is mentioned
+  mentionedInPeople?: string[]   // person names where this location is mentioned
+  mentionedInMeetings?: string[] // meeting names where this location is mentioned
+  mentionedInLibrary?: string[]  // library names where this location is mentioned
 }
 
 export interface GraphNode {
-  data: { id: string; label: string; type: 'date' | 'page' | 'keyword' | 'person' | 'location' | 'library'; weight?: number; color?: string }
+  data: { id: string; label: string; type: 'date' | 'page' | 'keyword' | 'person' | 'location' | 'library' | 'meeting'; weight?: number; color?: string }
 }
 
 export interface GraphEdge {
