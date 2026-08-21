@@ -136,6 +136,7 @@
             <template #prepend>
               <v-icon v-if="result.type === 'note'" size="16" color="primary">mdi-calendar</v-icon>
               <v-icon v-else-if="result.type === 'location'" size="16" color="teal">mdi-map-marker</v-icon>
+              <v-icon v-else-if="result.type === 'meeting'" size="16" color="teal">mdi-account-group</v-icon>
               <v-icon v-else size="16" color="secondary">mdi-file-document-outline</v-icon>
             </template>
             <v-list-item-title class="text-body-2">
@@ -370,6 +371,7 @@ function formatAlertDate(alertDate: string): string {
 function formatDate(dateStr: string): string {
   if (dateStr.startsWith('page:')) return `Page: ${dateStr.slice(5)}`
   if (dateStr.startsWith('person:')) return `Person: ${dateStr.slice(7)}`
+  if (dateStr.startsWith('meeting:')) return `Meeting: ${dateStr.slice(8)}`
   const d = new Date(dateStr + 'T00:00:00')
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
@@ -377,22 +379,25 @@ function formatDate(dateStr: string): string {
 function reminderLink(dateStr: string): string {
   if (dateStr.startsWith('page:')) return `/page/${encodeURIComponent(dateStr.slice(5))}`
   if (dateStr.startsWith('person:')) return `/person/${encodeURIComponent(dateStr.slice(7))}`
+  if (dateStr.startsWith('meeting:')) return `/meeting/${encodeURIComponent(dateStr.slice(8))}`
   return `/note/${dateStr}`
 }
 
 function reminderIcon(dateStr: string): string {
   if (dateStr.startsWith('page:')) return 'mdi-file-document-outline'
   if (dateStr.startsWith('person:')) return 'mdi-account'
+  if (dateStr.startsWith('meeting:')) return 'mdi-account-group'
   return 'mdi-calendar'
 }
 
 // ── Search ─────────────────────────────────────────────────────────
-interface SearchResult { type: 'note' | 'page' | 'location' | 'library'; id: string; title: string; excerpt: string; matches: number }
+interface SearchResult { type: 'note' | 'page' | 'location' | 'library' | 'meeting'; id: string; title: string; excerpt: string; matches: number }
 
 function searchResultLink(result: SearchResult): string {
   if (result.type === 'note') return `/note/${result.id}`
   if (result.type === 'location') return `/location/${encodeURIComponent(result.id)}`
   if (result.type === 'library') return `/library/${encodeURIComponent(result.id)}`
+  if (result.type === 'meeting') return `/meeting/${encodeURIComponent(result.id)}`
   return `/page/${encodeURIComponent(result.id)}`
 }
 const searchQuery = ref('')

@@ -49,6 +49,7 @@ export const EMOJI_MAP: Record<string, string> = {
 
 export function useWikilinkParser(options?: {
   locationNicknames?: Map<string, string> | (() => Map<string, string>)
+  meetingNames?: string[] | (() => string[])
 }) {
   const { applyMarkdownHooks } = usePluginSystem()
 
@@ -112,10 +113,15 @@ export function useWikilinkParser(options?: {
       return `<a href="/location/${encodeURIComponent(parsed.name)}" class="wiki-link location-link">📍 ${display}</a>`
     })
 
-    // Page links: [[Page Name]] (non-date format)
+    // Meeting links: [[Meeting Name]] (non-date format)
     html = html.replace(
       /\[\[([a-zA-Z0-9_\- ][a-zA-Z0-9_\- ]+)\]\]/g,
-      '<a href="/page/$1" class="wiki-link page-link">📄 $1</a>',
+      (_match, name: string) => {
+        const meetingNames: string[] = typeof options?.meetingNames === 'function' ? options.meetingNames() : options?.meetingNames ?? []
+        return meetingNames.includes(name)
+          ? `<a href="/meeting/${encodeURIComponent(name)}" class="wiki-link meeting-link">\u{1F465} ${name}</a>`
+          : `<a href="/page/${name}" class="wiki-link page-link">📄 ${name}</a>`
+      },
     )
 
     // Email addresses: user@example.com (skip if already inside an href)

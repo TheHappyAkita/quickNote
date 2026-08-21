@@ -86,4 +86,42 @@ describe('NoteEditor.vue', () => {
     expect(editor.emitted('update:modelValue')).toBeTruthy()
     expect(editor.emitted('update:modelValue')![0]).toEqual(['new content'])
   })
+
+  it('suggests meetings for wikilinks', async () => {
+    global.useFetch = vi.fn((url: string) => ({
+      data: ref(url === '/api/meetings' ? [{ name: 'Q3 Planning' }] : []),
+      refresh: vi.fn(),
+      pending: ref(false),
+    }))
+
+    const wrapper = mountEditor({ modelValue: '' })
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    await wrapper.find('textarea').setValue('[[Q3')
+
+    expect(wrapper.findAll('.suggestions-dropdown .v-list-item-title').map(item => item.text())).toEqual(['Q3 Planning'])
+  })
+
+  it('sorts note proposals by date descending', async () => {
+    global.useFetch = vi.fn((url: string) => ({
+      data: ref(url === '/api/notes'
+        ? ['2024-01-15', '2026-08-20', '2025-03-10']
+        : []),
+      refresh: vi.fn(),
+      pending: ref(false),
+    }))
+
+    const wrapper = mountEditor({ modelValue: '' })
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    const textarea = wrapper.find('textarea')
+    await textarea.setValue('[[')
+
+    const proposals = wrapper.findAll('.suggestions-dropdown .v-list-item-title')
+    expect(proposals.map(proposal => proposal.text())).toEqual([
+      '2026-08-20',
+      '2025-03-10',
+      '2024-01-15',
+    ])
+  })
 })

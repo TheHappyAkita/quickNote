@@ -216,6 +216,7 @@ interface NavItem {
 }
 
 const allNavItems: NavItem[] = [
+  { id: 'meetings',  label: 'Meetings',  icon: 'mdi-account-group',             to: '/meetings',  activeTest: () => route.path === '/meetings' || route.path.startsWith('/meeting/') },
   { id: 'pages',     label: 'Pages',     icon: 'mdi-file-document-multiple',  to: '/pages',     activeTest: () => route.path === '/pages' || route.path.startsWith('/page/') },
   { id: 'persons',   label: 'People',    icon: 'mdi-account-group',            to: '/persons',   activeTest: () => route.path === '/persons' || route.path.startsWith('/person/') },
   { id: 'locations', label: 'Locations', icon: 'mdi-map-marker-multiple',      to: '/locations', activeTest: () => route.path === '/locations' || route.path.startsWith('/location/') },

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 export interface ServerPluginHooks {
-  'server:onSave'?: (data: { type: 'note' | 'page' | 'person' | 'location' | 'library', name: string, content: string }) => Promise<void> | void;
-  'server:onDelete'?: (data: { type: 'note' | 'page' | 'person' | 'location' | 'library', name: string }) => Promise<void> | void;
+  'server:onSave'?: (data: { type: 'note' | 'page' | 'person' | 'location' | 'library' | 'meeting', name: string, content: string }) => Promise<void> | void;
+  'server:onDelete'?: (data: { type: 'note' | 'page' | 'person' | 'location' | 'library' | 'meeting', name: string }) => Promise<void> | void;
 }
 
 export interface QuickNoteServerPlugin {

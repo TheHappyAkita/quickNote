@@ -5,9 +5,10 @@ import { listNotes, readNote } from '../utils/notes'
 import { listPages, readPage } from '../utils/pages'
 import { listLocations, readLocation } from '../utils/locations'
 import { listLibrary, readLibrary } from '../utils/library'
+import { listMeetings, readMeeting } from '../utils/meetings'
 
 export interface SearchResult {
-  type: 'note' | 'page' | 'location' | 'library'
+  type: 'note' | 'page' | 'location' | 'library' | 'meeting'
   id: string // date for notes, name for pages
   title: string
   excerpt: string
@@ -108,6 +109,28 @@ export default defineEventHandler(async (event): Promise<SearchResult[]> => {
         type: 'library',
         id: lib,
         title: lib,
+        excerpt: excerpt.slice(0, 200),
+        matches: countMatches(contentLower, searchTerm),
+      })
+    }
+  }))
+
+  // Search meetings
+  const meetings = await listMeetings()
+  await Promise.all(meetings.map(async (meeting) => {
+    const content = await readMeeting(meeting)
+    const nameMatch = meeting.toLowerCase().includes(searchTerm)
+    const contentMatch = content?.toLowerCase().includes(searchTerm)
+
+    if (nameMatch || contentMatch) {
+      const contentLower = content?.toLowerCase() ?? ''
+      const excerpts = content ? extractExcerpts(content, searchTerm, 3) : []
+      const excerpt = excerpts.join(' … ') || (content?.slice(0, 160) ?? '')
+
+      results.push({
+        type: 'meeting',
+        id: meeting,
+        title: meeting,
         excerpt: excerpt.slice(0, 200),
         matches: countMatches(contentLower, searchTerm),
       })

@@ -155,6 +155,18 @@ async function confirmDelete() {
   }
 }
 
+onMounted(() => {
+  const handler = (event: KeyboardEvent): void => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+      event.preventDefault()
+      if (saveTimeout) clearTimeout(saveTimeout)
+      void saveEntry()
+    }
+  }
+  document.addEventListener('keydown', handler)
+  onUnmounted(() => document.removeEventListener('keydown', handler))
+})
+
 onUnmounted(() => {
   if (saveTimeout) {
     clearTimeout(saveTimeout)

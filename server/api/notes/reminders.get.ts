@@ -7,6 +7,7 @@ import { readFile, writeFile } from 'fs/promises'
 import { getNotesDir, listNotes, readNote } from '../../utils/notes'
 import { listPages, readPage } from '../../utils/pages'
 import { listPersons, readPerson } from '../../utils/persons'
+import { listMeetings, readMeeting } from '../../utils/meetings'
 import { cacheGet, cacheSet, CACHE_TTL } from '../../utils/cache'
 
 const REMINDER_PATTERN = /^(.*?)(remind|remindme|reminder)(?:\s*:\s*|\s+)(.+)$/i
@@ -141,11 +142,12 @@ export default defineEventHandler(async (): Promise<Reminder[]> => {
   const cached = cacheGet<Reminder[]>('reminders')
   if (cached) return cached
 
-  const [dismissed, dates, pages, persons] = await Promise.all([
+  const [dismissed, dates, pages, persons, meetings] = await Promise.all([
     loadDismissed(),
     listNotes(),
     listPages(),
     listPersons(),
+    listMeetings(),
   ])
 
   const reminders: Reminder[] = []
@@ -175,6 +177,15 @@ export default defineEventHandler(async (): Promise<Reminder[]> => {
     for (let j = 0; j < batch.length; j++) {
       const content = batch[j]
       if (content) reminders.push(...extractReminders(`person:${persons[i + j]!}`, content, dismissed))
+    }
+  }
+
+  // Read and process meeting files
+  for (let i = 0; i < meetings.length; i += BATCH) {
+    const batch = await Promise.all(meetings.slice(i, i + BATCH).map(m => readMeeting(m)))
+    for (let j = 0; j < batch.length; j++) {
+      const content = batch[j]
+      if (content) reminders.push(...extractReminders(`meeting:${meetings[i + j]!}`, content, dismissed))
     }
   }
 

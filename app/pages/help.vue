@@ -27,6 +27,10 @@
               <td>📄 Link to a named page</td>
             </tr>
             <tr>
+              <td><code>[[Meeting Name]]</code></td>
+              <td>👥 Link to a meeting note (when the meeting exists)</td>
+            </tr>
+            <tr>
               <td><code>@[[Lastname, Forename]]</code></td>
               <td>👤 Person mention — creates a node in the graph</td>
             </tr>
@@ -87,6 +91,26 @@
         <div class="text-caption text-medium-emphasis mt-2">
           Wikilinks are clickable in the preview pane and appear as nodes in the Knowledge Graph.
         </div>
+      </v-card-text>
+    </v-card>
+
+    <!-- MEETINGS -->
+    <v-card class="mb-4" variant="outlined">
+      <v-card-title class="text-subtitle-1 font-weight-bold pb-0">
+        <v-icon size="18" class="mr-2" color="teal">mdi-account-group</v-icon>Meeting Notes
+      </v-card-title>
+      <v-card-text>
+        <p class="mb-3">Meeting notes have their own space under <code>/meetings</code>. Each meeting can store structured metadata above the note body.</p>
+        <v-table density="compact" class="help-table">
+          <thead><tr><th>Field</th><th>Stored as</th><th>Details</th></tr></thead>
+          <tbody>
+            <tr><td>When</td><td><code>date</code></td><td>Date and time of the meeting</td></tr>
+            <tr><td>Timezone</td><td><code>timezone</code></td><td>IANA timezone (selectable, defaults to browser timezone)</td></tr>
+            <tr><td>Topic</td><td><code>topic</code></td><td>The meeting subject</td></tr>
+            <tr><td>Attendees</td><td><code>attendees</code></td><td>Person mentions using <code>@[[Name]]</code> format — creates links to person pages</td></tr>
+          </tbody>
+        </v-table>
+        <div class="text-caption text-medium-emphasis mt-2">Type <code>[[Meeting Name]]</code> to link to an existing meeting note. Attendees are stored as <code>@[[Person Name]]</code> in frontmatter and automatically link to person pages. Meeting metadata is saved in Markdown frontmatter.</div>
       </v-card-text>
     </v-card>
 
