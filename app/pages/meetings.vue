@@ -30,6 +30,31 @@
       class="mb-4"
     />
 
+    <!-- Tag filter chips -->
+    <div v-if="allTags.length > 0" class="mb-4 d-flex flex-wrap gap-2 align-center">
+      <v-icon size="16" color="teal" class="mr-1">mdi-tag-multiple</v-icon>
+      <v-chip
+        v-for="tag in allTags"
+        :key="tag"
+        size="small"
+        :variant="selectedTags.has(tag) ? 'flat' : 'tonal'"
+        :color="selectedTags.has(tag) ? 'teal' : undefined"
+        class="cursor-pointer"
+        @click="toggleTag(tag)"
+      >
+        #{{ tag }}
+      </v-chip>
+      <v-btn
+        v-if="selectedTags.size > 0"
+        size="x-small"
+        variant="text"
+        color="teal"
+        @click="selectedTags.clear()"
+      >
+        Clear filter
+      </v-btn>
+    </div>
+
     <!-- List -->
     <v-progress-circular v-if="pending" indeterminate color="teal" class="d-flex mx-auto" />
 
@@ -69,6 +94,7 @@
               variant="tonal"
               color="teal"
               class="mr-1"
+              @click.prevent="toggleTag(tag)"
             >
               #{{ tag }}
             </v-chip>
@@ -127,6 +153,7 @@ const showCreateDialog = ref(false)
 const newName = ref('')
 const creating = ref(false)
 const search = ref('')
+const selectedTags = reactive(new Set<string>())
 
 const valid = computed(() => {
   const trimmed = newName.value.trim()
@@ -143,18 +170,42 @@ const nameError = computed(() => {
   return ''
 })
 
-const filteredMeetings = computed(() => {
-  if (!search.value.trim()) return sortedMeetings.value
-  const q = search.value.trim().toLowerCase()
-  return sortedMeetings.value.filter(m =>
-    m.name.toLowerCase().includes(q) ||
-    m.tags.some(t => t.toLowerCase().includes(q))
-  )
-})
-
 const sortedMeetings = computed(() => {
   return [...(meetings.value ?? [])].sort((a, b) => a.name.localeCompare(b.name))
 })
+
+const allTags = computed(() => {
+  const tags = new Set<string>()
+  for (const m of sortedMeetings.value) {
+    for (const t of m.tags) tags.add(t)
+  }
+  return [...tags].sort()
+})
+
+const filteredMeetings = computed(() => {
+  let result = sortedMeetings.value
+  
+  // Filter by tags
+  if (selectedTags.size > 0) {
+    result = result.filter(m => [...selectedTags].every(t => m.tags.includes(t)))
+  }
+  
+  // Filter by search
+  if (search.value.trim()) {
+    const q = search.value.trim().toLowerCase()
+    result = result.filter(m =>
+      m.name.toLowerCase().includes(q) ||
+      m.tags.some(t => t.toLowerCase().includes(q))
+    )
+  }
+  
+  return result
+})
+
+function toggleTag(tag: string) {
+  if (selectedTags.has(tag)) selectedTags.delete(tag)
+  else selectedTags.add(tag)
+}
 
 async function createMeeting(): Promise<void> {
   const name = newName.value.trim()
@@ -186,5 +237,11 @@ async function createMeeting(): Promise<void> {
 .meeting-card:hover {
   transform: translateY(-2px);
   border-color: rgb(var(--v-theme-teal));
+}
+.gap-2 {
+  gap: 8px;
+}
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>

@@ -12,3 +12,5 @@ node_modules
 # Logs
 *.log
 /5552/.nuxt
+/docker-compose.back
+/docker-compose.yml

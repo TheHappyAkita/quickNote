@@ -104,10 +104,27 @@ onMounted(() => {
           'border-color': '#6c63ff',
           'border-width': 2,
           'font-size': 10,
+          'shape': 'triangle',
+          'width': 55,
+          'height': 55,
+          'color': '#ffffff',
+          'text-outline-width': 2,
+          'text-outline-color': '#1a1a2e',
+        },
+      },
+      {
+        selector: 'node[type="meeting"]',
+        style: {
+          'background-color': '#0d3d35',
+          'border-color': '#26A69A',
+          'border-width': 2,
+          'font-size': 10,
           'shape': 'round-rectangle',
           'width': 54,
           'height': 54,
-          'color': '#9c8fff',
+          'color': '#ffffff',
+          'text-outline-width': 2,
+          'text-outline-color': '#0d3d35',
         },
       },
       {
@@ -230,6 +247,12 @@ onMounted(() => {
     router.push(`/library/${encodeURIComponent(libraryName)}`)
   })
 
+  cy.on('tap', 'node[type="meeting"]', (event) => {
+    const id = event.target.data('id') as string
+    const meetingName = id.replace(/^meeting:/, '')
+    router.push(`/meeting/${encodeURIComponent(meetingName)}`)
+  })
+
   cy.on('mouseover', 'node', (event) => {
     const node = event.target
     const type = node.data('type') as string
@@ -241,6 +264,8 @@ onMounted(() => {
       hoveredNode.value = `📄 ${label}`
     } else if (type === 'library') {
       hoveredNode.value = `📚 ${label}`
+    } else if (type === 'meeting') {
+      hoveredNode.value = `🧑‍🤝‍🧑 ${label}`
     } else if (type === 'person') {
       hoveredNode.value = `👤 ${label}`
     } else if (type === 'location') {
