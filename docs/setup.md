@@ -64,6 +64,10 @@ Open [http://localhost:3000](http://localhost:3000).
 | `NUXT_SESSION_PASSWORD` | **Yes** | — | Session encryption key, min 32 chars |
 | `AUTH_USERS` | **Yes** | `[]` | JSON array of `{ username, passwordHash }` objects |
 | `NOTES_DIR` | No | `~/.quickNote` | Directory where notes and pages are stored |
+| `UID` | Docker | `1000` | Host user ID used for container file ownership |
+| `GID` | Docker | `1000` | Host group ID used for container file ownership |
+| `QUICKNOTE_PORT` | Docker | `5551` | Host port mapped to container port `3000` |
+| `QUICKNOTE_DATA_DIR` | Docker | `${HOME}/.quickNote` | Host directory mounted at `/data/notes` |
 | `PORT` | No | `3000` | HTTP port for the production server |
 
 ### Multiple users

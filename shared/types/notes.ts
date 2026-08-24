@@ -11,6 +11,7 @@ export interface MeetingMeta {
   name: string
   slug: string
   tags: string[]
+  date?: string
 }
 
 export interface LibraryMeta {

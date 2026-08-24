@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { toSlug, sanitizeLocationSlug, decodeCoordSlug, parseFrontmatterName, injectFrontmatterName } from '../../../shared/utils/location'
+import { toSlug, sanitizeLocationSlug, decodeCoordSlug, parseFrontmatterName, injectFrontmatterName, updateFrontmatterFields } from '../../../shared/utils/location'
 
 describe('location utils', () => {
   describe('toSlug', () => {
@@ -60,6 +60,22 @@ describe('location utils', () => {
       const updated = injectFrontmatterName(content, 'New Name')
       expect(updated).toContain('name: New Name')
       expect(updated).not.toContain('name: Old Name')
+    })
+
+    it('updates selected fields without removing meaningful metadata', () => {
+      const content = '---\nname: Weekly Sync\norganizer: Alice\nattendees: [Bob]\nlocation: Room 1\n\n\n\n---\n\n\n\nNotes'
+      const updated = updateFrontmatterFields(content, {
+        attendees: '[@[[Bob]], @[[Carol]]]',
+        topic: 'Planning',
+      })
+
+      expect(updated).toBe('---\nname: Weekly Sync\norganizer: Alice\nattendees: [@[[Bob]], @[[Carol]]]\nlocation: Room 1\ntopic: Planning\n\n---\n\nNotes')
+    })
+
+    it('adds one empty line before closing frontmatter when none exists', () => {
+      const content = '---\ntopic: Planning\n---\nNotes'
+
+      expect(updateFrontmatterFields(content, { topic: 'Review' })).toBe('---\ntopic: Review\n\n---\n\nNotes')
     })
   })
 })

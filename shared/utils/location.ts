@@ -59,6 +59,41 @@ export function injectFrontmatterName(content: string, displayName: string): str
   return `---\nname: ${displayName}\n---\n${content}`
 }
 
+export function updateFrontmatterFields(content: string, fields: Record<string, string | null>): string {
+  const frontmatterMatch: RegExpMatchArray | null = content.match(/^---\n([\s\S]*?)\n---/)
+  const body: string = frontmatterMatch ? content.slice(frontmatterMatch[0].length) : content
+  const lines: string[] = frontmatterMatch?.[1]?.split('\n') ?? []
+  const pendingFields: Map<string, string | null> = new Map(Object.entries(fields))
+  const updatedLines: string[] = []
+
+  for (let index: number = 0; index < lines.length; index += 1) {
+    const line: string = lines[index]!
+    const key: string | undefined = [...pendingFields.keys()].find((candidate: string): boolean => line.startsWith(`${candidate}:`))
+    if (!key) {
+      updatedLines.push(line)
+      continue
+    }
+
+    const value: string | null = pendingFields.get(key) ?? null
+    if (value !== null) updatedLines.push(`${key}: ${value}`)
+    pendingFields.delete(key)
+    while (index + 1 < lines.length && /^\s+-\s+/.test(lines[index + 1]!)) index += 1
+  }
+
+  while (updatedLines.at(-1) === '') updatedLines.pop()
+  for (const [key, value] of pendingFields) {
+    if (value !== null) updatedLines.push(`${key}: ${value}`)
+  }
+
+  const hasMeaningfulLine: boolean = updatedLines.some((line: string): boolean => line.length > 0)
+  if (!hasMeaningfulLine) return body.replace(/^\n+/, '')
+
+  const normalizedBody: string = body.replace(/^\n+/, '')
+  return normalizedBody
+    ? `---\n${updatedLines.join('\n')}\n\n---\n\n${normalizedBody}`
+    : `---\n${updatedLines.join('\n')}\n\n---`
+}
+
 /**
  * @deprecated Use toSlug() instead.
  * Kept for backwards compat — strips same unsafe chars but preserves commas.

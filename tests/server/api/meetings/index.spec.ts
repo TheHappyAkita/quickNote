@@ -64,6 +64,18 @@ describe('Meetings API - GET /api/meetings', () => {
     expect(result[0].tags).toEqual(expect.arrayContaining(['important', 'urgent', 'followup']))
   })
 
+  it('should list meetings with the newest meeting date first', async () => {
+    await writeMeeting('Older Meeting', '---\ndate: 2026-08-20 09:00\n---\nOlder')
+    await writeMeeting('Undated Meeting', 'Undated')
+    await writeMeeting('Newest Meeting', '---\ndate: 2026-08-22 09:00\n---\nNewest')
+
+    const { listMeetingsWithMeta } = await import('../../../../server/utils/meetings')
+    const result = await listMeetingsWithMeta()
+
+    expect(result.map((meeting) => meeting.name)).toEqual(['Newest Meeting', 'Older Meeting', 'Undated Meeting'])
+    expect(result[0]?.date).toBe('2026-08-22 09:00')
+  })
+
   it('should handle meetings with frontmatter metadata', async () => {
     const content = `---
 name: Sprint Planning Meeting

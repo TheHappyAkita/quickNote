@@ -22,6 +22,21 @@ export const {
   read: readMeeting,
   write: writeMeeting,
   delete: deleteMeeting,
-  listWithMeta: listMeetingsWithMeta,
   rename: renameMeetingFile,
 } = meetingsNamespace
+
+export async function listMeetingsWithMeta(): Promise<MeetingMeta[]> {
+  const meetings: MeetingMeta[] = await meetingsNamespace.listWithMeta()
+  const meetingsWithDates: MeetingMeta[] = await Promise.all(meetings.map(async (meeting: MeetingMeta): Promise<MeetingMeta> => {
+    const content: string | null = await readMeeting(meeting.slug)
+    const date: string | undefined = content?.match(/^date:\s*(.+)$/m)?.[1]?.trim()
+    return date ? { ...meeting, date } : meeting
+  }))
+
+  return meetingsWithDates.sort((first: MeetingMeta, second: MeetingMeta): number => {
+    if (first.date && second.date) return second.date.localeCompare(first.date) || first.name.localeCompare(second.name)
+    if (first.date) return -1
+    if (second.date) return 1
+    return first.name.localeCompare(second.name)
+  })
+}
