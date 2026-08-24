@@ -148,6 +148,8 @@
 </template>
 
 <script setup lang="ts">
+import { updateFrontmatterFields } from '#shared/utils/location'
+
 const route = useRoute()
 const router = useRouter()
 const meetingName = computed(() => decodeURIComponent(route.params.name as string))
@@ -387,33 +389,18 @@ watch(() => meetingData.value?.content, (value) => {
 }, { immediate: true })
 
 function metadataContent(): string {
-  const metadata: string[] = []
-  
-  // Preserve existing tags
-  const tags = currentTags.value
-  if (tags.length > 0) {
-    metadata.push(`tags: [${tags.join(', ')}]`)
-  }
-  
-  if (meetingDate.value) {
-    metadata.push(`date: ${meetingDate.value}`)
-    metadata.push(`timezone: ${meetingTimezone.value}`)
-  }
-  if (topic.value.trim()) metadata.push(`topic: ${topic.value.trim()}`)
-  
-  // Save attendees in @[[Name]] format for proper person linking
-  if (attendeesArray.value.length > 0) {
-    const formattedAttendees = attendeesArray.value
-      .filter(Boolean)
-      .map(name => `@[[${name}]]`)
-    metadata.push(`attendees: [${formattedAttendees.join(', ')}]`)
-  }
-  
-  // Preserve blank lines after frontmatter - extract content after closing ---
-  // Match: opening ---, frontmatter content, closing ---, then capture everything after
-  const match = content.value.match(/^---\n[\s\S]*?\n---(\n?.*)$/s)
-  const existing = match?.[1] ?? content.value
-  return metadata.length > 0 ? `---\n${metadata.join('\n')}\n\n---${existing}` : existing
+  const tags: string[] = currentTags.value
+  const formattedAttendees: string[] = attendeesArray.value
+    .filter(Boolean)
+    .map((name: string): string => `@[[${name}]]`)
+
+  return updateFrontmatterFields(content.value, {
+    tags: tags.length > 0 ? `[${tags.join(', ')}]` : null,
+    date: meetingDate.value || null,
+    timezone: meetingDate.value ? meetingTimezone.value : null,
+    topic: topic.value.trim() || null,
+    attendees: formattedAttendees.length > 0 ? `[${formattedAttendees.join(', ')}]` : null,
+  })
 }
 
 async function saveNow() {

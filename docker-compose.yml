@@ -2,7 +2,7 @@ services:
   quicknote:
     build: .
     ports:
-      - "5551:3000"
+      - "${QUICKNOTE_PORT}:3000"
     env_file:
       - .env
     environment:
@@ -14,9 +14,9 @@ services:
       NUXT_OLLAMA_BASE_URL: "http://host.docker.internal:11434"
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    user: "1000:1000"
+    user: "${UID}:${GID}"
     volumes:
       # Notes and canvas state are persisted here.
-      # Change the left side to any host path you like, e.g. ~/my-notes:/data/notes
-      - $HOME/.quickNote:/data/notes
+      # Change QUICKNOTE_DATA_DIR in .env to any host path you like.
+      - ${QUICKNOTE_DATA_DIR}:/data/notes
     restart: unless-stopped

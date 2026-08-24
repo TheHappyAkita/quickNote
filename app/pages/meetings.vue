@@ -170,9 +170,7 @@ const nameError = computed(() => {
   return ''
 })
 
-const sortedMeetings = computed(() => {
-  return [...(meetings.value ?? [])].sort((a, b) => a.name.localeCompare(b.name))
-})
+const sortedMeetings = computed((): MeetingMeta[] => meetings.value ?? [])
 
 const allTags = computed(() => {
   const tags = new Set<string>()
