@@ -1,6 +1,7 @@
 <!-- Copyright (C) 2026 TheHappyAkita - SPDX-License-Identifier: GPL-3.0-only -->
 <template>
-  <v-container fluid class="pa-4 pa-sm-6">
+  <div class="library-scroll">
+    <v-container fluid class="pa-4 pa-sm-6">
     <div class="d-flex align-center mb-4">
       <v-icon color="primary" class="mr-2">mdi-library-shelves</v-icon>
       <h1 class="text-h6 font-weight-bold">Library</h1>
@@ -86,7 +87,8 @@
     >
       <LibraryCreator @close="showCreator = false" @created="onCreated" />
     </v-dialog>
-  </v-container>
+    </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -119,6 +121,10 @@ function onCreated(slug: string) {
 </script>
 
 <style scoped>
+.library-scroll {
+  height: calc(100vh - var(--v-layout-top, 64px));
+  overflow-y: auto;
+}
 .entry-card {
   cursor: pointer;
   transition: transform 0.15s, border-color 0.15s;
