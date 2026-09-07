@@ -1,6 +1,7 @@
 <!-- Copyright (C) 2026 TheHappyAkita - SPDX-License-Identifier: GPL-3.0-only -->
 <template>
-  <v-container fluid class="pa-4 pa-sm-6">
+  <div class="pages-scroll">
+    <v-container fluid class="pa-4 pa-sm-6">
     <div class="d-flex align-center mb-4">
       <v-icon color="secondary" class="mr-2">mdi-file-document-multiple</v-icon>
       <h1 class="text-h6 font-weight-bold">Pages</h1>
@@ -125,7 +126,8 @@
         </v-card>
       </v-col>
     </v-row>
-  </v-container>
+    </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -202,6 +204,10 @@ async function createPage() {
 </script>
 
 <style scoped>
+.pages-scroll {
+  height: calc(100vh - var(--v-layout-top, 64px));
+  overflow-y: auto;
+}
 .page-card {
   cursor: pointer;
   transition: transform 0.15s, border-color 0.15s;

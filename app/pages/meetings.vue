@@ -1,6 +1,8 @@
 <!-- Copyright (C) 2026 TheHappyAkita - SPDX-License-Identifier: GPL-3.0-only -->
 <template>
-  <v-container fluid class="pa-4 pa-sm-6">
+
+  <div class="meetings-scroll">
+    <v-container fluid class="pa-4 pa-sm-6">
     <div class="d-flex align-center mb-4">
       <v-icon color="teal" class="mr-2">mdi-account-group</v-icon>
       <h1 class="text-h6 font-weight-bold">Meetings</h1>
@@ -136,7 +138,8 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </v-container>
+    </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -228,6 +231,10 @@ async function createMeeting(): Promise<void> {
 </script>
 
 <style scoped>
+.meetings-scroll {
+  height: calc(100vh - var(--v-layout-top, 64px));
+  overflow-y: auto;
+}
 .meeting-card {
   cursor: pointer;
   transition: transform 0.15s, border-color 0.15s;
